@@ -10,7 +10,9 @@ partner data) lives in a separate private overlay that depends on these packages
   conformal calibration (split-conformal + MAPIE), EI recommender, ARD sensitivity.
 - **engin-host** — stage [4] chassis selection: pydantic-typed capability KB,
   multi-criteria scoring with uncertainty + hard-constraint flags. Depends on engin-core.
-- **engin-pathway** — stage [3] graph-ML manufacturability ranking. *Planned.*
+- **engin-pathway** — stage [3] graph-ML manufacturability ranking (networkx GCN +
+  ridge + conformal; beats step-count). M0 (random-weight GCN); M1 = trained PyG GNN
+  + COBRApy/eQuilibrator. Depends on engin-core.
 
 ## Principles (enforced across packages)
 - **Calibrated uncertainty is first-class** — no naked point estimates; conformal

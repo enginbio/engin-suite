@@ -29,7 +29,7 @@ thin domain layers over one shared engine, `engin-core`.
 |---|---|---|---|
 | [`engin-core`](packages/engin-core) | — | Shared engine: fed-batch simulator (scipy), scikit-learn GP with conformal calibration (split-conformal + MAPIE), Expected-Improvement recommender, ARD sensitivity. | ✅ working |
 | [`engin-host`](packages/engin-host) | [4] | Host/chassis selection: multi-criteria scoring over a capability KB, with uncertainty and hard-constraint flags. Depends on `engin-core`. | ✅ working |
-| `engin-pathway` | [3] | Graph-ML manufacturability ranking of metabolic routes. | planned |
+| [`engin-pathway`](packages/engin-pathway) | [3] | Graph-ML manufacturability ranking of metabolic routes (beats step-count; calibrated). Depends on `engin-core`. | ✅ working (M0) |
 
 ## Design principles (suite-wide)
 
@@ -48,7 +48,7 @@ thin domain layers over one shared engine, `engin-core`.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e "packages/engin-core[dev]" -e "packages/engin-host[dev]"
+pip install -e "packages/engin-core[dev]" -e "packages/engin-host[dev]" -e "packages/engin-pathway[dev]"
 pytest packages/                 # all packages
 ruff check .
 ```

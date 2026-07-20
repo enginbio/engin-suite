@@ -31,7 +31,9 @@ domain layers over one shared engine, `engin-core`.
   sensitivity. The honest-uncertainty engine.
 - **engin-host** — chassis selection: multi-criteria scoring over a capability KB
   with uncertainty and hard-constraint flags.
-- **engin-pathway** — graph-ML manufacturability ranking of metabolic routes *(planned)*.
+- **engin-pathway** — graph-ML manufacturability ranking of metabolic routes:
+  a message-passing GCN + ridge + conformal beats step-count (ρ 0.85 vs 0.51) on
+  synthetic routes. M0; the trained PyG GNN + real routes are M1.
 
 ## Why calibrated uncertainty
 
