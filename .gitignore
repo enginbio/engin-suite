@@ -1,0 +1,33 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Test / tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Generated demo/benchmark artifacts (regenerate with the scripts)
+**/examples/outputs/
+**/benchmarks/outputs/
+*.ckpt
+
+# Never commit partner data
+data/partner/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
