@@ -36,7 +36,10 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-pythonpath = ["src"]
+# Run from a bare checkout without relying on an editable install: this package's
+# own src plus the sibling engin-core it imports. pytest resolves these relative
+# to rootdir, and .pth-provided paths are not visible during a pytest run.
+pythonpath = ["src", "../engin-core/src"]
 
 [tool.ruff]
 line-length = 100
