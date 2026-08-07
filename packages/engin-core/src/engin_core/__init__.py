@@ -14,6 +14,14 @@ from .gp import (
     prob_at_least,
     split_conformal_multiplier,
 )
+from .handoff import (
+    HostDecision,
+    ProcessBrief,
+    RankedRoute,
+    RouteRanking,
+    inflate_uncertainty,
+    process_brief,
+)
 from .recommend import expected_improvement, recommend_batch
 from .sensitivity import ard_importance
 from .simulator import (
@@ -41,5 +49,11 @@ __all__ = [
     "unit_to_physical",
     "KNOBS",
     "KNOB_NAMES",
+    "HostDecision",
+    "RankedRoute",
+    "RouteRanking",
+    "ProcessBrief",
+    "inflate_uncertainty",
+    "process_brief",
     "__version__",
 ]
