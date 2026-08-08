@@ -22,11 +22,14 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -e "packages/engin-core[dev]" -e "packages/engin-host[dev]" -e "packages/engin-pathway[dev]"
+          pip install -e "packages/engin-core[dev]" -e "packages/engin-graph[dev]" -e "packages/engin-host[dev]" -e "packages/engin-pathway[dev]"
       - name: Lint
         run: ruff check .
       - name: Test engin-core
         working-directory: packages/engin-core
+        run: pytest -q
+      - name: Test engin-graph
+        working-directory: packages/engin-graph
         run: pytest -q
       - name: Test engin-host
         working-directory: packages/engin-host
