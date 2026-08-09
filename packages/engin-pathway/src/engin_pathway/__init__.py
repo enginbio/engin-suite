@@ -6,6 +6,7 @@ so a team spends its foundry cycles on the routes most likely to hit titer. A gr
 model reads route structure (esp. the worst step) to recover the signal step-count
 misses. A thin domain layer over ``engin_core``'s conformal calibration.
 """
+
 from __future__ import annotations
 
 from .embed import GraphEmbedder

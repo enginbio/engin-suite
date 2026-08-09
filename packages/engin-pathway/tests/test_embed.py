@@ -1,4 +1,5 @@
 """Embedder: shape, determinism, and worst-step sensitivity."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -18,7 +19,7 @@ def test_embedding_shape_and_determinism():
     v2 = GraphEmbedder(seed=0).embed(_route("a"))
     # 3 poolings x 5 node feats + 3 poolings x 16 hidden = 15 + 48 = 63
     assert v1.shape == (63,)
-    assert np.allclose(v1, v2)                 # deterministic given seed
+    assert np.allclose(v1, v2)  # deterministic given seed
 
 
 def test_embedding_sees_the_worst_step():

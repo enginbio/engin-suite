@@ -5,6 +5,7 @@ recommendation with a confidence band. Pydantic validates the data (values and
 confidences in [0, 1], every host covering every capability) so a malformed KB
 fails loudly at load time rather than silently skewing a recommendation.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -93,7 +94,7 @@ class HostScore(BaseModel):
     host: str
     score: float
     sd: float
-    band90: float                              # 1.645 * sd, a 90% half-width
-    contributions: list[tuple[str, float]]     # top per-capability contributions
-    flags: list[str]                           # hard-constraint violations
+    band90: float  # 1.645 * sd, a 90% half-width
+    contributions: list[tuple[str, float]]  # top per-capability contributions
+    flags: list[str]  # hard-constraint violations
     feasible: bool

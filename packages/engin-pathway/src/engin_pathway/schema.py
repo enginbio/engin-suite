@@ -6,6 +6,7 @@ matrix and a networkx graph so the graph model can read its *structure* — whic
 is where the manufacturability signal that step-count misses actually lives (a
 single toxic or thermodynamically-uphill step tanks the whole route).
 """
+
 from __future__ import annotations
 
 import networkx as nx
@@ -63,7 +64,7 @@ class Route(BaseModel):
 
     def graph(self) -> nx.Graph:
         """Undirected path graph over the steps, node attr ``x`` = feature vector."""
-        g = nx.path_graph(self.n_steps)                # 0-1-2-...-(L-1)
+        g = nx.path_graph(self.n_steps)  # 0-1-2-...-(L-1)
         for i, s in enumerate(self.steps):
             g.nodes[i]["x"] = s.vector()
         return g

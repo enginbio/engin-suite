@@ -11,6 +11,7 @@ ranking loop beats step-count. The M1 upgrade swaps this for a *trained* GNN on
 **PyTorch Geometric**; the route-as-graph interface (via networkx) stays the same.
 The graph is built with networkx so branched real routes (M1) drop straight in.
 """
+
 from __future__ import annotations
 
 import networkx as nx
@@ -44,10 +45,16 @@ class GraphEmbedder:
         H1 = np.maximum(Ah @ X @ self.W1, 0.0)
         H2 = np.maximum(Ah @ H1 @ self.W2, 0.0)
         # min-pool included so the embedding can see the *worst step*.
-        return np.concatenate([
-            X.mean(0), X.max(0), X.min(0),
-            H2.mean(0), H2.max(0), H2.min(0),
-        ])
+        return np.concatenate(
+            [
+                X.mean(0),
+                X.max(0),
+                X.min(0),
+                H2.mean(0),
+                H2.max(0),
+                H2.min(0),
+            ]
+        )
 
     def matrix(self, routes: list[Route]) -> NDArray[np.float64]:
         """Embed a list of routes -> ``(n_routes, embedding_dim)``."""

@@ -15,6 +15,7 @@ Reports, averaged over several seeds so the numbers are not cherry-picked:
 
 Run:  python benchmarks/benchmark.py
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -44,19 +45,19 @@ def one_seed(seed: int, d: int = 5):
     gp = fit_gp(U[tr], y_obs[tr], seed=seed)
 
     # forecast quality on held-out test runs
-    m_te, sd_epi = gp.predict(U[te], include_noise=False)   # model uncertainty only
-    m_te, sd_tot = gp.predict(U[te], include_noise=True)     # + observation noise
+    m_te, sd_epi = gp.predict(U[te], include_noise=False)  # model uncertainty only
+    m_te, sd_tot = gp.predict(U[te], include_noise=True)  # + observation noise
     resid = m_te - y_obs[te]
-    rmse = float(np.sqrt(np.mean(resid ** 2)))
-    r2 = float(1 - np.sum(resid ** 2) / np.sum((y_obs[te] - y_obs[te].mean()) ** 2))
+    rmse = float(np.sqrt(np.mean(resid**2)))
+    r2 = float(1 - np.sum(resid**2) / np.sum((y_obs[te] - y_obs[te].mean()) ** 2))
 
     # calibration: three ways to build a 90% interval (see module docstring)
     mc, sdc = gp.predict(U[ca], include_noise=True)
     q90 = split_conformal_multiplier(y_obs[ca], mc, sdc, level=0.90)
     ar = np.abs(resid)
-    cover_epi = float(np.mean(ar <= GAUSS_90 * sd_epi))      # naive, overconfident
-    cover_tot = float(np.mean(ar <= GAUSS_90 * sd_tot))      # Gaussian, no guarantee
-    cover_conf = float(np.mean(ar <= q90 * sd_tot))          # split-conformal, honest
+    cover_epi = float(np.mean(ar <= GAUSS_90 * sd_epi))  # naive, overconfident
+    cover_tot = float(np.mean(ar <= GAUSS_90 * sd_tot))  # Gaussian, no guarantee
+    cover_conf = float(np.mean(ar <= q90 * sd_tot))  # split-conformal, honest
 
     # active learning: EI batch vs random batch, scored on *true* titer against
     # the best *true* titer in the initial DoE (apples to apples, noise-free).
@@ -68,9 +69,14 @@ def one_seed(seed: int, d: int = 5):
     lift_rand = 100.0 * (best_rand - best_true_prior) / best_true_prior
 
     return dict(
-        rmse=rmse, r2=r2,
-        cover_epi=cover_epi, cover_tot=cover_tot, cover_conf=cover_conf, q90=q90,
-        lift_ei=lift_ei, lift_rand=lift_rand,
+        rmse=rmse,
+        r2=r2,
+        cover_epi=cover_epi,
+        cover_tot=cover_tot,
+        cover_conf=cover_conf,
+        q90=q90,
+        lift_ei=lift_ei,
+        lift_rand=lift_rand,
     )
 
 

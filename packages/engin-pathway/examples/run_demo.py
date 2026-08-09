@@ -4,6 +4,7 @@ picking the best route among alternatives.
 
 Run:  python examples/run_demo.py    (needs matplotlib)
 """
+
 from __future__ import annotations
 
 import os
@@ -43,7 +44,7 @@ def main():
     hw = ranker.half_width()
     cover = float(np.mean(np.abs(pred_te - yte) <= hw))
     rho = spearman(pred_te, yte)
-    rho_base = spearman(-step_counts(data[te]), yte)         # step-count as a ranker
+    rho_base = spearman(-step_counts(data[te]), yte)  # step-count as a ranker
 
     # ---- the real task: pick the best route among alternatives ----
     rng = np.random.default_rng(7)
@@ -56,29 +57,45 @@ def main():
         L = step_counts(grp)
         oracle.append(yt.max())
         modelp.append(yt[int(np.argmax(pr))])
-        basep.append(yt[int(np.argmin(L))])                 # fewest steps
+        basep.append(yt[int(np.argmin(L))])  # fewest steps
         randp.append(yt[int(rng.integers(K))])
     oracle, modelp, basep, randp = map(np.array, (oracle, modelp, basep, randp))
     win = float(np.mean(modelp > basep))
+
     def reg(a):
         return float(np.mean(oracle - a))
 
     print("=== engin-pathway — session-1 slice ===")
-    print(f"Manufacturability forecast (test): R²={ss:.2f}  RMSE={rmse:.3f}  "
-          f"90% coverage={cover:.2f}")
+    print(
+        f"Manufacturability forecast (test): R²={ss:.2f}  RMSE={rmse:.3f}  90% coverage={cover:.2f}"
+    )
     print(f"Ranking (Spearman ρ):  graph model {rho:.2f}   vs   step-count {rho_base:.2f}")
     print(f"Best-route pick among {K} alternatives ({G} groups):")
-    print(f"   mean true manufacturability of pick — "
-          f"oracle {oracle.mean():.3f} | model {modelp.mean():.3f} | "
-          f"step-count {basep.mean():.3f} | random {randp.mean():.3f}")
+    print(
+        f"   mean true manufacturability of pick — "
+        f"oracle {oracle.mean():.3f} | model {modelp.mean():.3f} | "
+        f"step-count {basep.mean():.3f} | random {randp.mean():.3f}"
+    )
     print(f"   model beats step-count in {win:.0%} of groups")
-    print(f"   regret vs oracle — model {reg(modelp):.3f} | "
-          f"step-count {reg(basep):.3f} | random {reg(randp):.3f}")
+    print(
+        f"   regret vs oracle — model {reg(modelp):.3f} | "
+        f"step-count {reg(basep):.3f} | random {reg(randp):.3f}"
+    )
 
     # ---- plots ----
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.errorbar(yte, pred_te, yerr=hw, fmt="o", ms=4, capsize=2,
-                color="#6b46c1", ecolor="#d6bcfa", alpha=0.8, label="test routes (90% PI)")
+    ax.errorbar(
+        yte,
+        pred_te,
+        yerr=hw,
+        fmt="o",
+        ms=4,
+        capsize=2,
+        color="#6b46c1",
+        ecolor="#d6bcfa",
+        alpha=0.8,
+        label="test routes (90% PI)",
+    )
     lim = [0, max(yte.max(), pred_te.max()) * 1.1]
     ax.plot(lim, lim, "k--", lw=1)
     ax.set_xlabel("true manufacturability")
@@ -89,9 +106,11 @@ def main():
     fig.savefig(f"{OUT}/pathway_forecast.png", dpi=130)
 
     fig, ax = plt.subplots(figsize=(5.2, 3.4))
-    ax.bar(["oracle", "graph model", "step-count", "random"],
-           [oracle.mean(), modelp.mean(), basep.mean(), randp.mean()],
-           color=["#2f855a", "#6b46c1", "#a0aec0", "#e2e8f0"])
+    ax.bar(
+        ["oracle", "graph model", "step-count", "random"],
+        [oracle.mean(), modelp.mean(), basep.mean(), randp.mean()],
+        color=["#2f855a", "#6b46c1", "#a0aec0", "#e2e8f0"],
+    )
     ax.set_ylabel("mean true manufacturability of pick")
     ax.set_title(f"Best-route selection ({K} alternatives) — model beats step-count {win:.0%}")
     fig.tight_layout()
@@ -115,8 +134,9 @@ def main():
             f"(esp. the worst step via max/min-pooling) recovers the manufacturability "
             f"signal it misses. Next: a trained GNN (PyG) + real KEGG/MetaCyc routes.\n"
         )
-    print("\nWrote outputs/ -> pathway_forecast.png, pathway_selection.png, "
-          "pathway-ranking-memo.md")
+    print(
+        "\nWrote outputs/ -> pathway_forecast.png, pathway_selection.png, pathway-ranking-memo.md"
+    )
 
 
 if __name__ == "__main__":

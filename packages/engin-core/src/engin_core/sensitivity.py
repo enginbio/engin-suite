@@ -4,6 +4,7 @@ The GP's per-dimension inverse lengthscales double as a cheap global sensitivity
 measure: a short lengthscale on knob *j* means titer changes fast along *j*, so
 that knob matters. Normalized, these answer "which knobs actually move titer".
 """
+
 from __future__ import annotations
 
 import numpy as np

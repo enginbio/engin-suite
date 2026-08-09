@@ -1,4 +1,5 @@
 """Scoring behavior: right picks, hard-constraint demotion, honest bands."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -31,7 +32,7 @@ def test_small_molecule_query_picks_gras_yeast():
         hard=dict(gras=0.7),
     )
     ranked = score(kb, q)
-    assert ranked[0].host == "S. cerevisiae"     # GRAS, cheap, good small-molecule host
+    assert ranked[0].host == "S. cerevisiae"  # GRAS, cheap, good small-molecule host
     assert ranked[0].feasible
 
 
@@ -54,7 +55,7 @@ def test_band_widens_with_lower_confidence():
 def test_prob_meets_is_a_probability():
     kb = default_kb()
     ranked = score(kb, HostQuery(weights=dict(titer=1.0, speed=1.0)))
-    p = prob_meets(ranked[0], threshold=ranked[0].score)   # threshold == mean
+    p = prob_meets(ranked[0], threshold=ranked[0].score)  # threshold == mean
     assert abs(p - 0.5) < 1e-6
     assert prob_meets(ranked[0], 0.0) > prob_meets(ranked[0], 1.0)
 

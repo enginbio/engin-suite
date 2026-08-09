@@ -22,6 +22,7 @@ entirely (that path covers ~0.62 at a nominal 0.90). Two honest fixes:
 - :func:`mapie_split_interval` -- a library-backed (MAPIE) constant-width split
   conformal, exposed as an honest baseline / cross-check.
 """
+
 from __future__ import annotations
 
 import warnings
@@ -69,7 +70,7 @@ class GP:
         self.ymean = float(ymean)
         self.ystd = float(ystd)
         self.ell = np.asarray(ell, float)
-        self._noise_var = float(noise_var)   # observation-noise variance, physical g/L^2
+        self._noise_var = float(noise_var)  # observation-noise variance, physical g/L^2
         self.q90: float | None = None
 
     def predict(
@@ -83,11 +84,11 @@ class GP:
         subtracting the fitted noise variance.
         """
         Xs = np.atleast_2d(np.asarray(Xs, float))
-        mean, sd_total = self._gpr.predict(Xs, return_std=True)   # physical, incl. noise
+        mean, sd_total = self._gpr.predict(Xs, return_std=True)  # physical, incl. noise
         if include_noise:
             sd = sd_total
         else:
-            sd = np.sqrt(np.maximum(sd_total ** 2 - self._noise_var, 0.0))
+            sd = np.sqrt(np.maximum(sd_total**2 - self._noise_var, 0.0))
         return mean, sd
 
 
@@ -101,10 +102,8 @@ def fit_gp(X: ArrayLike, y: ArrayLike, seed: int = 0, n_restarts: int = 8) -> GP
     X = np.asarray(X, float)
     y = np.asarray(y, float)
     d = X.shape[1]
-    kernel = (
-        ConstantKernel(1.0, (1e-2, 1e2))
-        * RBF([0.3] * d, (0.05, 1e2))
-        + WhiteKernel(0.1, (1e-4, 1.0))
+    kernel = ConstantKernel(1.0, (1e-2, 1e2)) * RBF([0.3] * d, (0.05, 1e2)) + WhiteKernel(
+        0.1, (1e-4, 1.0)
     )
     gpr = GaussianProcessRegressor(
         kernel=kernel, normalize_y=True, n_restarts_optimizer=n_restarts, random_state=seed
@@ -116,7 +115,7 @@ def fit_gp(X: ArrayLike, y: ArrayLike, seed: int = 0, n_restarts: int = 8) -> GP
     ystd = float(y.std() + 1e-9)
     ell = np.atleast_1d(np.asarray(gpr.kernel_.k1.k2.length_scale, float))
     noise_level = float(gpr.kernel_.k2.noise_level)
-    gp = GP(gpr, X, float(y.mean()), ystd, ell, noise_level * ystd ** 2)
+    gp = GP(gpr, X, float(y.mean()), ystd, ell, noise_level * ystd**2)
     gp.log_ml_final = float(gpr.log_marginal_likelihood_value_)
     return gp
 
@@ -139,7 +138,7 @@ def split_conformal_multiplier(
     sd_cal = np.asarray(sd_cal, float)
     scores = np.abs(y_cal - mean_cal) / np.maximum(sd_cal, 1e-9)
     n = len(scores)
-    lvl = min(np.ceil((n + 1) * level) / n, 1.0)   # finite-sample conformal level
+    lvl = min(np.ceil((n + 1) * level) / n, 1.0)  # finite-sample conformal level
     return float(np.quantile(scores, lvl, method="higher"))
 
 

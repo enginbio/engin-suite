@@ -12,6 +12,7 @@ conditions than the initial DoE explored.
 
 Run:  python examples/run_demo.py    (needs numpy + matplotlib)
 """
+
 from __future__ import annotations
 
 import csv
@@ -50,10 +51,10 @@ def main():
     N = 120
     U = RNG.random((N, d))
     y_true = simulate_unit(U)
-    y_obs = add_noise(y_true, RNG)                 # full set of known runs
+    y_obs = add_noise(y_true, RNG)  # full set of known runs
     tr, ca, te = slice(0, 70), slice(70, 100), slice(100, 120)
     n_tr, n_ca, n_te = 70, 30, 20
-    gp = fit_gp(U[tr], y_obs[tr])                  # fit on 70 training runs
+    gp = fit_gp(U[tr], y_obs[tr])  # fit on 70 training runs
 
     # ---- 2. Split-conformal interval calibration on the 30 calibration runs ----
     mc, sdc = gp.predict(U[ca], include_noise=True)
@@ -64,9 +65,9 @@ def main():
     m_te, sd_te = gp.predict(U[te], include_noise=True)
     y_obs_te = y_obs[te]
     resid = m_te - y_obs_te
-    rmse = float(np.sqrt(np.mean(resid ** 2)))
-    ss = 1 - np.sum(resid ** 2) / np.sum((y_obs_te - y_obs_te.mean()) ** 2)
-    cover = float(np.mean(np.abs(resid) <= z90 * sd_te))   # target ~0.90
+    rmse = float(np.sqrt(np.mean(resid**2)))
+    ss = 1 - np.sum(resid**2) / np.sum((y_obs_te - y_obs_te.mean()) ** 2)
+    cover = float(np.mean(np.abs(resid) <= z90 * sd_te))  # target ~0.90
 
     # ---- 4. Sensitivity: which knobs move titer ----
     imp = ard_importance(gp)
@@ -76,7 +77,7 @@ def main():
     best_prior = float(y_obs.max())
     Xnext, m_next, sd_next, ei = recommend_batch(gp, best_prior, k=8, seed=3)
     phys_next = unit_to_physical(Xnext)
-    y_next_true = simulate_unit(Xnext)                     # self-validation
+    y_next_true = simulate_unit(Xnext)  # self-validation
     best_new = float(y_next_true.max())
     lift = 100.0 * (best_new - best_prior) / best_prior
 
@@ -96,10 +97,7 @@ def main():
     for j in order:
         print(f"   {sim.KNOB_NAMES[j]:14s} {imp[j] * 100:5.1f}%")
     print(f"Best titer in initial DoE:      {best_prior:.2f} g/L")
-    print(
-        f"Best titer among 8 recommended: {best_new:.2f} g/L   "
-        f"({lift:+.1f}% vs best prior)"
-    )
+    print(f"Best titer among 8 recommended: {best_new:.2f} g/L   ({lift:+.1f}% vs best prior)")
     print(f"Stretch target (95th pct):      {target:.2f} g/L")
     print(f"P(hit target) best-known cond:  {p_best_known:.2f}")
     print(f"P(hit target) top recommendation:{p_reco:.2f}")
@@ -107,8 +105,14 @@ def main():
     # ---------- plots ----------
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.errorbar(
-        y_obs_te, m_te, yerr=z90 * sd_te, fmt="o", capsize=3,
-        color="#2b6cb0", ecolor="#90cdf4", label="held-out runs (90% PI)",
+        y_obs_te,
+        m_te,
+        yerr=z90 * sd_te,
+        fmt="o",
+        capsize=3,
+        color="#2b6cb0",
+        ecolor="#90cdf4",
+        label="held-out runs (90% PI)",
     )
     lim = [0, max(y_obs_te.max(), m_te.max()) * 1.1]
     ax.plot(lim, lim, "k--", lw=1, label="perfect")
@@ -134,8 +138,11 @@ def main():
     ax.hist(y_obs, bins=12, color="#cbd5e0", label="initial DoE titers")
     ax.axvline(best_prior, color="#718096", ls="--", label=f"best prior {best_prior:.0f}")
     ax.scatter(
-        y_next_true, np.full_like(y_next_true, 1.0), color="#dd6b20",
-        zorder=5, label="recommended (realized)",
+        y_next_true,
+        np.full_like(y_next_true, 1.0),
+        color="#dd6b20",
+        zorder=5,
+        label="recommended (realized)",
     )
     ax.axvline(best_new, color="#dd6b20", ls="--", label=f"best new {best_new:.0f}")
     ax.set_xlabel("titer (g/L)")
@@ -151,15 +158,27 @@ def main():
         w = csv.writer(f)
         w.writerow(sim.KNOB_NAMES + ["titer_obs_gL", "titer_true_gL"])
         for i in range(N):
-            w.writerow(
-                [f"{v:.3f}" for v in phys[i]]
-                + [f"{y_obs[i]:.2f}", f"{y_true[i]:.2f}"]
-            )
+            w.writerow([f"{v:.3f}" for v in phys[i]] + [f"{y_obs[i]:.2f}", f"{y_true[i]:.2f}"])
 
     write_memo(
-        f"{OUT}/scale-up-risk-memo.md", N, n_tr, n_te, rmse, ss, cover,
-        order, imp, best_prior, best_new, lift, target, p_best_known, p_reco,
-        phys_next, m_next, sd_next,
+        f"{OUT}/scale-up-risk-memo.md",
+        N,
+        n_tr,
+        n_te,
+        rmse,
+        ss,
+        cover,
+        order,
+        imp,
+        best_prior,
+        best_new,
+        lift,
+        target,
+        p_best_known,
+        p_reco,
+        phys_next,
+        m_next,
+        sd_next,
     )
     print(
         "\nWrote outputs/ -> calibration.png, sensitivity.png, active_learning.png, "
@@ -168,8 +187,24 @@ def main():
 
 
 def write_memo(
-    path, n, ntr, nte, rmse, ss, cover, order, imp, best_prior, best_new,
-    lift, target, p_best, p_reco, phys_next, m_next, sd_next,
+    path,
+    n,
+    ntr,
+    nte,
+    rmse,
+    ss,
+    cover,
+    order,
+    imp,
+    best_prior,
+    best_new,
+    lift,
+    target,
+    p_best,
+    p_reco,
+    phys_next,
+    m_next,
+    sd_next,
 ):
     L = []
     L.append("# Scale-up risk memo (auto-generated)\n")

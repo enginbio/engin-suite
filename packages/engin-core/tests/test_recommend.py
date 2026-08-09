@@ -1,4 +1,5 @@
 """Recommender: EI math, diversity, and that a recommended batch beats the prior."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -21,8 +22,8 @@ def _dataset(seed=0, d=5, n=90):
 
 def test_expected_improvement_is_sane():
     ei = expected_improvement(np.array([10.0, 5.0, 1.0]), np.array([1.0, 1.0, 1.0]), best=5.0)
-    assert np.all(ei >= 0.0)                 # EI is non-negative
-    assert ei[0] > ei[1] > ei[2]             # higher mean over incumbent -> more EI
+    assert np.all(ei >= 0.0)  # EI is non-negative
+    assert ei[0] > ei[1] > ei[2]  # higher mean over incumbent -> more EI
     # more uncertainty at the incumbent mean -> more EI (exploration value)
     hi = expected_improvement(np.array([5.0]), np.array([3.0]), best=5.0)[0]
     lo = expected_improvement(np.array([5.0]), np.array([1.0]), best=5.0)[0]
@@ -58,6 +59,5 @@ def test_recommended_batch_beats_prior_best():
         X, *_ = recommend_batch(gp, float(y.max()), k=8, seed=seed + 10)
         best_new_true = float(simulate_unit(X).max())
         assert best_new_true >= best_true_prior - TOL, (
-            f"seed {seed}: recommended {best_new_true:.1f} < prior true "
-            f"{best_true_prior:.1f} g/L"
+            f"seed {seed}: recommended {best_new_true:.1f} < prior true {best_true_prior:.1f} g/L"
         )
