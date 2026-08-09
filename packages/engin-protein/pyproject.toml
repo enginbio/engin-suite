@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "engin-protein"
+version = "0.1.0"
+description = "Calibrated design-cycle tooling for proteins — evaluation, low-N campaigns, and batch planning over one engine"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "EnginBio" }]
+keywords = ["protein-design", "active-learning", "bayesian-optimization", "conformal-prediction"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+# Light path: the default featurizer is one-hot + physicochemical, so nothing here
+# pulls PyTorch or a PLM. Precomputed embeddings cover the heavy case (ADR 0002).
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "scikit-learn>=1.3",
+    "pydantic>=2.0",
+    "engin-core>=0.1.0",
+]
+
+[project.optional-dependencies]
+examples = ["matplotlib>=3.6"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# Run from a bare checkout without relying on an editable install: this package's
+# own src plus the sibling engin-core it imports. pytest resolves these relative
+# to rootdir, and .pth-provided paths are not visible during a pytest run.
+pythonpath = ["src", "../engin-core/src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E741", "N806"]
