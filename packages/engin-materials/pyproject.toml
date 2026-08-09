@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "engin-materials"
+version = "0.1.0"
+description = "Structure-property ranking for biomaterial formulations, with calibrated intervals"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "EnginBio" }]
+keywords = ["biomaterials", "polymers", "graph-neural-network", "conformal-prediction"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+# A thin domain layer: pydantic schemas plus the shared graph engine. Everything
+# modelling-related comes from engin-graph, which brings engin-core with it.
+dependencies = [
+    "numpy>=1.24",
+    "networkx>=3.0",
+    "pydantic>=2.0",
+    "engin-graph>=0.1.0",
+]
+
+[project.optional-dependencies]
+examples = ["matplotlib>=3.6"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# Run from a bare checkout without relying on an editable install: this package's own
+# src plus the siblings it imports. pytest resolves these relative to rootdir, and
+# .pth-provided paths are not visible during a pytest run (ADR 0004).
+pythonpath = ["src", "../engin-core/src", "../engin-graph/src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests", "examples"]
+
+# READMEs contain hand-aligned example code; formatting them would collapse the
+# alignment that makes the examples scan. Code is formatted, docs are not.
+[tool.ruff.format]
+exclude = ["*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E741", "N806"]
