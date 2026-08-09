@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Keep the pinned action major-versions current. Security-relevant: a stale
+  # action version is the most common supply-chain exposure in a repo like this,
+  # and nothing else in the project watches for it.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"
+    open-pull-requests-limit: 3
+
+# Deliberately no pip ecosystem entry. The packages declare loose floors
+# (numpy>=1.24 and similar) rather than pins, so dependency PRs would be noise
+# with nothing to update. Revisit if a lockfile is ever introduced.

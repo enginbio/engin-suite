@@ -3,37 +3,179 @@ name: CI
 on:
   push:
     branches: [main]
+  # Deliberately no branch filter: stacked PRs targeting a feature branch need CI
+  # too. Filtering on [main] silently gave stacked PRs no checks at all.
   pull_request:
-    branches: [main]
+  workflow_dispatch:
+
+# Superseded runs on the same ref are pointless; cancel them.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: nothing here writes to the repo.
+permissions:
+  contents: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip ruff
+      # Run from the root so each package's own [tool.ruff] config applies.
+      - name: ruff check
+        run: ruff check .
+
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        # 3.13 is what development actually happens on, and requires-python is
+        # ">=3.10" with no ceiling, so every version here is one we claim to support.
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install
+          cache: pip
+          cache-dependency-path: packages/*/pyproject.toml
+
+      - name: Install every package (editable, with dev extras)
         run: |
           python -m pip install --upgrade pip
-          pip install -e "packages/engin-core[dev]" -e "packages/engin-host[dev]" -e "packages/engin-pathway[dev]"
-      - name: Lint
-        run: ruff check .
-      - name: Test engin-core
-        working-directory: packages/engin-core
-        run: pytest -q
-      - name: Test engin-host
-        working-directory: packages/engin-host
-        run: pytest -q
-      - name: Test engin-pathway
-        working-directory: packages/engin-pathway
-        run: pytest -q
+          args=()
+          for pkg in packages/*/; do
+            # A directory is a package iff it has a pyproject.toml. A bare glob also
+            # matches leftover cache directories and anything else someone drops in
+            # packages/, and then the install fails confusingly.
+            [ -f "${pkg}pyproject.toml" ] || continue
+            args+=(-e "${pkg}[dev]")
+          done
+          if [ ${#args[@]} -eq 0 ]; then
+            echo "::error::discovered no packages under packages/ -- glob or layout changed"
+            exit 1
+          fi
+          echo "installing: ${args[*]}"
+          python -m pip install "${args[@]}"
+
+      # Packages are discovered from the filesystem, never listed here. Hand-listing
+      # them meant a new package could be added and silently never tested, with CI
+      # still green. Failures are collected so one bad package doesn't mask the rest.
+      - name: Test every package
+        run: |
+          failed=(); tested=0
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            name=$(basename "$pkg")
+            tested=$((tested + 1))
+            echo "::group::pytest $name"
+            if ( cd "$pkg" && python -m pytest -q ); then
+              echo "$name: pass"
+            else
+              echo "$name: FAIL"
+              failed+=("$name")
+            fi
+            echo "::endgroup::"
+          done
+          # Zero discovered packages must fail loudly. A silent pass here is exactly
+          # the coverage-loss this dynamic discovery exists to prevent.
+          if [ "$tested" -eq 0 ]; then
+            echo "::error::discovered no packages to test"
+            exit 1
+          fi
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "::error::failing packages: ${failed[*]}"
+            exit 1
+          fi
+          echo "all $tested packages passed"
+
       - name: Benchmarks (smoke)
         working-directory: packages/engin-core
         run: python benchmarks/benchmark.py
+
+  # The test job runs against `src/` via each package's pytest pythonpath (ADR 0004),
+  # which is deliberate but means it never exercises the *installed* distribution. A
+  # broken [tool.setuptools.packages.find] would pass every test. This job builds real
+  # wheels and runs the suites against them with pythonpath disabled.
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Build wheels and sdists
+        run: |
+          python -m pip install --upgrade pip build twine
+          built=0
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            built=$((built + 1))
+            echo "::group::build $(basename "$pkg")"
+            python -m build --outdir dist "$pkg"
+            echo "::endgroup::"
+          done
+          if [ "$built" -eq 0 ]; then
+            echo "::error::discovered no packages to build"
+            exit 1
+          fi
+          ls -l dist
+
+      - name: Check distribution metadata
+        run: twine check dist/*
+
+      # All wheels in one command so their inter-dependencies resolve locally rather
+      # than from PyPI, where these packages do not exist yet.
+      - name: Install from wheels
+        run: |
+          python -m pip install dist/*.whl pytest
+          python -m pip list | grep engin
+
+      - name: Import smoke test
+        run: |
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            mod=$(basename "$pkg" | tr '-' '_')
+            python -c "import ${mod}; print('${mod}', ${mod}.__version__)"
+          done
+
+      # `-o pythonpath=` clears the ini setting, so imports resolve from site-packages
+      # instead of src/. This is the step that actually proves the packaged artifact
+      # works, rather than the working tree.
+      - name: Test the installed distributions
+        run: |
+          failed=()
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            name=$(basename "$pkg")
+            echo "::group::pytest-on-wheel $name"
+            if ( cd "$pkg" && python -m pytest -q -o pythonpath= ); then
+              echo "$name: pass"
+            else
+              echo "$name: FAIL"
+              failed+=("$name")
+            fi
+            echo "::endgroup::"
+          done
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "::error::installed-distribution failures: ${failed[*]}"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 14
