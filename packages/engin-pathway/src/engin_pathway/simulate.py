@@ -11,6 +11,7 @@ This generator is bespoke by design (the domain model). In M1 it is replaced by
 real routes from KEGG/MetaCyc/BiGG via COBRApy, with ΔG node features from
 eQuilibrator.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -24,11 +25,11 @@ _W = np.array([1.3, 0.7, 0.6, 1.2, 0.8])
 def sample_route(rng: np.random.Generator, route_id: str) -> Route:
     """Sample one route (2..7 steps) with a worst-step-dominated manufacturability."""
     L = int(rng.integers(2, 8))
-    g = rng.beta(8, 1.5, size=(L, len(FEATURES)))       # steps are usually good (~0.84)
-    if rng.random() < 0.6:                              # inject a genuinely bad step
+    g = rng.beta(8, 1.5, size=(L, len(FEATURES)))  # steps are usually good (~0.84)
+    if rng.random() < 0.6:  # inject a genuinely bad step
         bad = int(rng.integers(0, L))
         col = int(rng.integers(0, len(FEATURES)))
-        g[bad, col] = rng.beta(1.2, 6)                  # a low value (toxic / uphill step)
+        g[bad, col] = rng.beta(1.2, 6)  # a low value (toxic / uphill step)
     # per-step score = weighted geometric mean of goodness features
     step_score = np.exp((np.log(np.clip(g, 1e-3, 1)) * _W).sum(1) / _W.sum())
     # manufacturability is dominated by the WORST step (structural, not length):

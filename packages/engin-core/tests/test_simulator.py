@@ -1,4 +1,5 @@
 """Simulator sanity: positivity, determinism, a real interior optimum, mapping."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -38,6 +39,6 @@ def test_real_interior_optimum_exists():
     rng = np.random.default_rng(1)
     U = rng.random((500, len(KNOBS)))
     y = simulate_unit(U)
-    assert y.std() > 1.0                                    # meaningful spread
+    assert y.std() > 1.0  # meaningful spread
     all_max_corner = simulate_unit(np.ones((1, len(KNOBS))))[0]
-    assert y.max() > all_max_corner                          # interior beats corner
+    assert y.max() > all_max_corner  # interior beats corner

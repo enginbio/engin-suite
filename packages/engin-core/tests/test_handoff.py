@@ -1,4 +1,5 @@
 """Handoff contracts: validation, uncertainty inflation, brief distillation."""
+
 from __future__ import annotations
 
 import pytest
@@ -21,10 +22,10 @@ def test_confidence_must_be_a_probability():
 
 def test_inflate_uncertainty_is_monotone_in_confidence():
     hw = 0.05
-    assert inflate_uncertainty(hw, 1.0) == pytest.approx(hw)        # confident -> unchanged
+    assert inflate_uncertainty(hw, 1.0) == pytest.approx(hw)  # confident -> unchanged
     assert inflate_uncertainty(hw, 0.5) == pytest.approx(1.5 * hw)
     assert inflate_uncertainty(hw, 0.0) == pytest.approx(2.0 * hw)  # unsure -> doubled
-    assert inflate_uncertainty(hw, None) == hw                      # no upstream -> unchanged
+    assert inflate_uncertainty(hw, None) == hw  # no upstream -> unchanged
     # strictly widens as confidence falls
     widths = [inflate_uncertainty(hw, c) for c in (0.9, 0.6, 0.3, 0.0)]
     assert widths == sorted(widths)
@@ -40,10 +41,10 @@ def test_route_ranking_top_and_brief():
         conditioned_on_host="CHO (mammalian)",
         host_confidence=0.7,
     )
-    assert ranking.top.route_id == "r2"                            # highest manufacturability
+    assert ranking.top.route_id == "r2"  # highest manufacturability
     brief = process_brief(ranking)
     assert brief.route_id == "r2"
     assert brief.expected_manufacturability == pytest.approx(0.8)
-    assert brief.uncertainty == pytest.approx(0.08)               # (0.88-0.72)/2
+    assert brief.uncertainty == pytest.approx(0.08)  # (0.88-0.72)/2
     assert brief.host == "CHO (mammalian)"
     assert "process" in brief.provenance

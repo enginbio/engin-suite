@@ -1,4 +1,5 @@
 """Schema validation: the KB fails loudly on malformed data."""
+
 from __future__ import annotations
 
 import pytest
@@ -17,12 +18,12 @@ def test_default_kb_is_valid():
 
 def test_host_rejects_out_of_range_capability():
     with pytest.raises(ValidationError):
-        Host(name="bad", caps={"a": 1.5}, conf={"a": 0.9})   # 1.5 not in [0,1]
+        Host(name="bad", caps={"a": 1.5}, conf={"a": 0.9})  # 1.5 not in [0,1]
 
 
 def test_host_rejects_mismatched_conf_keys():
     with pytest.raises(ValidationError):
-        Host(name="bad", caps={"a": 0.5}, conf={"b": 0.9})   # keys differ
+        Host(name="bad", caps={"a": 0.5}, conf={"b": 0.9})  # keys differ
 
 
 def test_kb_rejects_host_with_wrong_capabilities():

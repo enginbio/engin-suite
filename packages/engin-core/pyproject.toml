@@ -50,6 +50,11 @@ pythonpath = ["src"]
 line-length = 100
 src = ["src", "tests", "examples", "benchmarks"]
 
+# READMEs contain hand-aligned example code; formatting them would collapse the
+# alignment that makes the examples scan. Code is formatted, docs are not.
+[tool.ruff.format]
+exclude = ["*.md"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 # GP/kernel math reads best with conventional capitalized matrix names (K, X, L).

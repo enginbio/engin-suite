@@ -1,4 +1,5 @@
 """Generator sanity: labels in range, worst-step dominates, schema validates."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -24,16 +25,16 @@ def test_worst_step_tanks_manufacturability():
     # is out of scope here; instead assert the *schema* accepts both and that a
     # dataset contains a spread wide enough that bad steps matter.
     y = np.array([r.manufacturability for r in make_dataset(400, seed=1)])
-    assert y.std() > 0.05           # meaningful spread (bad steps pull some routes down)
+    assert y.std() > 0.05  # meaningful spread (bad steps pull some routes down)
     assert y.min() < 0.6 < y.max()  # both tanked and healthy routes appear
     assert good_step.vector()[3] > bad_step.vector()[3]
 
 
 def test_step_rejects_out_of_range_and_wrong_keys():
     with pytest.raises(ValidationError):
-        Step(features={**dict.fromkeys(FEATURES, 0.5), "g_tox": 1.5})   # out of [0,1]
+        Step(features={**dict.fromkeys(FEATURES, 0.5), "g_tox": 1.5})  # out of [0,1]
     with pytest.raises(ValidationError):
-        Step(features={"only_one": 0.5})                                # wrong keys
+        Step(features={"only_one": 0.5})  # wrong keys
 
 
 def test_route_rejects_bad_label_and_builds_graph():
@@ -42,5 +43,5 @@ def test_route_rejects_bad_label_and_builds_graph():
         Route(route_id="x", steps=steps, manufacturability=2.0)
     r = Route(route_id="x", steps=steps)
     g = r.graph()
-    assert g.number_of_nodes() == 3 and g.number_of_edges() == 2   # a 3-node chain
+    assert g.number_of_nodes() == 3 and g.number_of_edges() == 2  # a 3-node chain
     assert r.node_features().shape == (3, len(FEATURES))

@@ -5,6 +5,7 @@ profile, score candidate microbial hosts with an explainable rationale, an hones
 confidence band, and hard-constraint flags. A thin domain layer over ``engin_core``'s
 uncertainty vocabulary.
 """
+
 from __future__ import annotations
 
 from .kb import CAPABILITIES, default_kb

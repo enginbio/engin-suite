@@ -15,6 +15,7 @@ dropped. The deep, learned conditioning (a host-conditioned manufacturability
 model; a route-conditioned process design space) is a later milestone -- these
 contracts + honest uncertainty propagation are the plumbing it will ride on.
 """
+
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
@@ -77,7 +78,7 @@ class ProcessBrief(BaseModel):
 
     route_id: str
     expected_manufacturability: float
-    uncertainty: float                       # interval half-width, incl. upstream inflation
+    uncertainty: float  # interval half-width, incl. upstream inflation
     host: str | None = None
     provenance: str = ""
 

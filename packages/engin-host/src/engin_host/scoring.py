@@ -14,6 +14,7 @@ spreadsheet:
 The uncertainty primitive ``P(score >= threshold)`` is reused from ``engin_core``
 so the whole suite shares one calibrated-uncertainty vocabulary.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -31,11 +32,11 @@ def score(kb: KnowledgeBase, query: HostQuery, top_k: int = 3) -> list[HostScore
         raise KeyError(f"query weights reference unknown capabilities: {sorted(unknown)}")
     names, C, S = kb.matrices()
     w = np.array([query.weights.get(c, 0.0) for c in kb.capabilities], float)
-    w = w / w.sum()                                  # renormalize to a convex weighting
+    w = w / w.sum()  # renormalize to a convex weighting
 
-    scores = C @ w                                   # weighted suitability
-    sd = np.sqrt((S ** 2) @ (w ** 2))                # linear error propagation
-    contrib = C * w[None, :]                         # per-capability contribution
+    scores = C @ w  # weighted suitability
+    sd = np.sqrt((S**2) @ (w**2))  # linear error propagation
+    contrib = C * w[None, :]  # per-capability contribution
 
     out: list[HostScore] = []
     for i, name in enumerate(names):
@@ -62,5 +63,4 @@ def score(kb: KnowledgeBase, query: HostQuery, top_k: int = 3) -> list[HostScore
 
 def prob_meets(hostscore: HostScore, threshold: float) -> float:
     """``P(true suitability >= threshold)`` for a host, via engin-core's primitive."""
-    return float(prob_at_least(np.array([hostscore.score]),
-                               np.array([hostscore.sd]), threshold)[0])
+    return float(prob_at_least(np.array([hostscore.score]), np.array([hostscore.sd]), threshold)[0])

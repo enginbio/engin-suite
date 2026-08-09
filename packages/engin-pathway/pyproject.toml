@@ -49,6 +49,11 @@ pythonpath = ["src", "../engin-core/src"]
 line-length = 100
 src = ["src", "tests", "examples"]
 
+# READMEs contain hand-aligned example code; formatting them would collapse the
+# alignment that makes the examples scan. Code is formatted, docs are not.
+[tool.ruff.format]
+exclude = ["*.md"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["E741", "N806"]

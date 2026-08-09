@@ -7,6 +7,7 @@ residual is homoscedastic, so the calibrated interval is constant-width. Ranking
 quality is measured with Spearman ρ (scipy) against the honest baseline the wedge
 must beat: **step-count** (fewer steps assumed better).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -63,7 +64,7 @@ class PathwayRanker:
         """Split-conformal calibration of the (constant-width) interval."""
         y = labels(routes)
         mean = self.predict(routes)
-        sd = np.full_like(y, self._res_sd)             # homoscedastic ridge residual
+        sd = np.full_like(y, self._res_sd)  # homoscedastic ridge residual
         self.q = split_conformal_multiplier(y, mean, sd, level=level)
         return self
 

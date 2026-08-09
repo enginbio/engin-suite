@@ -3,6 +3,7 @@ with explainable drivers, honest confidence bands, and hard-constraint flags.
 
 Run:  python examples/run_demo.py    (needs matplotlib)
 """
+
 from __future__ import annotations
 
 import os
@@ -19,13 +20,31 @@ os.makedirs(OUT, exist_ok=True)
 
 QUERIES = {
     "Secreted human glycoprotein, industrial scale (therapeutic)": HostQuery(
-        weights=dict(glyco=1.0, secretion=0.9, protein=1.0, titer=0.6, scaleup=0.7,
-                     speed=0.3, cost=0.4, tools=0.4, gras=0.1),
+        weights=dict(
+            glyco=1.0,
+            secretion=0.9,
+            protein=1.0,
+            titer=0.6,
+            scaleup=0.7,
+            speed=0.3,
+            cost=0.4,
+            tools=0.4,
+            gras=0.1,
+        ),
         hard=dict(glyco=0.6),
     ),
     "Food-grade small molecule via fermentation, cost-sensitive & fast": HostQuery(
-        weights=dict(smallmol=1.0, gras=1.0, cost=0.9, titer=0.7, speed=0.7,
-                     scaleup=0.6, tools=0.5, secretion=0.1, protein=0.2),
+        weights=dict(
+            smallmol=1.0,
+            gras=1.0,
+            cost=0.9,
+            titer=0.7,
+            speed=0.7,
+            scaleup=0.6,
+            tools=0.5,
+            secretion=0.1,
+            protein=0.2,
+        ),
         hard=dict(gras=0.7),
     ),
 }
@@ -53,8 +72,16 @@ def main():
         ax.set_yticklabels(names)
         ax.set_xlabel("suitability score (90% band)")
         ax.set_title(title, fontsize=9)
-        ax.text(0.98, 0.02, "orange = hard-constraint flag", transform=ax.transAxes,
-                ha="right", va="bottom", fontsize=7, color="#dd6b20")
+        ax.text(
+            0.98,
+            0.02,
+            "orange = hard-constraint flag",
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=7,
+            color="#dd6b20",
+        )
         fig.tight_layout()
         fig.savefig(f"{OUT}/host-scores-{i + 1}.png", dpi=130)
     print("\nWrote outputs/ -> host-memo-*.md, host-scores-*.png")

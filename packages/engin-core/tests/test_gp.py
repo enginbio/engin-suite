@@ -1,4 +1,5 @@
 """GP forecast quality + the calibration guarantee (the product's trust wedge)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -28,8 +29,8 @@ def test_forecast_is_accurate_on_held_out():
     gp = fit_gp(U[tr], y[tr], seed=0)
     m, _ = gp.predict(U[te], include_noise=True)
     resid = m - y[te]
-    r2 = 1 - np.sum(resid ** 2) / np.sum((y[te] - y[te].mean()) ** 2)
-    assert r2 > 0.85          # strong fit on this smooth mechanistic landscape
+    r2 = 1 - np.sum(resid**2) / np.sum((y[te] - y[te].mean()) ** 2)
+    assert r2 > 0.85  # strong fit on this smooth mechanistic landscape
 
 
 def test_split_conformal_is_calibrated():
@@ -73,4 +74,4 @@ def test_prob_at_least_is_monotone_in_target():
     sd = np.array([5.0])
     assert prob_at_least(mean, sd, 40.0)[0] > prob_at_least(mean, sd, 60.0)[0]
     assert 0.0 <= prob_at_least(mean, sd, 50.0)[0] <= 1.0
-    assert abs(prob_at_least(mean, sd, 50.0)[0] - 0.5) < 1e-6   # target == mean
+    assert abs(prob_at_least(mean, sd, 50.0)[0] - 0.5) < 1e-6  # target == mean

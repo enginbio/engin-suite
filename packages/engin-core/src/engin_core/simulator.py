@@ -28,6 +28,7 @@ Design knobs (what a process team actually controls in a DoE):
     induction_time  when product formation switches on   (h)
     S0              initial batch substrate              (g/L)
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -35,26 +36,26 @@ from numpy.typing import ArrayLike, NDArray
 from scipy.integrate import solve_ivp
 
 # Fixed biological / strain constants (would be fit per strain in production)
-MU_MAX = 0.35     # 1/h   max specific growth rate
-KS = 0.5          # g/L   Monod half-saturation
-YXS = 0.5         # g/g   biomass yield on substrate
-M = 0.02          # 1/h   maintenance coefficient
-ALPHA = 0.09      # g/g   growth-associated product formation
-BETA = 0.03       # 1/h   non-growth-associated product formation
-KP = 18.0         # g/L   product-inhibition constant
-X0 = 0.2          # g/L   inoculum biomass
-V0 = 1.0          # L     initial volume
-VMAX = 2.5        # L     max working volume (stop feeding when reached)
-T_END = 48.0      # h
-DT = 0.05         # h     output grid + solver max step (keeps switches sharp)
+MU_MAX = 0.35  # 1/h   max specific growth rate
+KS = 0.5  # g/L   Monod half-saturation
+YXS = 0.5  # g/g   biomass yield on substrate
+M = 0.02  # 1/h   maintenance coefficient
+ALPHA = 0.09  # g/g   growth-associated product formation
+BETA = 0.03  # 1/h   non-growth-associated product formation
+KP = 18.0  # g/L   product-inhibition constant
+X0 = 0.2  # g/L   inoculum biomass
+V0 = 1.0  # L     initial volume
+VMAX = 2.5  # L     max working volume (stop feeding when reached)
+T_END = 48.0  # h
+DT = 0.05  # h     output grid + solver max step (keeps switches sharp)
 
 # Physical ranges for the 5 design knobs (unit cube [0,1] maps into these).
 KNOBS: list[tuple[str, float, float]] = [
-    ("feed_rate", 0.00, 0.06),       # L/h
-    ("feed_start", 3.0, 20.0),       # h
-    ("Sf", 150.0, 450.0),            # g/L
-    ("induction_time", 3.0, 26.0),   # h
-    ("S0", 5.0, 30.0),               # g/L
+    ("feed_rate", 0.00, 0.06),  # L/h
+    ("feed_start", 3.0, 20.0),  # h
+    ("Sf", 150.0, 450.0),  # g/L
+    ("induction_time", 3.0, 26.0),  # h
+    ("S0", 5.0, 30.0),  # g/L
 ]
 KNOB_NAMES: list[str] = [k[0] for k in KNOBS]
 
@@ -77,7 +78,7 @@ def _rhs(
 ) -> list[float]:
     X, S, P, V = y
     S = max(S, 0.0)
-    mu = MU_MAX * S / (KS + S) * (1.0 / (1.0 + P / KP))   # growth w/ product inhibition
+    mu = MU_MAX * S / (KS + S) * (1.0 / (1.0 + P / KP))  # growth w/ product inhibition
     F = feed_rate if (t >= feed_start and V < VMAX) else 0.0
     dil = F / V
     dX = mu * X - dil * X
@@ -110,18 +111,24 @@ def simulate(
     states = [y[None, :].copy()]
     for a, b in zip(breaks[:-1], breaks[1:], strict=False):
         sol = solve_ivp(
-            _rhs, (a, b), y, args=args,
-            method="RK45", rtol=1e-6, atol=1e-8, dense_output=True,
+            _rhs,
+            (a, b),
+            y,
+            args=args,
+            method="RK45",
+            rtol=1e-6,
+            atol=1e-8,
+            dense_output=True,
         )
-        pts = grid[(grid > a) & (grid <= b)]              # grid points in this segment
+        pts = grid[(grid > a) & (grid <= b)]  # grid points in this segment
         if pts.size:
             times.append(pts)
             states.append(sol.sol(pts).T)
-        y = np.maximum(sol.y[:, -1], 0.0)                 # carry exact endpoint forward
+        y = np.maximum(sol.y[:, -1], 0.0)  # carry exact endpoint forward
 
     t = np.concatenate(times)
-    y_all = np.maximum(np.vstack(states), 0.0)            # clamp tiny negatives
-    trace = np.column_stack([t, y_all])                  # (n+1, 5): [t, X, S, P, V]
+    y_all = np.maximum(np.vstack(states), 0.0)  # clamp tiny negatives
+    trace = np.column_stack([t, y_all])  # (n+1, 5): [t, X, S, P, V]
     return float(y[2]), trace
 
 

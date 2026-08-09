@@ -9,6 +9,7 @@ mean/sd and the incumbent ``best_y`` share one unit system, so the improvement
 term ``mean - best`` and the exploration term ``sd * phi(z)`` are dimensionally
 consistent and EI genuinely balances exploitation against exploration.
 """
+
 from __future__ import annotations
 
 import numpy as np
