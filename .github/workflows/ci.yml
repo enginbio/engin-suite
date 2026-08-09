@@ -31,6 +31,10 @@ jobs:
       # Run from the root so each package's own [tool.ruff] config applies.
       - name: ruff check
         run: ruff check .
+      # Formatting is enforced so style never costs review time. READMEs are
+      # excluded per package config -- their example code is hand-aligned.
+      - name: ruff format --check
+        run: ruff format --check .
 
   test:
     runs-on: ubuntu-latest
