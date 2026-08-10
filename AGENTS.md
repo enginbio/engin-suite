@@ -8,13 +8,15 @@ Engin turns a handful of fermentation runs into a calibrated titer forecast, a r
 
 ## Setup
 
-There is no root package — install the packages you need, editable, with dev extras:
-
 ```bash
-for p in packages/*/; do pip install -e "${p}[dev]"; done
-cd packages/engin-core && pytest    # run per package; includes coverage tests
+pip install -r requirements-dev.txt          # whole monorepo, editable
+cd packages/engin-core && pytest             # tests run per package
 ruff check . && ruff format --check .        # from the repo root
 ```
+
+There is no root *package* — `pip install -e ".[dev]"` will not work, because a root
+package would declare the sub-packages as dependencies and pip would look for them on
+PyPI, where they are not published yet.
 
 Test suites do **not** require the install: each package's pytest `pythonpath` lists
 the sibling sources it imports, so a bare checkout works. CI additionally builds

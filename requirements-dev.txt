@@ -1,0 +1,19 @@
+# Development install for the whole monorepo, from the repository root:
+#
+#     pip install -r requirements-dev.txt
+#
+# Deliberately a requirements file rather than a root package. A root
+# pyproject.toml would have to declare `engin-core>=0.1.0` and friends as
+# dependencies, and pip would try to resolve those from PyPI, where none of
+# them are published yet -- so `pip install -e ".[dev]"` from the root would
+# fail. pip does support relative editable paths here, so this works today.
+#
+# Revisit once the packages are on PyPI: a convenience metapackage then becomes
+# meaningful, and can coexist with this file.
+
+-e packages/engin-core[dev]
+-e packages/engin-graph[dev]
+-e packages/engin-host[dev]
+-e packages/engin-pathway[dev]
+-e packages/engin-protein[dev]
+-e packages/engin-materials[dev]
