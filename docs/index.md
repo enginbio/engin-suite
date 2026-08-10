@@ -1,48 +1,128 @@
-# engin-suite
+---
+sd_hide_title: true
+---
 
-The open **strain-to-scale** engine for fermentation biomanufacturing. De-risk
-each decision in the funnel — **pick the host → rank the pathway → optimize the
-process** — with *calibrated uncertainty* rather than point guesses.
+# Engin
 
-> The closed differentiators (probabilistic techno-economics, cross-process
-> priors, partner data) live in a private overlay that depends on this suite.
+```{toctree}
+:hidden:
+:caption: Getting started
 
-## The funnel
-
-```
-  target molecule + constraints
-            │
-   [4] host-selection   ──►  chosen chassis (+ why, + confidence)      engin-host
-            │
-   [3] pathway-ranking  ──►  routes ranked by manufacturability ± CI   engin-pathway
-            │
-   [1] fermentation     ──►  titer forecast ± CI + next-batch + TEA    engin (+ engin-core)
-            │
-        scale-up decision
+quickstart
+install
 ```
 
-Each stage hands its decision **and its uncertainty** to the next; all are thin
-domain layers over one shared engine, `engin-core`.
+```{toctree}
+:hidden:
+:caption: Guides
 
-## Packages
+guides/forecasting
+guides/cost
+guides/data-formats
+```
 
-- **engin-core** — fed-batch simulator (scipy), scikit-learn GP with conformal
-  calibration (split-conformal + MAPIE), Expected-Improvement recommender, ARD
-  sensitivity. The honest-uncertainty engine.
-- **engin-host** — chassis selection: multi-criteria scoring over a capability KB
-  with uncertainty and hard-constraint flags.
-- **engin-pathway** — graph-ML manufacturability ranking of metabolic routes:
-  a message-passing GCN + ridge + conformal beats step-count (ρ 0.85 vs 0.51) on
-  synthetic routes. M0; the trained PyG GNN + real routes are M1.
+```{toctree}
+:hidden:
+:caption: Reference
 
-## Why calibrated uncertainty
+api/index
+api-stability
+benchmarks
+limitations
+```
 
-Form a 90% interval from model uncertainty alone and assume normality: it covers
-~55% of held-out runs. Split-conformal restores ~96% honest coverage,
-distribution-free. Every scale-up decision needs `P(hit target)`, which is only
-meaningful if the intervals are calibrated.
+```{toctree}
+:hidden:
+:caption: Project
 
-## Links
+governance
+biosecurity
+contributing
+decisions
+```
 
-- [Source & README](https://github.com/enginbio/engin-suite)
-- Package quickstarts and benchmarks are in each `packages/*/README.md`.
+# Engin
+
+**Open tooling for bioprocess forecasting and scale-up economics.**
+
+Turn a handful of fermentation runs into a titer forecast with honest uncertainty, a recommendation for what to run next, and a probabilistic cost-per-kilogram read that accounts for recovery.
+
+```{warning}
+**Pre-1.0, and validated on synthetic data so far.**
+
+Results below come from a mechanistic simulator, not from real fermentation
+campaigns. That is a genuine limitation, not a formality — see
+[Limitations](limitations) and [Benchmarks](benchmarks) for exactly what has
+and has not been demonstrated. Real-data validation is the project's current
+priority.
+```
+
+## Why this exists
+
+Every bioprocess company rebuilds the same foundational software, because that software is either trade secret or has never existed. Large companies hold an advantage over small ones for no better reason than having already built the basic tooling.
+
+Engin makes that layer public infrastructure, so a team starts where the last one finished. Everything here is free, and always will be.
+
+## What makes it different
+
+::::{grid} 1 1 3 3
+:gutter: 3
+
+:::{grid-item-card} Calibrated, not confident
+Most bioprocess optimizers return point predictions or intervals that are quietly overconfident. Engin uses split-conformal calibration and reports honest coverage — including when it degrades.
+:::
+
+:::{grid-item-card} Optimizes cost, not titer
+Recovery cost is determined upstream but paid downstream, so maximizing titer can move the real objective backwards. The recommender optimizes net $/kg. This makes Engin look *worse* on the metric everyone reports, deliberately.
+:::
+
+:::{grid-item-card} Composes, doesn't replace
+Built on BayBE, BioSTEAM, COBRApy and MAPIE rather than reimplementing them. Your data stays in xarray and pandas — no bespoke container to learn, and nothing locked inside Engin.
+:::
+
+::::
+
+## Start here
+
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} Quickstart
+:link: quickstart
+:link-type: doc
+
+From a spreadsheet of runs to a calibrated forecast in under ten minutes.
+:::
+
+:::{grid-item-card} Benchmarks
+:link: benchmarks
+:link-type: doc
+
+How Engin performs against plain DoE, BayBE and BioSTEAM — including where it loses.
+:::
+
+::::
+
+## Install
+
+```bash
+pip install engin-core
+```
+
+Requires Python 3.11+. See [Install](install) for optional extras.
+
+## Honest baselines
+
+Every claim on this site is benchmarked against the simpler thing it says it beats — plain DoE/RSM for optimization, BioSTEAM for techno-economics, step-count heuristics for pathway ranking, "just use *E. coli*" for host selection.
+
+Cases where a simpler baseline wins are published in the same table as the wins. A benchmark suite that always favours its author is worthless, and we would rather you trusted the ones we do win.
+
+## Contributing
+
+Two things help most: **real fermentation data** or pointers to public datasets, and **benchmarks where Engin loses**. See [Contributing](contributing).
+
+The project has one maintainer and is [open to co-founders](governance).
+
+---
+
+Apache-2.0. No contributor licence agreement — [deliberately](governance), because it means this code can never be relicensed away from you.

@@ -1,0 +1,53 @@
+# Building the docs executes every example (MyST-NB, nb_execution_raise_on_error),
+# so this workflow is simultaneously the docs build and the examples test suite --
+# a broken example fails CI. That is D15: documentation that cannot silently rot.
+#
+# It runs on pull requests too, so a PR that breaks an example is caught before
+# merge rather than after.
+#
+# Hosting is Read the Docs (D20), which builds from .readthedocs.yaml. This
+# workflow does not deploy; it enforces that the build is green and the examples
+# run, on controlled resources rather than RTD's shared builders.
+
+name: docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-docs.txt
+
+      # -W turns warnings into errors: a dead cross-reference is a broken promise
+      # on a site whose argument is that its documentation is trustworthy.
+      # --keep-going reports every problem rather than stopping at the first.
+      - name: Build (warnings are errors, examples execute)
+        run: sphinx-build -W --keep-going -b html docs docs/_build/html
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: docs-html
+          path: docs/_build/html/
+          retention-days: 14

@@ -1,0 +1,43 @@
+# Read the Docs hosts and builds. Sphinx is unchanged — RTD is the host, not
+# an alternative generator.
+#
+# Division of labour with CI (see examples.yml):
+#   RTD  — builds, hosts, versions, PR previews, search, CDN
+#   CI   — executes every documentation example and fails on breakage
+#
+# Why the split: RTD community builders are shared and resource-limited, and
+# Engin's examples fit models. Executing there risks slow or flaky builds that
+# would eventually tempt someone to disable execution — which is precisely how
+# the D15 guarantee dies. So execution is enforced in CI where resources are
+# controlled, and RTD builds from the committed jupyter-cache.
+
+version: 2
+
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "3.12"
+  jobs:
+    post_checkout:
+      # Full history so the version switcher can see tags.
+      - git fetch --unshallow || true
+
+sphinx:
+  configuration: docs/conf.py
+  # Warnings are errors here too. A dead cross-reference is a broken promise
+  # on a site whose argument is that its documentation is trustworthy.
+  fail_on_warning: true
+
+formats:
+  - pdf
+  - epub
+
+python:
+  install:
+    # A requirements file, not `path: .` with a `docs` extra: there is no root
+    # package, and one would have to declare the sub-packages as dependencies
+    # that pip would look for on PyPI, where they are not published yet.
+    - requirements: requirements-docs.txt
+
+# Execution is off on RTD; docs build from the cache CI produced and committed.
+# conf.py reads READTHEDOCS to switch nb_execution_mode to "off".

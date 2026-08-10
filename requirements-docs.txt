@@ -1,0 +1,19 @@
+# Documentation build. Used by CI and by Read the Docs (.readthedocs.yaml).
+#
+#     pip install -r requirements-docs.txt
+#     sphinx-build -W --keep-going -b html docs docs/_build/html
+#
+# Building the docs executes every example (MyST-NB, raise_on_error), so the
+# build IS the examples test suite -- D15's guarantee with one mechanism rather
+# than a separate harness.
+#
+# The packages are installed editable because autodoc imports them to generate
+# the API reference from docstrings.
+
+-r requirements-dev.txt
+
+sphinx>=7.2
+myst-nb>=1.1
+pydata-sphinx-theme>=0.15
+sphinx-design>=0.6
+sphinx-copybutton>=0.5
