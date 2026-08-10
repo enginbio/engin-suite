@@ -81,9 +81,15 @@ A raw GP interval is overconfident here because a space-filling DoE is "easier"
 than the future query points the model is asked about (covariate shift), and the
 epistemic sd ignores observation noise entirely. Split-conformal calibrates the
 interval multiplier on a same-distribution held-out set using the finite-sample
-conformal quantile — distribution-free, no normality assumption. It is the same
-normalized-residual score as MAPIE's `ResidualNormalisedScore`; we keep the
-multiplier form so intervals ride the GP's per-point sd.
+conformal quantile — distribution-free, no normality assumption. The score is the classical
+normalized nonconformity measure of Papadopoulos, Gammerman and Vovk —
+`|y − ŷ| / σ`, with σ taken from the model's own predictive sd — and the
+multiplier form keeps intervals riding the GP's per-point sd.
+
+This is related to, but not the same as, MAPIE's `ResidualNormalisedScore`, which
+estimates σ with a *separate learned model* fitted to log-residuals. Normalizing
+by the GP's own sd needs no second model, which matters at the sample sizes this
+targets.
 
 Reproduce (`python benchmarks/benchmark.py`, mean over 8 seeds):
 

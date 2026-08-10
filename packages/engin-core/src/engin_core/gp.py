@@ -16,9 +16,10 @@ about (covariate shift), and the *epistemic* sd ignores observation noise
 entirely (that path covers ~0.62 at a nominal 0.90). Two honest fixes:
 
 - :func:`split_conformal_multiplier` -- the sd-scaled (heteroscedastic) split
-  conformal we prefer, because the GP gives a per-point sd. It is the same
-  normalized-residual score as MAPIE's ``ResidualNormalisedScore``; we keep the
-  thin multiplier form so intervals stay ``mean +/- q*sd``.
+  conformal we prefer, because the GP gives a per-point sd. This is the classical
+  normalized nonconformity measure (Papadopoulos/Gammerman/Vovk), normalizing by
+  the model's own predictive sd; we keep the thin multiplier form so intervals
+  stay ``mean +/- q*sd``.
 - :func:`mapie_split_interval` -- a library-backed (MAPIE) constant-width split
   conformal, exposed as an honest baseline / cross-check.
 """
@@ -128,10 +129,25 @@ def split_conformal_multiplier(
 ) -> float:
     """Interval multiplier ``q`` so that ``mean +/- q*sd`` has ~``level`` coverage.
 
-    Split-conformal on the *normalized* residual ``|y - mean| / sd`` (the same
-    score as MAPIE's ``ResidualNormalisedScore``): take the finite-sample conformal
-    quantile of the calibration scores. Distribution-free -- no normality
-    assumption -- and heteroscedastic because it rides the GP's per-point sd.
+    Split conformal on the *normalized* residual ``|y - mean| / sd``, taking the
+    finite-sample conformal quantile of the calibration scores. Distribution-free
+    -- no normality assumption -- and heteroscedastic because it rides the GP's
+    per-point sd.
+
+    This is the classical **normalized nonconformity measure** of Papadopoulos,
+    Gammerman and Vovk, ``R_i = |y_i - yhat_i| / sigma_i``, with ``sigma_i`` taken
+    from the model's own predictive sd.
+
+    ref: papadopoulos-normalized-nonconformity
+
+    **Not** the same as MAPIE's ``ResidualNormalisedScore``, despite an earlier
+    claim here. That score belongs to the same family but estimates ``sigma_i``
+    with a *separate learned model* fitted to log-residuals (conformalized residual
+    fitting). Using the GP's own predictive sd needs no second model, which matters
+    in the low-N regime this project targets, and is the natural choice when the
+    base estimator already emits a principled uncertainty. MAPIE does not offer
+    normalize-by-base-model-sd out of the box, which is why this function exists
+    rather than wrapping it (D9).
     """
     y_cal = np.asarray(y_cal, float)
     mean_cal = np.asarray(mean_cal, float)
