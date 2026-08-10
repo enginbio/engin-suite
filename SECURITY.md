@@ -39,11 +39,17 @@ Pre-1.0. Only the latest release gets fixes. This changes at 1.0, alongside the 
 
 ## Supply chain
 
-Stated as it currently stands rather than as intended, because a security document that overstates its own posture is worse than one that admits a gap:
+Dependencies declare **minimum versions rather than pins, and this is deliberate** — an application pins its environment, a library states what it needs, and a library that pins forces its constraints onto every consumer. There is therefore no lockfile, and adding one would be the wrong fix.
 
-- Dependencies declare **minimum versions, not pins**, and there is no lockfile. CI resolves the latest compatible set, so the declared floors are untested.
-- **Dependabot covers GitHub Actions only**, not Python dependencies.
-- **Nothing is released yet**, so nothing is signed. Signing is intended from the first release.
+What that leaves to guard against, and what guards it:
+
+| Risk | Control |
+|---|---|
+| Declared floors never actually tested | A `minimum-versions` CI job installs the oldest declared set and runs every suite against it |
+| Known vulnerabilities in dependencies | `pip-audit` runs in CI on every push and pull request |
+| Stale GitHub Actions | Dependabot, monthly |
+
+**Nothing is released yet, so nothing is signed.** Signing is intended from the first release; until then there is no artifact to verify, and saying otherwise would be the overstatement this section exists to avoid.
 
 Gaps here are in scope and a report that closes one is welcome.
 

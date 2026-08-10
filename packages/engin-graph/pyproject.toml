@@ -23,7 +23,7 @@ classifiers = [
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
-    "scikit-learn>=1.3",
+    "scikit-learn>=1.4",  # >=1.4 not >=1.3: mapie 1.0 requires it, so 1.3 was never installable
     "networkx>=3.0",
     "engin-core>=0.1.0",
 ]
