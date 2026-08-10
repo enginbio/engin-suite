@@ -18,7 +18,10 @@ import pathlib
 import re
 import sys
 
-import tomllib
+try:  # tomllib is stdlib from 3.11; this runs on the lowest supported Python
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10 only
+    import tomli as tomllib
 
 # Packages in this repo resolve from the working tree, never from an index.
 LOCAL = {
