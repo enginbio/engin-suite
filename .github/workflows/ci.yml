@@ -124,6 +124,73 @@ jobs:
         working-directory: packages/engin-core
         run: python benchmarks/benchmark.py
 
+  # The packages declare minimum versions rather than pins, which is right for a
+  # library -- an application pins, a library states what it needs. But every other
+  # job resolves the *latest* compatible set, so those floors are untested claims,
+  # and the person who finds out is a user installing into an older environment.
+  # This job installs the oldest declared set and runs the suites against it.
+  minimum-versions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          # The lowest Python this project supports, which is where the oldest
+          # dependency set is actually plausible.
+          python-version: "3.10"
+          cache: pip
+
+      - name: Pin every dependency to its declared floor
+        run: |
+          python -m pip install --upgrade pip
+          python scripts/lowest_direct_constraints.py > constraints-lowest.txt
+          cat constraints-lowest.txt
+
+      - name: Install at the floor
+        run: |
+          args=()
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            args+=(-e "${pkg}[dev]")
+          done
+          python -m pip install -c constraints-lowest.txt "${args[@]}"
+          python -m pip list
+
+      - name: Test every package at the floor
+        run: |
+          failed=()
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            name=$(basename "$pkg")
+            echo "::group::pytest $name (lowest deps)"
+            if ( cd "$pkg" && python -m pytest -q ); then echo "$name: pass"; else failed+=("$name"); fi
+            echo "::endgroup::"
+          done
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "::error::failing at declared dependency floors: ${failed[*]}"
+            echo "Either the floor is wrong and should be raised, or the code needs to support it."
+            exit 1
+          fi
+
+  # Dependency vulnerability scanning. SECURITY.md tells readers this runs; it has
+  # to actually run. Scoped to what is reachable through our own dependency tree.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install and audit
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          python -m pip install -r requirements-dev.txt
+          # Local packages are not on PyPI, so they have no advisories to check.
+          pip-audit --skip-editable --strict
+
   # The test job runs against `src/` via each package's pytest pythonpath (ADR 0004),
   # which is deliberate but means it never exercises the *installed* distribution. A
   # broken [tool.setuptools.packages.find] would pass every test. This job builds real

@@ -46,7 +46,7 @@ Several choices in this codebase look like bugs and are not. They're recorded wi
 
 The ones most likely to be mistaken for defects:
 
-- **`D13` — the recommender optimizes net $/kg, not titer.** Recovery cost is set upstream but paid downstream, so maximizing titer can move the true objective backwards. Engin looks *worse* on the metric everyone reports. This is deliberate.
+- **`D13` — the recommender will optimize net $/kg, not titer.** Recovery cost is set upstream but paid downstream, so maximizing titer can move the true objective backwards. Engin will look *worse* on the metric everyone reports; that is deliberate. **Not yet implemented** — `engin_core.recommend` currently maximizes titer, because the techno-economic head it needs (`D8`) does not exist. Don't mistake the current behaviour for the intended design, and don't entrench it.
 - **`D12` — benchmarks report real-data results including where coverage degrades**, and publish out-of-distribution failures. Do not substitute synthetic-data numbers because they look better.
 - **`D14` — library, not framework.** Stable public API, no hidden coupling, usable as a dependency. Don't add framework-shaped machinery.
 - **`D4` — there is no CLA, on purpose.** Don't add one as standard hygiene. DCO sign-off (`git commit -s`) only.
