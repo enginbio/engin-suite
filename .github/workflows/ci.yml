@@ -36,6 +36,24 @@ jobs:
       - name: ruff format --check
         run: ruff format --check .
 
+      # requirements-dev.txt is hand-maintained, which is exactly the drift this
+      # workflow otherwise avoids by discovering packages. Check it stays complete
+      # rather than trusting it: a contributor whose install silently misses a
+      # package gets confusing failures far from the cause.
+      - name: requirements-dev.txt covers every package
+        run: |
+          missing=()
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            name=$(basename "$pkg")
+            grep -q "packages/${name}" requirements-dev.txt || missing+=("$name")
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::requirements-dev.txt is missing: ${missing[*]}"
+            exit 1
+          fi
+          echo "requirements-dev.txt lists every package"
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30

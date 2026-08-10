@@ -39,7 +39,7 @@ This adds a `Signed-off-by` line attesting you have the right to contribute what
 ```bash
 git clone https://github.com/enginbio/engin-suite
 cd engin-suite
-for p in packages/*/; do pip install -e "${p}[dev]"; done
+pip install -r requirements-dev.txt   # whole monorepo, editable
 cd packages/engin-core && pytest      # tests run per package
 ```
 
