@@ -56,3 +56,15 @@ ruff check .
 ## License
 
 Apache-2.0 (see [LICENSE](LICENSE)). The private product overlay is proprietary.
+
+## Project documents
+
+| | |
+|---|---|
+| [DECISIONS.md](DECISIONS.md) | Why choices were made. **Canonical** — cited by ID (`D13`) in code and issues |
+| [GOVERNANCE.md](GOVERNANCE.md) | How decisions get made, maintainership, succession |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute, and what gets rejected |
+| [BIOSECURITY.md](BIOSECURITY.md) | Dual-use assessment and declined scope |
+| [SECURITY.md](SECURITY.md) | Software vulnerability disclosure |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Conduct expectations and reporting |
+| [AGENTS.md](AGENTS.md) | Context for AI coding agents |
