@@ -103,9 +103,7 @@ html_title = "Engin"
 # Deliberately not hardcoded to https://engin.bio/: that host 302-redirects to
 # docs.engin.bio, and a canonical pointing at a redirect is a conflicting
 # signal to search engines. The fallback below is for local builds only.
-html_baseurl = os.environ.get(
-    "READTHEDOCS_CANONICAL_URL", "https://docs.engin.bio/en/latest/"
-)
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "https://docs.engin.bio/en/latest/")
 
 html_theme_options = {
     "github_url": "https://github.com/enginbio/engin-suite",
