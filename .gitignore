@@ -31,3 +31,7 @@ data/partner/
 .DS_Store
 .idea/
 .vscode/
+
+# Sphinx build output and execution cache
+docs/_build/
+docs/.jupyter_cache/

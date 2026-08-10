@@ -4,7 +4,7 @@
 
 Maintainer contact: **biosecurity@engin.bio**
 
-This policy states Engin's assessment of the dual-use risk presented by its software, the commitments the project makes as a result, and the capabilities it declines to build. It covers biological misuse risk only. Software vulnerabilities are handled under [SECURITY.md](SECURITY.md).
+This policy states Engin's assessment of the dual-use risk presented by its software, the commitments the project makes as a result, and the capabilities it declines to build. It covers biological misuse risk only. Software vulnerabilities are handled under [SECURITY.md](https://github.com/enginbio/engin-suite/blob/main/SECURITY.md).
 
 ---
 
@@ -158,10 +158,10 @@ The project's position is that openness remains correct here, for three reasons.
 
 | Document | Covers |
 |---|---|
-| [SECURITY.md](SECURITY.md) | Software vulnerability disclosure |
-| [GOVERNANCE.md](GOVERNANCE.md) | Decision-making, maintainership, succession |
-| [DECISIONS.md](DECISIONS.md) | Decision record, including biosecurity assessments |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution process |
+| [SECURITY.md](https://github.com/enginbio/engin-suite/blob/main/SECURITY.md) | Software vulnerability disclosure |
+| [GOVERNANCE.md](https://github.com/enginbio/engin-suite/blob/main/GOVERNANCE.md) | Decision-making, maintainership, succession |
+| [DECISIONS.md](https://github.com/enginbio/engin-suite/blob/main/DECISIONS.md) | Decision record, including biosecurity assessments |
+| [CONTRIBUTING.md](https://github.com/enginbio/engin-suite/blob/main/CONTRIBUTING.md) | Contribution process |
 
 ## References
 

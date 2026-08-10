@@ -6,7 +6,7 @@ Maintainer contact: **maintainers@engin.bio**
 
 This document states how decisions are made in Engin, who makes them, how people take on and leave those roles, and what happens when there is disagreement. It follows the structure recommended by [Scientific Python SPEC 9](https://scientific-python.org/specs/spec-0009/).
 
-Conduct expectations are in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Contribution mechanics are in [CONTRIBUTING.md](CONTRIBUTING.md). The record of what has been decided and why is [DECISIONS.md](DECISIONS.md).
+Conduct expectations are in [CODE_OF_CONDUCT.md](https://github.com/enginbio/engin-suite/blob/main/CODE_OF_CONDUCT.md). Contribution mechanics are in [CONTRIBUTING.md](https://github.com/enginbio/engin-suite/blob/main/CONTRIBUTING.md). The record of what has been decided and why is [DECISIONS.md](https://github.com/enginbio/engin-suite/blob/main/DECISIONS.md).
 
 ---
 
@@ -25,8 +25,8 @@ The transition trigger is stated in §4.3. This document is written now, before 
 | Role | How obtained | Authority | Obligations |
 |---|---|---|---|
 | **User** | Use the software | Open issues, participate in discussion, fork | Follow the Code of Conduct |
-| **Contributor** | Have a pull request merged | All of the above; listed in release notes | DCO sign-off on commits; follow [CONTRIBUTING.md](CONTRIBUTING.md) |
-| **Maintainer** | Invitation under §4.1 | Commit access; merge PRs; triage; release | Uphold [DECISIONS.md](DECISIONS.md); keep calibration and benchmark tests honest; respond to review requests within 10 working days or say they cannot |
+| **Contributor** | Have a pull request merged | All of the above; listed in release notes | DCO sign-off on commits; follow [CONTRIBUTING.md](https://github.com/enginbio/engin-suite/blob/main/CONTRIBUTING.md) |
+| **Maintainer** | Invitation under §4.1 | Commit access; merge PRs; triage; release | Uphold [DECISIONS.md](https://github.com/enginbio/engin-suite/blob/main/DECISIONS.md); keep calibration and benchmark tests honest; respond to review requests within 10 working days or say they cannot |
 | **Lead maintainer** | Currently the founder; see §4.3 | Final say on decisions not reaching consensus; holds infrastructure credentials | Publish reasoning for every decision made over unresolved disagreement |
 | **Co-founder** | Direct agreement; see §4.2 | Peer to the lead maintainer on direction, scope and DECISIONS.md | As maintainer, plus shared responsibility for project direction |
 
@@ -52,7 +52,7 @@ Consensus means no maintainer sustains a blocking objection — not unanimity, a
 
 ### 3.3 Recording
 
-Every substantive and foundational decision is recorded in [DECISIONS.md](DECISIONS.md) with an identifier, the reasoning, and its status. Code, issues and pull requests cite decision identifiers rather than restating arguments.
+Every substantive and foundational decision is recorded in [DECISIONS.md](https://github.com/enginbio/engin-suite/blob/main/DECISIONS.md) with an identifier, the reasoning, and its status. Code, issues and pull requests cite decision identifiers rather than restating arguments.
 
 **Superseded decisions are retained**, not deleted. A record showing what changed and why is more useful than one presenting a clean narrative, and it is what makes the commitment in §3.4 verifiable.
 
@@ -106,7 +106,7 @@ A maintainer may be removed for sustained Code of Conduct violation or for actio
 
 The realistic failure mode for a one-maintainer project is not conflict. It is silence.
 
-**5.1 The project cannot be captured.** Engin is Apache-2.0 with no contributor licence agreement (see `D3`, `D4` in [DECISIONS.md](DECISIONS.md)). Copyright is distributed across contributors, so the existing code cannot be relicensed — by the current maintainer or anyone who succeeds them. Anyone may fork at any time, permanently. **That is the real continuity guarantee: it is enforceable by you, not promised by us.**
+**5.1 The project cannot be captured.** Engin is Apache-2.0 with no contributor licence agreement (see `D3`, `D4` in [DECISIONS.md](https://github.com/enginbio/engin-suite/blob/main/DECISIONS.md)). Copyright is distributed across contributors, so the existing code cannot be relicensed — by the current maintainer or anyone who succeeds them. Anyone may fork at any time, permanently. **That is the real continuity guarantee: it is enforceable by you, not promised by us.**
 
 **5.2 Unresponsiveness is a legitimate fork trigger.** If the maintainers are unreachable for six months while issues go unaddressed, the community is entitled to continue the work elsewhere. The project will not treat that as hostile, and will redirect to a fork that has taken up maintenance if asked.
 
@@ -120,7 +120,7 @@ The realistic failure mode for a one-maintainer project is not conflict. It is s
 
 **6.1 Technical disagreement.** Raise it in the issue. If it cannot be resolved and the decision is substantive or foundational, the lead maintainer decides and publishes the reasoning. A contributor who believes a decision is wrong may open an issue arguing against the recorded reasoning — that is a legitimate contribution and sometimes the most valuable kind.
 
-**6.2 Conduct concerns.** Report to **conduct@engin.bio** under [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+**6.2 Conduct concerns.** Report to **conduct@engin.bio** under [CODE_OF_CONDUCT.md](https://github.com/enginbio/engin-suite/blob/main/CODE_OF_CONDUCT.md).
 
 **6.3 The limitation of a one-person project, stated plainly.** Reporting a conduct concern about the sole maintainer means reporting it to that maintainer. There is no independent body, and this document does not pretend otherwise. Someone uncomfortable with that may raise the concern publicly in an issue, or contact the conduct body of a project in the surrounding ecosystem. This is one of several reasons §4.2 and §4.3 matter.
 
@@ -140,9 +140,9 @@ Reviewed every six months, or on any change to the number of maintainers.
 
 ## 8. What this document does not cover
 
-- **Conduct expectations** — [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- **How to contribute** — [CONTRIBUTING.md](CONTRIBUTING.md)
-- **What has been decided and why** — [DECISIONS.md](DECISIONS.md)
-- **Dual-use and biosecurity** — [BIOSECURITY.md](BIOSECURITY.md)
-- **Software vulnerabilities** — [SECURITY.md](SECURITY.md)
-- **API stability and release policy** — [docs/api-stability.md](docs/api-stability.md)
+- **Conduct expectations** — [CODE_OF_CONDUCT.md](https://github.com/enginbio/engin-suite/blob/main/CODE_OF_CONDUCT.md)
+- **How to contribute** — [CONTRIBUTING.md](https://github.com/enginbio/engin-suite/blob/main/CONTRIBUTING.md)
+- **What has been decided and why** — [DECISIONS.md](https://github.com/enginbio/engin-suite/blob/main/DECISIONS.md)
+- **Dual-use and biosecurity** — [BIOSECURITY.md](https://github.com/enginbio/engin-suite/blob/main/BIOSECURITY.md)
+- **Software vulnerabilities** — [SECURITY.md](https://github.com/enginbio/engin-suite/blob/main/SECURITY.md)
+- **API stability and release policy** — [docs/api-stability.md](https://github.com/enginbio/engin-suite/blob/main/docs/api-stability.md)
