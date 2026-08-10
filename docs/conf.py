@@ -95,7 +95,15 @@ intersphinx_mapping = {
 
 html_theme = "pydata_sphinx_theme"
 html_title = "Engin"
-html_baseurl = "https://engin.bio/"
+
+# Canonical URL. Read the Docs sets READTHEDOCS_CANONICAL_URL to the fully
+# versioned URL of the version being built, so the canonical tag stays correct
+# as versions are added rather than needing an edit each time.
+#
+# Deliberately not hardcoded to https://engin.bio/: that host 302-redirects to
+# docs.engin.bio, and a canonical pointing at a redirect is a conflicting
+# signal to search engines. The fallback below is for local builds only.
+html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "https://docs.engin.bio/en/latest/")
 
 html_theme_options = {
     "github_url": "https://github.com/enginbio/engin-suite",
