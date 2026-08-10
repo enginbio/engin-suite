@@ -144,6 +144,8 @@ jobs:
       - name: Pin every dependency to its declared floor
         run: |
           python -m pip install --upgrade pip
+          # tomllib is stdlib only from 3.11 and this job runs on 3.10.
+          python -c "import tomllib" 2>/dev/null || python -m pip install tomli
           python scripts/lowest_direct_constraints.py > constraints-lowest.txt
           cat constraints-lowest.txt
 
@@ -188,8 +190,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip pip-audit
           python -m pip install -r requirements-dev.txt
-          # Local packages are not on PyPI, so they have no advisories to check.
-          pip-audit --skip-editable --strict
+          # Local packages are not on PyPI and have no advisories, so they are
+          # skipped. --strict is deliberately NOT used: it fails on any skipped
+          # distribution, which would make it permanently red on the packages we
+          # skip on purpose.
+          pip-audit --skip-editable
 
   # The test job runs against `src/` via each package's pytest pythonpath (ADR 0004),
   # which is deliberate but means it never exercises the *installed* distribution. A
