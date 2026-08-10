@@ -58,7 +58,7 @@ Before opening a pull request:
 Not to be discouraging — these are specific and rare:
 
 - **Uncalibrated point estimates.** Calibrated uncertainty is the project's core commitment. A model that returns a number without an honest interval doesn't fit here.
-- **Optimizing titer instead of net cost.** The recommender is *intended* to optimize net $/kg, because recovery cost is determined upstream but incurred downstream. This makes Engin look worse on the metric everyone reports, and that is a considered trade (`D13`). It currently maximizes titer only because the techno-economic head (`D8`) is not built — a change that deepens that dependence on titer is going the wrong way.
+- **Optimizing titer instead of net cost.** The recommender is *intended* to optimize net $/kg, because titer is inflatable by running longer and omits raw-material cost, which dominates COGS. This makes Engin look worse on the metric everyone reports, and that is a considered trade (`D13`). It currently maximizes titer only because the techno-economic head (`D8`) is not built — a change that deepens that dependence on titer is going the wrong way.
 - **Reimplementing what already exists.** We compose with BayBE, BioSTEAM, COBRApy and MAPIE rather than rebuilding them (`D9`).
 - **Anything on the declined list in `BIOSECURITY.md`.**
 

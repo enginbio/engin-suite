@@ -65,10 +65,22 @@ Five tiers, each published with what it does and does not prove: own simulator �
 
 **Licence rule, binding: ship loaders that fetch, never data that ships.** Some upstream datasets are NonCommercial/NoDerivatives licensed, which conflicts with an Apache-2.0 project whose users are commercial.
 
-**D13 — The recommender optimizes net $/kg, not titer.** `standing`
-Recovery cost is determined upstream — by titer, strain and broth composition — but incurred downstream. An optimizer maximizing titer can therefore move the true objective *backwards*: a higher-titer strain with a messier broth can be economically worse.
+**D13 — The recommender optimizes net $/kg, not titer.** `standing` — *justification replaced 2026-08-10*
+
+Titer is the wrong optimization target, for four reasons:
+
+- **Titer is an integrative metric.** It can be inflated by running the fermentation longer or at higher biomass — a better number without a better process.
+- **TRY splits into three cost centres**: titer → downstream processing, rate → reactor size, yield → raw material.
+- **Raw material dominates COGS.** Media is roughly 35–50% of precision-fermentation cost of goods, ahead of facility depreciation (20–25%) and downstream processing (15–20%). That cost is governed by *yield*, which titer does not capture.
+- **Cost is non-linear in TRY**, with thresholds and inflection points, so no single metric is a usable proxy for the objective.
 
 **Accepted consequence: Engin looks worse on the metric everyone currently reports.** That trade is deliberate and is explained prominently rather than left to be discovered in a benchmark table.
+
+> **Withdrawn justification, kept because the error is instructive.** This decision previously read: *"Recovery cost is determined upstream — by titer, strain and broth composition — but incurred downstream, so an optimizer maximizing titer can move the true objective backwards: a higher-titer strain with a messier broth can be economically worse."*
+>
+> **That mechanism is backwards.** Higher titer *reduces* downstream cost — less water to remove, smaller equipment, fewer unit operations — and purification is more expensive when broth concentration is low. Titer is the TRY metric that corresponds to downstream cost, and the two move together favourably.
+>
+> The decision survived; its reasoning did not. It was derived from mechanism and asserted confidently in three documents while the field had measurements saying the opposite. Recorded rather than quietly edited, because a project promising that its reasoning is contestable owes the reader its corrections too.
 
 **D14 — Library, not framework.** `standing`
 Stable public APIs, no hidden coupling, usable as a dependency. Required by the goal of being depended upon, independent of any commercial consideration. An earlier draft justified the same properties as preserving optionality for a future paid layer; that framing is withdrawn.

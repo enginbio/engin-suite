@@ -46,7 +46,7 @@ Several choices in this codebase look like bugs and are not. They're recorded wi
 
 The ones most likely to be mistaken for defects:
 
-- **`D13` — the recommender will optimize net $/kg, not titer.** Recovery cost is set upstream but paid downstream, so maximizing titer can move the true objective backwards. Engin will look *worse* on the metric everyone reports; that is deliberate. **Not yet implemented** — `engin_core.recommend` currently maximizes titer, because the techno-economic head it needs (`D8`) does not exist. Don't mistake the current behaviour for the intended design, and don't entrench it.
+- **`D13` — the recommender will optimize net $/kg, not titer.** Titer is inflatable by running longer, and omits raw material cost, which dominates COGS and is governed by yield. Engin will look *worse* on the metric everyone reports; that is deliberate. **Not yet implemented** — `engin_core.recommend` maximizes titer, because the techno-economic head it needs (`D8`) does not exist. Don't mistake the current behaviour for the intended design, and don't entrench it. Note the justification changed on 2026-08-10: the earlier "recovery cost rises with titer" mechanism was backwards and is withdrawn.
 - **`D12` — benchmarks report real-data results including where coverage degrades**, and publish out-of-distribution failures. Do not substitute synthetic-data numbers because they look better.
 - **`D14` — library, not framework.** Stable public API, no hidden coupling, usable as a dependency. Don't add framework-shaped machinery.
 - **`D4` — there is no CLA, on purpose.** Don't add one as standard hygiene. DCO sign-off (`git commit -s`) only.
@@ -64,7 +64,15 @@ The ones most likely to be mistaken for defects:
 
 - Don't add anything on the declined list in `BIOSECURITY.md`.
 - Don't commit data files. Benchmarks fetch; they don't vendor. Some upstream datasets are NC/ND licensed and cannot ship here.
-- **`engin_core.fit_gp` is for low-dimensional continuous design spaces.** Its ARD kernel is initialised for unit-cube inputs and collapses to the prior mean on high-dimensional sparse features such as one-hot sequences. Bring a different estimator and feed its `(mean, sd)` to the shared conformal and acquisition primitives, which are estimator-agnostic.
+- **`engin_core.fit_gp` is for low-dimensional continuous design spaces.** Its ARD kernel is
+  initialised for unit-cube inputs and collapses to the prior mean on high-dimensional sparse
+  features such as one-hot sequences. Bring a different estimator and feed its `(mean, sd)` to the
+  shared conformal and acquisition primitives, which are estimator-agnostic.
+
+  This is a fact about *that kernel*, not about Gaussian processes. Purpose-built GP approaches for
+  protein fitness exist — a zero-shot predictor as the prior mean with a dedicated substitution
+  kernel — and have not been evaluated here. Ridge on one-hot features is a well-established strong
+  few-shot baseline, so `engin-protein` using it is defensible; treating it as the ceiling is not.
 
 ## Where things are written down
 
