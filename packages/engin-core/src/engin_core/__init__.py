@@ -32,6 +32,18 @@ from .simulator import (
     simulate_unit,
     unit_to_physical,
 )
+from .tea import (
+    BioSteamCostModel,
+    CostModel,
+    CostParameters,
+    CostSummary,
+    ParametricCostModel,
+    cost_samples,
+    cost_summary,
+    design_context,
+    expected_cost_reduction,
+    recommend_batch_by_cost,
+)
 
 __version__ = "0.1.0"
 
@@ -56,5 +68,15 @@ __all__ = [
     "ProcessBrief",
     "inflate_uncertainty",
     "process_brief",
+    "CostParameters",
+    "CostModel",
+    "CostSummary",
+    "ParametricCostModel",
+    "BioSteamCostModel",
+    "cost_samples",
+    "cost_summary",
+    "design_context",
+    "expected_cost_reduction",
+    "recommend_batch_by_cost",
     "__version__",
 ]

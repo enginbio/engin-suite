@@ -30,6 +30,10 @@ dependencies = [
 
 [project.optional-dependencies]
 examples = ["matplotlib>=3.6"]
+# BioSTEAM-backed techno-economics. Optional because BioSTEAM requires Python >= 3.12
+# while this package supports 3.10+, and pulls ~40 transitive dependencies including
+# numba and thermo. Keeping it out of the default install preserves the light path.
+tea = ["biosteam>=2.51; python_version >= '3.12'"]
 dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
 
 [project.urls]
