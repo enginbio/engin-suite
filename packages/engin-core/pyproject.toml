@@ -34,7 +34,7 @@ dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
 
 [project.urls]
 Homepage = "https://github.com/enginbio/engin-suite"
-Documentation = "https://enginbio.github.io/engin-suite/"
+Documentation = "https://docs.engin.bio"
 Repository = "https://github.com/enginbio/engin-suite"
 
 [tool.setuptools.packages.find]

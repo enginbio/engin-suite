@@ -26,6 +26,11 @@ dependencies = [
     "engin-core>=0.1.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/enginbio/engin-suite"
+Documentation = "https://docs.engin.bio"
+Repository = "https://github.com/enginbio/engin-suite"
+
 [project.optional-dependencies]
 examples = ["matplotlib>=3.6"]
 dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
