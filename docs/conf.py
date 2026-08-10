@@ -38,13 +38,13 @@ version = ".".join(release.split(".")[:2])
 # -- Extensions -------------------------------------------------------------
 
 extensions = [
-    "myst_nb",                      # MyST markdown + executed notebooks
-    "sphinx.ext.autodoc",           # API reference generated from docstrings
+    "myst_nb",  # MyST markdown + executed notebooks
+    "sphinx.ext.autodoc",  # API reference generated from docstrings
     "sphinx.ext.autosummary",
-    "sphinx.ext.napoleon",          # NumPy/Google docstring styles
-    "sphinx.ext.intersphinx",       # cross-link to numpy, scipy, sklearn
+    "sphinx.ext.napoleon",  # NumPy/Google docstring styles
+    "sphinx.ext.intersphinx",  # cross-link to numpy, scipy, sklearn
     "sphinx.ext.viewcode",
-    "sphinx_design",                # cards, tabs, grids
+    "sphinx_design",  # cards, tabs, grids
     "sphinx_copybutton",
 ]
 
@@ -56,7 +56,7 @@ ON_RTD = os.environ.get("READTHEDOCS") == "True"
 # RTD build by turning execution on there — fix it in CI, or the guarantee
 # quietly stops being enforced anywhere.
 nb_execution_mode = "off" if ON_RTD else "cache"
-nb_execution_timeout = 300          # some examples fit models
+nb_execution_timeout = 300  # some examples fit models
 nb_execution_raise_on_error = True  # a broken example FAILS THE BUILD
 nb_execution_cache_path = ".jupyter_cache"  # committed, so RTD can read it
 
@@ -75,7 +75,7 @@ autodoc_typehints = "description"
 autodoc_member_order = "bysource"
 autodoc_default_options = {
     "members": True,
-    "undoc-members": False,         # undocumented members are a docs bug
+    "undoc-members": False,  # undocumented members are a docs bug
     "show-inheritance": True,
 }
 napoleon_google_docstring = False

@@ -1,0 +1,16 @@
+# Lint configuration for Python outside the packages -- docs/conf.py is the first
+# such file. Without this, ruff falls back to its own defaults for root-level
+# files, which is a different rule set from the one every package uses, so the
+# same code is judged by different standards depending on where it sits.
+#
+# Each package keeps its own [tool.ruff] in pyproject.toml; those take precedence
+# for files beneath them. This governs everything else.
+
+line-length = 100
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E741", "N806"]
+
+[format]
+exclude = ["*.md"]
