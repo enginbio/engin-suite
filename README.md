@@ -4,9 +4,11 @@ The open **strain-to-scale** engine for fermentation-based biomanufacturing:
 de-risk each decision in the funnel — **pick the host → rank the pathway →
 optimize the process** — with *calibrated uncertainty* rather than point guesses.
 
-This is a monorepo of the open (Apache-2.0) suite. The closed differentiators
-(probabilistic techno-economics, cross-process priors, partner data) live in a
-separate private overlay that depends on these packages.
+This is a monorepo of the open (Apache-2.0) suite, and there is no closed
+counterpart holding the interesting parts back. Probabilistic techno-economics
+ships here in `engin_core.tea` (`D8`); everything methodological is public
+(`D1`). A private overlay exists for hosted-service plumbing and any future
+partner data under NDA — nothing methodological, and no partner data yet.
 
 ```
   target molecule + constraints
@@ -38,9 +40,18 @@ thin domain layers over one shared engine, `engin-core`.
 - **Honest baselines** — every model is reported against the dumb heuristic it
   claims to beat (naive Gaussian intervals, random batches, step-count ranking,
   "just use E. coli").
-- **Open-core discipline** — the engine, simulators, and calibration are public
-  here; cross-process priors, partner data, and the economics coupling stay
-  private.
+- **Everything methodological is public** — engine, simulators, calibration and
+  the economics coupling alike (`D1`, `D8`). There is no held-back core. The only
+  thing that could sit outside this repository is partner data under NDA, which
+  does not exist yet.
+- **The objective is net $/kg, not titer** (`D13`) — recovery cost is determined
+  upstream but incurred downstream, so an optimizer maximizing titer can move the
+  true objective backwards. Titer is also inflatable by running longer, and says
+  nothing about the raw-material cost that dominates COGS. **The accepted
+  consequence is that Engin will look worse on the metric everyone reports**, and
+  it is better to say so here than to let it be discovered in a benchmark table.
+  `engin_core.tea.recommend_batch_by_cost` optimizes cost;
+  `engin_core.recommend_batch` optimizes titer and is kept for comparison.
 - **Stand on mature libraries** — scipy (integration), scikit-learn/GPyTorch (GP),
   MAPIE (conformal), pydantic (schemas). Hand-write only the domain models.
 
