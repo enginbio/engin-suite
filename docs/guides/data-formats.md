@@ -3,6 +3,12 @@ file_format: mystnb
 kernelspec:
   name: python3
   display_name: Python 3
+  # `language` is load-bearing, not decoration. With execution ON (CI) the kernel
+  # reports it; with execution OFF (Read the Docs, D20) there is no kernel, and
+  # without it myst-nb emits "No source code lexer found for notebook cell N" for
+  # every cell -- which fail_on_warning turns into a failed RTD build while CI
+  # stays green.
+  language: python
 ---
 
 # Data formats and conventions
