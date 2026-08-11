@@ -32,6 +32,8 @@ The transition trigger is stated in §4.3. This document is written now, before 
 
 **Infrastructure credentials** — PyPI, the `engin.bio` domain, Read the Docs, the GitHub organization — are currently held by the lead maintainer alone. This is a single point of failure and is acknowledged as one; §5 covers what happens if it fails.
 
+A **continuity runbook** is maintained privately, recording where each credential lives, how it is recovered and who to contact. It holds no secrets — it is kept private because recovery paths are worth nothing to a reader and something to an attacker. It does not remove the single point of failure; it means the project's recovery does not depend on one person's memory. A second credential holder is the real fix and follows a co-founder (§4.2) rather than preceding one.
+
 ---
 
 ## 3. How decisions are made
@@ -124,7 +126,7 @@ The realistic failure mode for a one-maintainer project is not conflict. It is s
 
 **6.3 The limitation of a one-person project, stated plainly.** Reporting a conduct concern about the sole maintainer means reporting it to that maintainer. There is no independent body, and this document does not pretend otherwise. Someone uncomfortable with that may raise the concern publicly in an issue, or contact the conduct body of a project in the surrounding ecosystem. This is one of several reasons §4.2 and §4.3 matter.
 
-**6.4 Escalation beyond the project.** Where a concern cannot be resolved internally and the project has a fiscal host or foundation affiliation, that body's process applies. Engin currently has neither. If that changes, this section is updated.
+**6.4 Escalation beyond the project.** Where a concern cannot be resolved internally and the project has a fiscal host or foundation affiliation, that body's process applies. **Engin has neither, and is not currently seeking one** — a deliberate decision with written triggers rather than an open item (`D25`). The honest consequence is that this escalation route does not exist today, and §6.3 is the whole of the answer until it does.
 
 ---
 
