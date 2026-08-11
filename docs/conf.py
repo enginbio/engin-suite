@@ -133,4 +133,15 @@ html_static_path = ["_static"]
 # site whose whole argument is that the documentation is trustworthy.
 nitpicky = True
 
-exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store"]
+# .jupyter_cache lives under docs/ (see nb_execution_cache_path) and contains an
+# executed .ipynb per cached document. Sphinx globs those as source files and then
+# reports each as absent from any toctree, which -W turns into a failed build. CI
+# cannot catch this: it builds from a fresh checkout, where the cache does not yet
+# exist when the glob runs. Only a rebuild -- anyone's second local build -- hits it.
+exclude_patterns = [
+    "_build",
+    ".jupyter_cache",
+    "**.ipynb_checkpoints",
+    "Thumbs.db",
+    ".DS_Store",
+]
