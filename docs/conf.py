@@ -11,10 +11,15 @@ examples is needed — building the docs is verifying them.
 Execution happens in CI, not on Read the Docs. RTD's shared builders are
 resource-limited and Engin's examples fit models; executing there risks slow
 or flaky builds, which is exactly the pressure that eventually gets execution
-switched off. So CI executes and commits the jupyter-cache, and RTD renders
-from it without executing --- see ``nb_execution_mode`` below for why that
-needs ``cache`` rather than ``off``, which is not what this file said before
-2026-08-10.
+switched off. So the examples are executed in CI, and Read the Docs renders them
+from a committed jupyter-cache without executing anything.
+
+Two details of that are easy to get wrong, and both were wrong here until
+2026-08-10. It needs ``nb_execution_mode = "cache"`` rather than ``"off"``,
+because ``"off"`` ignores the cache and renders code without its outputs. And
+the cache is kept current by contributors plus a CI *check*, not by CI pushing
+to ``main`` --- a bot cannot push to a protected branch. See the comment on
+``nb_execution_mode`` below.
 """
 
 import os
@@ -54,9 +59,9 @@ extensions = [
 
 ON_RTD = os.environ.get("READTHEDOCS") == "True"
 
-# CI executes and commits the cache; RTD builds from it. Do not "fix" a slow
-# RTD build by turning execution on there — fix it in CI, or the guarantee
-# quietly stops being enforced anywhere.
+# Do not "fix" a slow RTD build by turning execution on there — fix it in CI, or
+# the guarantee quietly stops being enforced anywhere.
+#
 # `cache` everywhere, including on Read the Docs, and the reason is load-bearing.
 #
 # This used to be `"off" if ON_RTD else "cache"`, on the belief that "off" would
@@ -66,8 +71,10 @@ ON_RTD = os.environ.get("READTHEDOCS") == "True"
 #
 # `cache` gets what D20 actually wants -- RTD does not execute -- by a different
 # route: a cache hit renders stored outputs and runs nothing. The cache is
-# committed (see .github/workflows/docs.yml, which refreshes it on every push to
-# main) and is content-hash keyed, so it is portable across machines and paths.
+# committed, and content-hash keyed rather than path keyed, so it is portable
+# across machines. Contributors refresh it with any change to an executed page
+# (CONTRIBUTING.md); .github/workflows/docs.yml *verifies* it is current rather
+# than maintaining it, because a bot cannot push to a protected branch.
 #
 # The residual risk is honest: on a cache *miss* RTD would execute. That is why
 # CI refreshes the committed cache rather than leaving it to drift.
