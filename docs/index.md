@@ -27,6 +27,7 @@ guides/data-formats
 
 api/index
 api-stability
+methods/conformal-calibration
 benchmarks
 limitations
 ```
