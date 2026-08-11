@@ -13,7 +13,9 @@ no longer reinvent. The normal CDF/PDF come from :mod:`scipy.stats`.
 **Calibration is first-class.** A raw GP interval is overconfident here: a
 space-filling DoE is "easier" than the future query points the model is asked
 about (covariate shift), and the *epistemic* sd ignores observation noise
-entirely (that path covers ~0.62 at a nominal 0.90). Two honest fixes:
+entirely (that path covers roughly 0.55-0.62 at a nominal 0.90, depending on how
+many seeds are averaged -- the spread is real, so read any single figure for it as
+an order of magnitude rather than a measurement). Two honest fixes:
 
 - :func:`split_conformal_multiplier` -- the sd-scaled (heteroscedastic) split
   conformal we prefer, because the GP gives a per-point sd. This is the classical
