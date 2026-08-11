@@ -197,9 +197,20 @@ class ColumnGuess(BaseModel):
     evidence: str = ""
     alternatives: list[str] = Field(default_factory=list)
 
+    contested: bool = False
+    """Another column claims the same channel, so this mapping is *not* applied.
+
+    Renaming two columns to one name silently destroys one of them. When a real
+    dataset offers four aeration-rate columns -- total, air, O2 and CO2 -- the
+    loader cannot know which is *the* airflow, and picking by confidence would be
+    arbitrary when they all score alike. Both keep their original names, the
+    suggestion stays visible here, and a finding names the competition.
+    """
+
     @property
     def mapped(self) -> bool:
-        return self.channel is not None
+        """Identified *and* usable: a contested guess is reported, not applied."""
+        return self.channel is not None and not self.contested
 
 
 class InferenceReport(BaseModel):
@@ -401,6 +412,35 @@ def infer_columns(df: pd.DataFrame, *, review_threshold: float = 0.7) -> Inferen
                 confidence=round(confidence, 3),
                 evidence=evidence,
                 alternatives=alternatives,
+            )
+        )
+
+    # Two columns renamed to one name destroys one of them, and pandas does it
+    # without complaint -- a real dataset with four aeration-rate columns lost all
+    # four this way before this check existed. Contested channels are reported and
+    # left alone rather than resolved by guessing.
+    claims: dict[str, list[ColumnGuess]] = {}
+    for guess in report.guesses:
+        if guess.channel:
+            claims.setdefault(guess.channel, []).append(guess)
+    for channel, competitors in claims.items():
+        if len(competitors) < 2:
+            continue
+        sources = [g.source for g in competitors]
+        for guess in competitors:
+            guess.contested = True
+            guess.evidence += f"; contested by {len(competitors) - 1} other column(s)"
+        report.notes.append(
+            Finding(
+                level="error",
+                code="contested-channel",
+                target=channel,
+                message=f"{len(competitors)} columns all look like {channel!r}: {sources}. "
+                "None was applied -- renaming them all to one name would silently "
+                "discard every one but the last.",
+                suggestion="decide which is the channel and rename it yourself, or "
+                "register_alias() the others to channels of their own; they are carried "
+                "through under their original names either way",
             )
         )
 
