@@ -31,7 +31,7 @@ map to three cost centres:
 
 **The bundled simulator cannot reproduce those shares, and that is worth knowing.**
 With realistic media prices (glucose ~$0.55/kg) and this simulator's substrate-to-
-product ratio of ~3.6 kg/kg at 1–2 L scale, raw material lands near **1%** of modelled
+product ratio of ~3.6 kg/kg at 1–2 L scale, raw material lands near **2%** of modelled
 cost, not 35–50%. Hitting the literature share would require pricing substrate at
 roughly **$28/kg**, which is not a feedstock, it is a fiction.
 
