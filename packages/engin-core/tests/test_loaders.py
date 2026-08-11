@@ -237,3 +237,56 @@ def test_unreshapeable_table_raises_with_an_actionable_message():
 def test_summary_mentions_the_review_threshold():
     _, report = load_endpoints(pd.DataFrame({"Batch": ["B1"], "o2": [1.0]}))
     assert "review threshold" in report.summary()
+
+
+# ------------------------------------------- regressions from the first real dataset
+
+
+def test_short_headers_do_not_match_by_being_inside_a_longer_alias():
+    """The first real dataset produced four confident-looking mappings, all wrong.
+
+    ``our`` matched substrate via "carbonSOURce", ``ht`` matched biomass via
+    "dryweigHT", ``fi`` matched mu via "speciFIc", and ``te`` matched titer via
+    "tITEr". A short header appearing somewhere inside a long word is coincidence,
+    not evidence about what a column means.
+    """
+    df = pd.DataFrame({"batch_id": ["B1"], "te": [31.1], "fi": [5286], "ht": [1.34]})
+    report = infer_columns(df)
+    for source in ("te", "fi", "ht"):
+        guess = _guess(report, source)
+        assert guess.channel is None, (
+            f"{source!r} mapped to {guess.channel!r} on a substring coincidence; "
+            "containment matching should not fire for headers this short"
+        )
+
+
+def test_gas_transfer_channels_from_the_first_real_dataset_map_exactly():
+    """OUR, CER, RQ and kLa are standard in industrial records and were absent
+    from a vocabulary built around a simulator."""
+    df = pd.DataFrame(
+        {"batch_id": ["B1"], "our": [1.08], "cer": [4.62], "rq": [4.26], "kla": [54.3]}
+    )
+    report = infer_columns(df)
+    for source in ("our", "cer", "rq", "kla"):
+        guess = _guess(report, source)
+        assert guess.channel == source
+        assert guess.confidence == 1.0
+
+
+def test_hh_is_recognised_as_an_hour_axis():
+    """The real dataset's time column. Without it the table reads as endpoint data."""
+    df = pd.DataFrame({"batch_id": ["B1", "B1"], "hh": [30, 31], "our": [1.0, 1.1]})
+    report = infer_columns(df)
+    assert report.time_column == "hh"
+    assert report.orientation == "long"
+
+
+def test_unglossed_column_reports_that_no_default_exists():
+    """Distinct from a known channel that merely omitted its units: the fix is to
+    consult the source documentation, not to look up a default."""
+    ds, _ = load_timeseries(long_frame())
+    ds["aux2_raw"] = (("run", "time"), ds["titer"].values * 0.0)
+    report = validate_timeseries(ds)
+    codes = {f.code for f in report.findings}
+    assert "missing-units-unknown-channel" in codes
+    assert "missing-units" not in codes
