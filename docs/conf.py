@@ -11,8 +11,10 @@ examples is needed — building the docs is verifying them.
 Execution happens in CI, not on Read the Docs. RTD's shared builders are
 resource-limited and Engin's examples fit models; executing there risks slow
 or flaky builds, which is exactly the pressure that eventually gets execution
-switched off. So CI executes and commits the jupyter-cache, and RTD builds
-from it.
+switched off. So CI executes and commits the jupyter-cache, and RTD renders
+from it without executing --- see ``nb_execution_mode`` below for why that
+needs ``cache`` rather than ``off``, which is not what this file said before
+2026-08-10.
 """
 
 import os
@@ -55,7 +57,21 @@ ON_RTD = os.environ.get("READTHEDOCS") == "True"
 # CI executes and commits the cache; RTD builds from it. Do not "fix" a slow
 # RTD build by turning execution on there — fix it in CI, or the guarantee
 # quietly stops being enforced anywhere.
-nb_execution_mode = "off" if ON_RTD else "cache"
+# `cache` everywhere, including on Read the Docs, and the reason is load-bearing.
+#
+# This used to be `"off" if ON_RTD else "cache"`, on the belief that "off" would
+# render the committed cache without executing. It does not: "off" ignores the
+# cache entirely and renders every code cell *without its outputs*, so the
+# published site showed bare code while CI showed results. Measured, not assumed.
+#
+# `cache` gets what D20 actually wants -- RTD does not execute -- by a different
+# route: a cache hit renders stored outputs and runs nothing. The cache is
+# committed (see .github/workflows/docs.yml, which refreshes it on every push to
+# main) and is content-hash keyed, so it is portable across machines and paths.
+#
+# The residual risk is honest: on a cache *miss* RTD would execute. That is why
+# CI refreshes the committed cache rather than leaving it to drift.
+nb_execution_mode = "cache"
 nb_execution_timeout = 300  # some examples fit models
 nb_execution_raise_on_error = True  # a broken example FAILS THE BUILD
 # Anchored to this file rather than left relative: the path is resolved against

@@ -22,7 +22,9 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # write, not read: pushes to main refresh the committed jupyter-cache that
+  # Read the Docs renders from. Pull requests do not reach that step.
+  contents: write
 
 jobs:
   build:
@@ -46,8 +48,38 @@ jobs:
       - name: Build (warnings are errors, examples execute)
         run: sphinx-build -W --keep-going -b html docs docs/_build/html
 
+      # Read the Docs builds under materially different settings from the step
+      # above, and RTD is not a required check -- so for three merges it failed
+      # while every PR showed green and the published site served a stale page.
+      # This reproduces RTD's environment so that class of breakage blocks a
+      # merge instead of being discovered on the live site.
+      - name: Build as Read the Docs builds it
+        env:
+          READTHEDOCS: "True"
+          READTHEDOCS_CANONICAL_URL: https://docs.engin.bio/en/latest/
+        run: sphinx-build -W --keep-going -b html docs docs/_build/rtd
+
       - uses: actions/upload-artifact@v7
         with:
           name: docs-html
           path: docs/_build/html/
           retention-days: 14
+
+      # RTD renders example outputs from this cache rather than executing them
+      # (D20). It therefore has to be current in the repository, and the only
+      # way that survives one maintainer is a machine keeping it current.
+      # Pushes to main only: pull requests have no write access, and a
+      # GITHUB_TOKEN-authored push does not retrigger workflows, so this cannot
+      # loop.
+      - name: Refresh the committed execution cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if git diff --quiet -- docs/.jupyter_cache; then
+            echo "execution cache is current; nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/.jupyter_cache
+          git commit -m "Refresh the docs execution cache [skip ci]"
+          git push
