@@ -33,9 +33,13 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from pydantic import BaseModel, Field
 from scipy.integrate import solve_ivp
 
-# Fixed biological / strain constants (would be fit per strain in production)
+# Fixed biological / strain constants (would be fit per strain in production).
+# Kept as module constants because they are the defaults of `Kinetics` and are
+# cited in the docs; to vary a process, pass `kinetics=` rather than reassigning
+# these, which would change behaviour for every caller in the interpreter.
 MU_MAX = 0.35  # 1/h   max specific growth rate
 KS = 0.5  # g/L   Monod half-saturation
 YXS = 0.5  # g/g   biomass yield on substrate
@@ -60,6 +64,34 @@ KNOBS: list[tuple[str, float, float]] = [
 KNOB_NAMES: list[str] = [k[0] for k in KNOBS]
 
 
+class Kinetics(BaseModel):
+    """The strain-and-product constants, as data rather than module globals.
+
+    Defaults reproduce the bundled process exactly, so every existing caller is
+    unaffected. Passing a modified instance gives a *different* process on the
+    same equations — which is what makes distribution shift testable: a model fit
+    on one process can be asked about another, and its intervals checked where
+    they have no right to hold.
+
+    **These are parameter perturbations of a caricature, not models of named
+    organisms.** Calling a variant "a different strain" would be a claim about
+    biology this module cannot support. It is a different *process*, which is
+    enough to generate honest out-of-distribution behaviour.
+    """
+
+    mu_max: float = Field(MU_MAX, gt=0, description="max specific growth rate, 1/h")
+    ks: float = Field(KS, gt=0, description="Monod half-saturation, g/L")
+    yxs: float = Field(YXS, gt=0, description="biomass yield on substrate, g/g")
+    m: float = Field(M, ge=0, description="maintenance coefficient, 1/h")
+    alpha: float = Field(ALPHA, ge=0, description="growth-associated product formation, g/g")
+    beta: float = Field(BETA, ge=0, description="non-growth-associated formation, 1/h")
+    kp: float = Field(KP, gt=0, description="product-inhibition constant, g/L")
+
+
+DEFAULT_KINETICS = Kinetics()
+"""The bundled process. Identical to the module constants above."""
+
+
 def unit_to_physical(U: ArrayLike) -> NDArray[np.float64]:
     """Map points in the unit cube ``[0, 1]^5`` to physical knob values."""
     U = np.atleast_2d(np.asarray(U, float))
@@ -75,16 +107,17 @@ def _rhs(
     feed_start: float,
     Sf: float,
     induction_time: float,
+    kin: Kinetics,
 ) -> list[float]:
     X, S, P, V = y
     S = max(S, 0.0)
-    mu = MU_MAX * S / (KS + S) * (1.0 / (1.0 + P / KP))  # growth w/ product inhibition
+    mu = kin.mu_max * S / (kin.ks + S) * (1.0 / (1.0 + P / kin.kp))  # growth w/ product inhibition
     F = feed_rate if (t >= feed_start and V < VMAX) else 0.0
     dil = F / V
     dX = mu * X - dil * X
-    dS = -(mu / YXS) * X - M * X + dil * (Sf - S)
+    dS = -(mu / kin.yxs) * X - kin.m * X + dil * (Sf - S)
     prod_on = 1.0 if t >= induction_time else 0.0
-    dP = (ALPHA * mu + BETA) * X * prod_on - dil * P
+    dP = (kin.alpha * mu + kin.beta) * X * prod_on - dil * P
     dV = F
     return [dX, dS, dP, dV]
 
@@ -95,13 +128,18 @@ def simulate(
     Sf: float,
     induction_time: float,
     S0: float,
+    kinetics: Kinetics | None = None,
 ) -> tuple[float, NDArray[np.float64]]:
     """Integrate one run (RK45, piecewise); return ``(final_titer_gL, trace)``.
 
     ``trace`` has shape ``(n_steps + 1, 5)`` with columns ``[t, X, S, P, V]``,
     sampled on the ``DT`` grid via the solver's dense output.
+
+    ``kinetics`` defaults to the bundled process, so omitting it reproduces
+    previous behaviour exactly.
     """
-    args = (feed_rate, feed_start, Sf, induction_time)
+    kin = kinetics or DEFAULT_KINETICS
+    args = (feed_rate, feed_start, Sf, induction_time, kin)
     grid = np.arange(0.0, T_END + DT / 2, DT)
     # Breakpoints: integrate smooth segments between the RHS switch times.
     breaks = sorted({0.0, T_END} | {t for t in (feed_start, induction_time) if 0.0 < t < T_END})
@@ -132,10 +170,14 @@ def simulate(
     return float(y[2]), trace
 
 
-def simulate_unit(U: ArrayLike) -> NDArray[np.float64]:
-    """Titer for a batch of unit-cube design points -> ``(n,)`` array."""
+def simulate_unit(U: ArrayLike, kinetics: Kinetics | None = None) -> NDArray[np.float64]:
+    """Titer for a batch of unit-cube design points -> ``(n,)`` array.
+
+    ``kinetics`` defaults to the bundled process. Passing a different one is how
+    a *second* process is generated for distribution-shift work.
+    """
     phys = unit_to_physical(U)
-    return np.array([simulate(*row)[0] for row in phys])
+    return np.array([simulate(*row, kinetics=kinetics)[0] for row in phys])
 
 
 if __name__ == "__main__":
