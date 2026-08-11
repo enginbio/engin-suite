@@ -53,7 +53,7 @@ asserts that no module in the package ever passes that flag.
 ### The provenance manifest
 
 Every fetched file gets a JSON manifest beside it recording the source URL, the
-SHA-256 observed at download time, whether it matched what the registry expected,
+digests observed at download time, whether they matched what the registry expected,
 the licence, the citation, and a UTC timestamp. A published number can then be
 traced to a specific byte sequence obtained on a specific day — which is what
 makes a benchmark checkable by someone who has no reason to trust you.
@@ -61,17 +61,30 @@ makes a benchmark checkable by someone who has no reason to trust you.
 A checksum mismatch deletes the file rather than warning about it. Benchmarking
 against a download that failed verification is worse than not benchmarking.
 
-### The registry has one entry, on purpose
+### What is registered
 
-[IndPenSim](http://www.industrialpenicillinsimulation.com/) — and it is there as
-the worked example of the licence problem rather than as a usable dataset. Adding
-an entry means verifying its licence and a checksum yourself; an unverified entry
-is worse than an absent one, because it looks authoritative.
+| Dataset | Licence | Tier | What it is |
+|---|---|---|---|
+| `erythromycin-efp` | CC-BY-4.0 | 3 | 406 industrial fed-batch production batches, hourly, with a product-potency target |
+| `cho-k1-cultivations` | CC-BY-4.0 | 3 | 24 CHO-K1 cultivations, batch and fed-batch, 38 inline + 10 offline variables |
+| `indpensim` | CC-BY-NC-ND-4.0 | 2 | the worked example of the licence problem — **fetch refuses it** |
 
-Worth being precise about what IndPenSim is, since it is often described loosely:
-a **simulation validated against industrial data**, not measurements from a real
+Adding an entry means checking the licence against the publisher and recording a
+checksum that is either the publisher's own or verified against it. An unverified
+entry is worse than an absent one, because it looks authoritative.
+
+**On checksums, against the usual advice: md5 is often the right one to record.**
+What provenance needs is a match against the value *the publisher published* —
+that is what detects a file being swapped, truncated or quietly revised. A sha256
+computed by whoever added the entry proves only that the bytes have not changed
+since *they* downloaded it: a weaker claim wearing a stronger algorithm. Zenodo
+publishes md5, so md5 is usually the checkable value, and insisting on sha256
+would mean downloading 227 MB — or IndPenSim's 2.5 GB — to produce a digest
+nobody can check you against.
+
+Worth being precise about IndPenSim, since it is often described loosely: a
+**simulation validated against industrial data**, not measurements from a real
 plant. That places it at `D12` tier 2 — evidence a method is not overfitted to
-our own model's quirks — rather than tier 3. It does not, by itself, close the
-real-data gap.
+our own model's quirks — rather than tier 3.
 
 See [Limitations](limitations.md) for current validation status.

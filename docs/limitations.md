@@ -25,7 +25,7 @@ Current status is recorded in [Benchmarks](benchmarks.md).
 
 ## Known constraints
 
-- **No public corpus of in-domain microbial design-of-experiments data with absolute titers exists.** This limits tier 4 and is a constraint on the field, not only on this project.
+- **No public corpus of in-domain microbial *design-of-experiments* data with absolute titers exists**, which limits tier 4 and is a constraint on the field rather than on this project alone. **Corrected 2026-08-10:** this sentence used to do more work than it could carry. Real, industrial, in-domain microbial process data *does* exist publicly and permissively — the [erythromycin fermentation dataset](https://doi.org/10.5281/zenodo.14619074) is 406 production batches sampled hourly, CC-BY-4.0, with a product-potency target. What it is not is *designed* variation: process conditions were recorded, not varied to explore a design space. So tier 4 remains open and tier 3 does not, and the earlier phrasing implied a scarcity that was broader than the facts.
 - **Cost coupling is demonstrated on mechanistic grounds.** No public dataset found supports validating cost-per-kilogram predictions end to end.
 - **Calibrated intervals degrade out of distribution.** Coverage is reported for out-of-distribution cases rather than omitted.
 
