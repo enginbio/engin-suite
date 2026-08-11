@@ -28,6 +28,7 @@ guides/data-formats
 api/index
 api-stability
 methods/conformal-calibration
+methods/out-of-distribution
 benchmarks
 limitations
 ```
