@@ -49,9 +49,26 @@ points at the sibling sources it imports, so a bare checkout runs green.
 Before opening a pull request:
 
 - `pytest` passes, including the calibration coverage tests
-- `ruff check .` and `ruff format .` are clean
+- `ruff check .` and `ruff format .` are clean — the whole tree, not the files you touched
 - New behaviour has a test
 - `ruff format --check .` is clean (READMEs are excluded; their examples are hand-aligned)
+
+### If you changed a documentation page that runs code
+
+Rebuild the docs and **commit the refreshed `docs/.jupyter_cache`** along with your change:
+
+```bash
+sphinx-build -W --keep-going -b html docs docs/_build/html   # executes examples, refreshes cache
+git add docs/.jupyter_cache
+```
+
+That cache is committed on purpose. Read the Docs renders example outputs *from* it rather than
+executing them on shared builders (`D20`), so a stale cache means the published page either loses
+its outputs or RTD starts executing — the thing that arrangement exists to prevent. CI fails with
+an explicit message if you forget, so this is a reminder rather than a trap.
+
+Worth knowing: the cache's SQLite index changes on every build even when nothing else does, so
+expect it to show as modified. Commit it anyway.
 
 ## Things that will get a change rejected
 
