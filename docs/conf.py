@@ -58,7 +58,11 @@ ON_RTD = os.environ.get("READTHEDOCS") == "True"
 nb_execution_mode = "off" if ON_RTD else "cache"
 nb_execution_timeout = 300  # some examples fit models
 nb_execution_raise_on_error = True  # a broken example FAILS THE BUILD
-nb_execution_cache_path = ".jupyter_cache"  # committed, so RTD can read it
+# Anchored to this file rather than left relative: the path is resolved against
+# sphinx-build's working directory, so a bare ".jupyter_cache" landed at whatever
+# directory the build was invoked from -- the repository root in practice, where
+# .gitignore's `docs/.jupyter_cache/` entry never matched it.
+nb_execution_cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".jupyter_cache")
 
 myst_enable_extensions = [
     "colon_fence",

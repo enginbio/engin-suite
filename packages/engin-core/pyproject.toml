@@ -34,7 +34,13 @@ examples = ["matplotlib>=3.6"]
 # while this package supports 3.10+, and pulls ~40 transitive dependencies including
 # numba and thermo. Keeping it out of the default install preserves the light path.
 tea = ["biosteam>=2.51; python_version >= '3.12'"]
-dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
+# The D11 data convention (engin_core.convention). Optional because the modelling
+# path needs none of it: the convention is the entry point for people bringing
+# their own data, not for the core loop, and keeping xarray and pandas out of the
+# default install preserves the light path. pint is what turns a units attribute
+# from a comment into a checkable claim.
+io = ["xarray>=2023.1", "pandas>=2.0", "pint>=0.22"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6", "xarray>=2023.1", "pandas>=2.0", "pint>=0.22"]
 
 [project.urls]
 Homepage = "https://github.com/enginbio/engin-suite"
