@@ -147,6 +147,104 @@ for channel in CHANNELS.values():
 This is a recommendation, not a closed vocabulary. Channels outside it are
 carried as-is.
 
+## Getting messy data onto the convention
+
+Nobody's export arrives conforming. `engin_core.loaders` maps the headers a
+bioreactor or a spreadsheet actually produced onto the convention's channels,
+pulls units out of wherever they were hiding, and **reports what it did rather
+than raising**:
+
+```{code-cell} python
+import pandas as pd
+from engin_core.loaders import load_endpoints
+
+messy = pd.DataFrame({
+    "Batch":        ["B1", "B2"],
+    "Titre (g/L)":  [30.0, 31.5],
+    "OD600":        [4.1, 4.4],
+    "O2 (%)":       [21.0, 20.8],
+    "AUX2_raw":     [0.11, 0.09],
+})
+
+tidy, report = load_endpoints(messy)
+print(report.summary())
+print()
+for guess in report.guesses:
+    mapped = guess.channel or "—"
+    print(f"  {guess.source:14s} -> {mapped:10s} {guess.confidence:>4}  {guess.evidence}")
+```
+
+`AUX2_raw` is reported, not dropped — the person reading knows what it was, and
+the loader does not. It survives into the returned frame untouched.
+
+### Confidence is a heuristic, not a calibration
+
+```{warning}
+The score is an **ordinal ranking aid, not a calibrated probability.** A 0.9
+means "matched a known alias and the units agree" — it does *not* mean nine
+times in ten the mapping is right, because nothing has been measured against
+labelled exports. Calibrating it needs a corpus of real files with known-correct
+mappings, which is the same data problem as `D12` tier 3–4.
+```
+
+Use it to decide *what to look at first*:
+
+```{code-cell} python
+for guess in report.needs_review:
+    print(f"  check {guess.source!r}: {guess.evidence}")
+    if guess.alternatives:
+        print(f"    could also be: {guess.alternatives}")
+```
+
+Ambiguity is preserved rather than resolved by fiat. A bare `O2` column is
+genuinely ambiguous between dissolved and exhaust oxygen, so it scores low and
+names both candidates instead of picking one confidently.
+
+### Long tables to Datasets
+
+A long export — one row per run per timepoint — reshapes to the convention in
+one call:
+
+```{code-cell} python
+from engin_core.loaders import load_timeseries
+from engin_core.convention import validate_timeseries
+
+rows = [
+    {"Batch": run, "Time (h)": float(t), "Titer (g/L)": 10.0 + t, "OD600": 2.0 + t}
+    for run in ("R00", "R01")
+    for t in range(4)
+]
+
+ds, load_report = load_timeseries(pd.DataFrame(rows))
+print(load_report.summary())
+print(validate_timeseries(ds).summary())
+print(ds)
+```
+
+The result conforms, so the loader and the validator agree — which is the point
+of having both.
+
+`load_timeseries` raises in exactly one case: there is no run or time column, so
+there is nothing to reshape onto. Everything else is a report.
+
+### Teaching it your headers
+
+```{code-cell} python
+from engin_core.loaders import infer_columns, register_alias
+
+register_alias("titer", "prod_a")
+print(infer_columns(pd.DataFrame({"PROD_A": [1.0]})).guesses[0].evidence)
+```
+
+### On vendor-specific loaders
+
+There are none yet, deliberately. Writing a Sartorius or Benchling parser from a
+general impression of what such a file looks like would be inventing a format
+and calling it support — delimiters, encodings and header spellings are exactly
+what cannot be reasoned out. The alias table is seeded with generic spellings,
+and `register_alias` lets a real file teach the loader without a code change.
+Vendor profiles land when someone has the actual files.
+
 ## Related
 
 - [Limitations](../limitations.md) — what has and has not been validated

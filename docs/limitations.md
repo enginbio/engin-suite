@@ -29,6 +29,19 @@ Current status is recorded in [Benchmarks](benchmarks.md).
 - **Cost coupling is demonstrated on mechanistic grounds.** No public dataset found supports validating cost-per-kilogram predictions end to end.
 - **Calibrated intervals degrade out of distribution.** Coverage is reported for out-of-distribution cases rather than omitted.
 
+## Ingest confidence is not calibrated
+
+The schema-inference score reported by `engin_core.loaders` is an **ordinal
+heuristic, not a calibrated probability.** A 0.9 means "matched a known alias
+and the units agree"; it does not mean the mapping is right nine times in ten.
+Nothing has been measured against a corpus of labelled exports, because no such
+corpus exists here yet — the same data problem as tier 3–4 above.
+
+This is called out rather than left implicit because on a project whose argument
+is calibrated uncertainty, a number named "confidence" that has not been
+calibrated is the easiest thing to over-read. Use it to rank what to review
+first, not to decide what needs no review.
+
 ## Techno-economic constraints
 
 Two limitations of the cost head are specific enough to state plainly. Both are
