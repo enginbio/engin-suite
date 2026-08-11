@@ -22,9 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  # write, not read: pushes to main refresh the committed jupyter-cache that
-  # Read the Docs renders from. Pull requests do not reach that step.
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -45,19 +43,35 @@ jobs:
       # -W turns warnings into errors: a dead cross-reference is a broken promise
       # on a site whose argument is that its documentation is trustworthy.
       # --keep-going reports every problem rather than stopping at the first.
-      - name: Build (warnings are errors, examples execute)
-        run: sphinx-build -W --keep-going -b html docs docs/_build/html
-
-      # Read the Docs builds under materially different settings from the step
-      # above, and RTD is not a required check -- so for three merges it failed
-      # while every PR showed green and the published site served a stale page.
-      # This reproduces RTD's environment so that class of breakage blocks a
-      # merge instead of being discovered on the live site.
-      - name: Build as Read the Docs builds it
+      # Runs FIRST, deliberately: it builds against the cache exactly as committed,
+      # before the step below refreshes it. Two things are checked at once.
+      #
+      # 1. Read the Docs builds under materially different settings from CI, and
+      #    is not a required check -- so for three merges it failed while every PR
+      #    showed green and the published site served a stale page. This
+      #    reproduces its environment so that breakage blocks a merge.
+      # 2. The committed execution cache is current. RTD renders example outputs
+      #    from it instead of executing (D20); if it were stale, RTD would quietly
+      #    fall back to *executing* on shared builders -- the thing D20 exists to
+      #    prevent. A cache hit logs "Using cached notebook"; a miss logs
+      #    "Executing notebook", which is what this fails on.
+      - name: Verify Read the Docs renders from the committed cache
         env:
           READTHEDOCS: "True"
           READTHEDOCS_CANONICAL_URL: https://docs.engin.bio/en/latest/
-        run: sphinx-build -W --keep-going -b html docs docs/_build/rtd
+        run: |
+          set -o pipefail
+          sphinx-build -W --keep-going -b html docs docs/_build/rtd 2>&1 | tee rtd-build.log
+          if grep -q "Executing notebook" rtd-build.log; then
+            echo "::error::The committed docs execution cache is stale, so Read the Docs would"
+            echo "::error::execute notebooks on its shared builders instead of rendering from"
+            echo "::error::the cache (D20). Rebuild the docs locally and commit the refreshed"
+            echo "::error::docs/.jupyter_cache:  sphinx-build -b html docs docs/_build/html"
+            exit 1
+          fi
+
+      - name: Build (warnings are errors, examples execute)
+        run: sphinx-build -W --keep-going -b html docs docs/_build/html
 
       - uses: actions/upload-artifact@v7
         with:
@@ -65,21 +79,3 @@ jobs:
           path: docs/_build/html/
           retention-days: 14
 
-      # RTD renders example outputs from this cache rather than executing them
-      # (D20). It therefore has to be current in the repository, and the only
-      # way that survives one maintainer is a machine keeping it current.
-      # Pushes to main only: pull requests have no write access, and a
-      # GITHUB_TOKEN-authored push does not retrigger workflows, so this cannot
-      # loop.
-      - name: Refresh the committed execution cache
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          if git diff --quiet -- docs/.jupyter_cache; then
-            echo "execution cache is current; nothing to commit"
-            exit 0
-          fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/.jupyter_cache
-          git commit -m "Refresh the docs execution cache [skip ci]"
-          git push
