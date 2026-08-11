@@ -8,6 +8,12 @@
 
 line-length = 100
 
+# The committed docs execution cache holds machine-generated .ipynb files, which
+# ruff lints like any other notebook. They are build output that happens to be
+# tracked (see docs/conf.py's nb_execution_mode comment), so linting them judges
+# generated code by source standards and fails on things no one can fix.
+exclude = ["docs/.jupyter_cache"]
+
 [lint]
 select = ["E", "F", "I", "UP", "B"]
 ignore = ["E741", "N806"]
