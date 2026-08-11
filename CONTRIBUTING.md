@@ -46,6 +46,23 @@ cd packages/engin-core && pytest      # tests run per package
 The suites don't actually need the install — each package's pytest configuration
 points at the sibling sources it imports, so a bare checkout runs green.
 
+### Adding a package
+
+If the new package imports a sibling, list that sibling's source in its pytest configuration:
+
+```toml
+[tool.pytest.ini_options]
+pythonpath = ["src", "../engin-core/src"]
+```
+
+Editable installs are not enough on their own: paths contributed by `.pth` files are absent from
+`sys.path` during a pytest run, so `import engin_core` fails in tests even when `pip install -e`
+succeeded. This is the one step that is easy to miss and produces a confusing `ModuleNotFoundError`
+on a fresh clone. See [ADR 0004](https://docs.engin.bio/en/latest/adr/0004-hermetic-test-pythonpath.html).
+
+Nothing else needs updating by hand — CI discovers packages from the filesystem, so a directory with
+a `pyproject.toml` is tested, linted, built and audited automatically.
+
 Before opening a pull request:
 
 - `pytest` passes, including the calibration coverage tests
