@@ -114,6 +114,14 @@ CHANNELS: dict[str, Channel] = {
         Channel(name="airflow", units="vvm", description="gas flow per volume per minute"),
         Channel(name="offgas_co2", units="%", description="exhaust CO2 fraction"),
         Channel(name="offgas_o2", units="%", description="exhaust O2 fraction"),
+        # Gas-transfer channels, added after the first real dataset carried all four
+        # and the registry knew none of them. They are standard in industrial
+        # fermentation records and derived rather than sensed, which is why a
+        # simulator-shaped vocabulary missed them.
+        Channel(name="our", units="mmol/L/h", description="oxygen uptake rate"),
+        Channel(name="cer", units="mmol/L/h", description="carbon dioxide evolution rate"),
+        Channel(name="rq", units="1", description="respiratory quotient, CER/OUR"),
+        Channel(name="kla", units="1/h", description="volumetric oxygen mass-transfer coefficient"),
     )
 }
 """Known channels. Extend by registering rather than editing: unknown names are
@@ -310,16 +318,30 @@ def validate_timeseries(ds: xr.Dataset) -> ConventionReport:
         units = var.attrs.get("units")
         known = CHANNELS.get(target)
 
-        if units is None:
-            expected = f' (this convention expects "{known.units}")' if known else ""
+        if units is None and known is None:
+            # The common case on real data: a column nobody has glossed yet. Worth
+            # its own message, because the fix is to consult the source
+            # documentation rather than to look up a default that does not exist.
+            add(
+                Finding(
+                    level="error",
+                    code="missing-units-unknown-channel",
+                    target=target,
+                    message=f"no units, and {target!r} is not a registered channel, so the "
+                    "convention has no default to offer",
+                    suggestion="take the units from the dataset's own documentation and set "
+                    f'ds["{target}"].attrs["units"]; if this is a known quantity under '
+                    "another name, register_alias() it so the next dataset maps cleanly",
+                )
+            )
+        elif units is None:
             add(
                 Finding(
                     level="error",
                     code="missing-units",
                     target=target,
-                    message=f"no units attribute{expected}",
-                    suggestion=f'set ds["{target}"].attrs["units"] = '
-                    f'"{known.units if known else "<unit>"}"',
+                    message=f'no units attribute (this convention expects "{known.units}")',
+                    suggestion=f'set ds["{target}"].attrs["units"] = "{known.units}"',
                 )
             )
         else:

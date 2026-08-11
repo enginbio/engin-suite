@@ -61,6 +61,15 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 
 Orientation = Literal["endpoint", "long", "wide", "unknown"]
 
+MIN_CONTAINED_ALIAS = 4
+"""Shortest alias allowed to match by being *contained* in a header.
+
+Three characters is too permissive on real headers: `rq` and `our` and `ph` are
+all real channels, and a three-letter alias found inside a longer header is as
+often coincidence as signal. Exact matches are unaffected -- a two-character
+header still maps if it is a known spelling in its own right.
+"""
+
 ALIASES: dict[str, tuple[str, ...]] = {
     "titer": ("titer", "titre", "product", "product_conc", "producttiter", "conc_product"),
     "biomass": ("biomass", "dcw", "dryweight", "od600", "od", "cellmass", "x"),
@@ -78,6 +87,10 @@ ALIASES: dict[str, tuple[str, ...]] = {
     "airflow": ("airflow", "gasflow", "aeration", "air"),
     "offgas_co2": ("co2", "offgasco2", "exhaustco2", "xco2"),
     "offgas_o2": ("o2", "offgaso2", "exhausto2", "xo2"),
+    "our": ("our", "oxygenuptakerate", "our_rate"),
+    "cer": ("cer", "co2evolutionrate", "carbondioxideevolutionrate"),
+    "rq": ("rq", "respiratoryquotient"),
+    "kla": ("kla", "klaa", "masstransfercoefficient"),
 }
 """Header spellings that map onto a convention channel.
 
@@ -102,6 +115,7 @@ RUN_ALIASES: tuple[str, ...] = (
 
 TIME_ALIASES: tuple[str, ...] = (
     "time",
+    "hh",
     "timeh",
     "elapsedtime",
     "processtime",
@@ -307,10 +321,18 @@ def _match_channel(name_part: str) -> tuple[str | None, float, str, list[str]]:
             exact[1:],
         )
 
+    # Containment, in one direction only and with a length floor.
+    #
+    # The reverse direction -- treating a header as an abbreviation *inside* a
+    # longer alias -- was tried and removed. On the first real dataset it mapped
+    # `our` to substrate via "carbonSOURce", `ht` to biomass via "dryweigHT",
+    # `fi` to mu via "speciFIc" and `te` to titer via "tITEr`. Four confident-
+    # looking guesses, all coincidence. A short header appearing somewhere inside
+    # a long word is not evidence about what the column means.
     partial = [
         ch
         for ch, spellings in ALIASES.items()
-        if any(len(s) >= 3 and (_normalize(s) in key or key in _normalize(s)) for s in spellings)
+        if any(len(s) >= MIN_CONTAINED_ALIAS and _normalize(s) in key for s in spellings)
     ]
     if len(partial) == 1:
         return partial[0], 0.6, f"header contains an alias for {partial[0]!r}", []
