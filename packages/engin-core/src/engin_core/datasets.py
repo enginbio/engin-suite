@@ -21,18 +21,23 @@ thereby takes the decision knowingly. Nothing in this package calls it that way.
 ## What "provenance manifest" means here
 
 Not a catalogue entry — a record of what actually happened. :func:`fetch` writes a
-JSON manifest beside each downloaded file recording the source URL, the SHA-256
-observed at download time, whether it matched what the registry expected, the
+JSON manifest beside each downloaded file recording the source URL, both digests
+observed at download time, whether they matched what the registry expected, the
 licence, the citation, and a UTC timestamp. A result computed from that file can
 then be traced to a specific byte sequence obtained on a specific day, which is
 what makes a benchmark reproducible by someone else (`D15`).
 
-## On the registry being small
+## The bar for an entry
 
-It has one entry. That is not a stub: adding a dataset requires verifying its
-licence and checksum, and an unverified entry is worse than an absent one because
-it looks authoritative. :data:`REGISTRY` is easy to extend and
-:func:`validate_registry` states what an entry must satisfy.
+Every dataset here has had its licence checked against the publisher, and carries
+a checksum that is either the publisher's own or was verified against it. An
+unverified entry is worse than an absent one, because it looks authoritative;
+:func:`validate_registry` states the rules and the test suite fails the build on
+any violation.
+
+Note that **md5 is often the right checksum to record**, which is not the usual
+advice — see :class:`DatasetFile` for why publisher-published beats
+locally-stronger.
 """
 
 from __future__ import annotations
@@ -90,12 +95,30 @@ class License(BaseModel):
 
 
 class DatasetFile(BaseModel):
-    """One downloadable artefact, with the checksum that makes it verifiable."""
+    """One downloadable artefact, with the checksum that makes it verifiable.
+
+    **Either digest satisfies the registry, and md5 is not the weaker choice
+    here.** What provenance needs is a match against the value *the publisher
+    published*: that detects a file being swapped, truncated or silently revised.
+    A digest computed by whoever added the registry entry proves only that the
+    bytes have not changed since *they* downloaded it, which is a weaker claim
+    dressed as a stronger algorithm. Zenodo publishes md5, so md5 is often the
+    checkable one — and demanding sha256 would force every registrant to
+    download the whole artefact (2.5 GB, in one case here) to record a digest
+    nobody else can check them against.
+
+    Record both where both are known.
+    """
 
     url: str
     sha256: str | None = None
-    """Expected digest. ``None`` means nobody has verified one yet — the download
-    still records what it observed, and says the expectation was absent."""
+    md5: str | None = None
+    """At least one is required for a fetchable file (:func:`validate_registry`).
+    Say in ``description`` where the value came from if it is not the publisher's."""
+
+    filename: str | None = None
+    """What to call the download. Needed more often than it looks: Zenodo's file
+    endpoints end in ``/content``, so the URL's last segment is not a name."""
 
     size_bytes: int | None = None
     description: str = ""
@@ -152,8 +175,107 @@ REGISTRY: dict[str, Dataset] = {
             "an unverified URL in a registry is worse than an absent one."
         ),
     ),
+    "erythromycin-efp": Dataset(
+        name="erythromycin-efp",
+        description=(
+            "Erythromycin fed-batch fermentation, 406 industrial production batches sampled "
+            "hourly (median 126 h per batch, 50,536 rows). 23 process variables: 5 process "
+            "conditions, 6 cumulative feeds, 5 physicochemical and 7 biochemical indicators, "
+            "including OUR, CER, respiratory quotient and kLa. The documented target is "
+            "chemical potency during fermentation."
+        ),
+        homepage="https://doi.org/10.5281/zenodo.14619074",
+        citation=(
+            "Erythromycin fermentation process dataset (2025). Zenodo. "
+            "doi:10.5281/zenodo.14619074. Historical production data from Yichang HEC "
+            "Changjiang Pharmaceutical Co., Ltd, 2022."
+        ),
+        license=License(
+            spdx="CC-BY-4.0",
+            url="https://creativecommons.org/licenses/by/4.0/",
+            commercial_use=True,
+            derivatives_allowed=True,
+            redistributable=True,
+        ),
+        tier=3,
+        files=[
+            DatasetFile(
+                url="https://zenodo.org/api/records/14619074/files/EFP_long.csv/content",
+                filename="EFP_long.csv",
+                sha256="e432d23998c61db6d35b6f95d54b4c94c17b3d7b85a0117b8526665e5d91cf3e",
+                md5="6f65e6af4bc8f5e750414372b8cf81ca",
+                size_bytes=8025512,
+                description=(
+                    "Long format: one row per (batch_id, hour). md5 is Zenodo's published "
+                    "value; sha256 was computed locally from a download that matched it."
+                ),
+            )
+        ],
+        notes=(
+            "The closest public data to Engin's own domain: real, industrial, microbial, "
+            "fed-batch, with a product-potency target and a run/time structure that maps "
+            "onto the D11 convention almost directly (batch_id -> run, hh -> time in hours). "
+            "Two honest caveats. It is *production* data, not designed experiments, so the "
+            "process conditions were not varied to explore a design space -- which is why "
+            "this is tier 3 and not tier 4. And the column names are unglossed abbreviations: "
+            "'hx' is the strongest candidate for potency by position and behaviour, but "
+            "mapping the 23 variables needs the source paper rather than inference. Exactly "
+            "the situation engin_core.loaders reports confidence for."
+        ),
+    ),
+    "cho-k1-cultivations": Dataset(
+        name="cho-k1-cultivations",
+        description=(
+            "24 Chinese Hamster Ovary (CHO)-K1 cultivations, 161.5-328.5 h each, in parallel "
+            "bioreactors at 0.55-0.8 L working volume: 12 experiments x 2 reactors, nine "
+            "batch and three fed-batch. 48 variables -- 38 continuous inline and 10 offline "
+            "sampled up to twice daily -- with time-axis-aligned CSVs alongside the raw "
+            "tables."
+        ),
+        homepage="https://doi.org/10.5281/zenodo.20829178",
+        citation=(
+            "Uhlendorff, S., Fulek, R., Eimler, J., Pein-Hackelbusch, M. and Frahm, B. "
+            "Dataset Based on Chinese Hamster Ovary (CHO) Cultivations including Turbidity, "
+            "Permittivity, O2 and CO2 Measurements (2026). Zenodo. "
+            "doi:10.5281/zenodo.20829178."
+        ),
+        license=License(
+            spdx="CC-BY-4.0",
+            url="https://creativecommons.org/licenses/by/4.0/",
+            commercial_use=True,
+            derivatives_allowed=True,
+            redistributable=True,
+        ),
+        tier=3,
+        files=[
+            DatasetFile(
+                url="https://zenodo.org/api/records/20829178/files/Dataset.zip/content",
+                filename="Dataset.zip",
+                md5="71b2a35b7df2ed11644ec9f177453772",
+                size_bytes=227627771,
+                description=(
+                    "Zenodo's published md5. No sha256 recorded: computing one would mean "
+                    "downloading 227 MB to produce a digest nobody else can check against, "
+                    "which is not what verification is for."
+                ),
+            )
+        ],
+        notes=(
+            "Mammalian rather than microbial, so this is D12 tier 3 in the textbook sense -- "
+            "real data, out of domain. That is the point of the tier: it tests whether the "
+            "machinery survives real noise, missingness and scale change without pretending "
+            "to be evidence about fermentation. The authors state it is intended for "
+            "data-driven, mechanistic and hybrid modelling, and the fed-batch subset is the "
+            "closest in structure to Engin's simulator."
+        ),
+    ),
 }
-"""Curated real datasets. One entry, deliberately -- see the module docstring."""
+"""Curated real datasets.
+
+Every entry's licence was checked against the publisher and every checksum is
+either the publisher's own or was verified against it. An entry that cannot meet
+that bar does not belong here -- see :func:`validate_registry`.
+"""
 
 
 class ProvenanceRecord(BaseModel):
@@ -167,7 +289,9 @@ class ProvenanceRecord(BaseModel):
     url: str
     path: str
     sha256: str
+    md5: str
     sha256_expected: str | None = None
+    md5_expected: str | None = None
     size_bytes: int
     fetched_utc: str
     license_spdx: str
@@ -179,7 +303,13 @@ class ProvenanceRecord(BaseModel):
 
     @property
     def checksum_verified(self) -> bool:
-        return self.sha256_expected is not None and self.sha256 == self.sha256_expected
+        """True when every declared expectation matched. False if none was declared."""
+        checks = [
+            (self.sha256_expected, self.sha256),
+            (self.md5_expected, self.md5),
+        ]
+        declared = [(e, o) for e, o in checks if e is not None]
+        return bool(declared) and all(e == o for e, o in declared)
 
 
 def cache_dir() -> Path:
@@ -229,12 +359,14 @@ def _get(name: str) -> Dataset:
         raise KeyError(f"unknown dataset {name!r}; available: {available()}") from None
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
+def _digests(path: Path) -> tuple[str, str]:
+    """``(sha256, md5)``, computed in one pass so a large file is read once."""
+    sha, md5 = hashlib.sha256(), hashlib.md5()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+            sha.update(chunk)
+            md5.update(chunk)
+    return sha.hexdigest(), md5.hexdigest()
 
 
 def fetch(
@@ -279,32 +411,38 @@ def fetch(
 
     written: list[Path] = []
     for spec in ds.files:
-        filename = spec.url.rsplit("/", 1)[-1] or f"{name}.dat"
+        filename = spec.filename or spec.url.rsplit("/", 1)[-1] or f"{name}.dat"
         path = target / filename
         if path.exists() and not force:
             written.append(path)
             continue
         urllib.request.urlretrieve(spec.url, path)  # noqa: S310 - registry URLs only
-        digest = _sha256(path)
+        sha, md5 = _digests(path)
         record = ProvenanceRecord(
             dataset=ds.name,
             url=spec.url,
             path=str(path),
-            sha256=digest,
+            sha256=sha,
+            md5=md5,
             sha256_expected=spec.sha256,
+            md5_expected=spec.md5,
             size_bytes=path.stat().st_size,
             fetched_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
             license_spdx=ds.license.spdx,
             citation=ds.citation,
         )
-        if spec.sha256 is not None and digest != spec.sha256:
-            path.unlink(missing_ok=True)
-            raise OSError(
-                f"checksum mismatch for {spec.url}\n"
-                f"  expected {spec.sha256}\n  observed {digest}\n"
-                "The file was removed. Either the source changed or the download was "
-                "corrupted; do not benchmark against it until this is resolved."
-            )
+        for algorithm, expected, observed in (
+            ("sha256", spec.sha256, sha),
+            ("md5", spec.md5, md5),
+        ):
+            if expected is not None and expected != observed:
+                path.unlink(missing_ok=True)
+                raise OSError(
+                    f"{algorithm} mismatch for {spec.url}\n"
+                    f"  expected {expected}\n  observed {observed}\n"
+                    "The file was removed. Either the source changed or the download was "
+                    "corrupted; do not benchmark against it until this is resolved."
+                )
         manifest = path.with_suffix(path.suffix + ".provenance.json")
         manifest.write_text(record.model_dump_json(indent=2) + "\n")
         written.append(path)
@@ -329,10 +467,11 @@ def validate_registry() -> list[str]:
         if not ds.license.url.startswith(("http://", "https://")):
             problems.append(f"{key!r}: licence url is not a URL")
         for spec in ds.files:
-            if spec.sha256 is None:
+            if spec.sha256 is None and spec.md5 is None:
                 problems.append(
-                    f"{key!r}: file {spec.url} has no sha256 -- a fetchable file without a "
-                    "checksum cannot be verified, which defeats the provenance record"
+                    f"{key!r}: file {spec.url} has neither sha256 nor md5 -- a fetchable "
+                    "file without a checksum cannot be verified, which defeats the "
+                    "provenance record"
                 )
     return problems
 

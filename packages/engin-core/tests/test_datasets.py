@@ -131,6 +131,25 @@ def test_manifest_records_the_licence_that_governs_the_file(local_dataset, tmp_p
     assert "Apache-2.0" in manifest_for(path).engin_note
 
 
+def test_md5_mismatch_is_caught_too(tmp_path, monkeypatch):
+    payload = tmp_path / "wrong.csv"
+    payload.write_text("not what was promised")
+    ds = Dataset(
+        name="bad-md5",
+        description="d",
+        homepage="https://example.invalid",
+        citation="c",
+        license=PERMISSIVE,
+        tier=3,
+        files=[DatasetFile(url=payload.as_uri(), md5="0" * 32)],
+    )
+    monkeypatch.setitem(REGISTRY, "bad-md5", ds)
+    dest = tmp_path / "out"
+    with pytest.raises(OSError, match="md5 mismatch"):
+        fetch("bad-md5", dest=dest)
+    assert not (dest / "wrong.csv").exists()
+
+
 def test_checksum_mismatch_removes_the_file_and_explains(tmp_path, monkeypatch):
     payload = tmp_path / "bad.csv"
     payload.write_text("not what was promised")
@@ -146,7 +165,7 @@ def test_checksum_mismatch_removes_the_file_and_explains(tmp_path, monkeypatch):
     monkeypatch.setitem(REGISTRY, "bad-checksum", ds)
 
     dest = tmp_path / "out"
-    with pytest.raises(OSError, match="checksum mismatch"):
+    with pytest.raises(OSError, match="sha256 mismatch"):
         fetch("bad-checksum", dest=dest)
     assert not (dest / "bad.csv").exists(), "a file that failed verification must not survive"
 
@@ -177,7 +196,32 @@ def test_every_fetchable_file_has_a_checksum():
     """A download without a checksum cannot be verified, which defeats provenance."""
     for name, ds in REGISTRY.items():
         for spec in ds.files:
-            assert spec.sha256 is not None, f"{name}: {spec.url} has no sha256"
+            assert spec.sha256 or spec.md5, f"{name}: {spec.url} has neither sha256 nor md5"
+
+
+def test_every_registered_dataset_names_its_licence_and_source():
+    """An entry that cannot say where it came from is worse than no entry."""
+    for name, ds in REGISTRY.items():
+        assert ds.license.spdx, f"{name}: no SPDX licence"
+        assert ds.homepage.startswith("http"), f"{name}: no resolvable homepage"
+        assert len(ds.citation) > 40, f"{name}: citation too thin to credit the authors"
+
+
+def test_md5_only_entries_are_accepted():
+    """Zenodo publishes md5. Demanding sha256 would force a full download to
+    produce a digest nobody else can check against -- weaker provenance, not
+    stronger. See DatasetFile's docstring."""
+    md5_only = [n for n, ds in REGISTRY.items() if any(f.md5 and not f.sha256 for f in ds.files)]
+    assert md5_only, "expected at least one entry relying on the publisher's md5"
+    assert validate_registry() == []
+
+
+def test_zenodo_style_urls_declare_a_filename():
+    """Zenodo file endpoints end in /content, so the URL basename is not a name."""
+    for name, ds in REGISTRY.items():
+        for spec in ds.files:
+            if spec.url.rstrip("/").endswith("/content"):
+                assert spec.filename, f"{name}: {spec.url} would download as 'content'"
 
 
 def test_unknown_dataset_names_the_alternatives():
