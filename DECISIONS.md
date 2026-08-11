@@ -130,10 +130,14 @@ Revisit when the binding constraint shifts from *building* to *sustaining* — w
 **D17 — Data is earned, not extracted; value strictly precedes any data ask.** `standing`
 Contributed data would improve the models, but the incentive isn't symmetric: a contributor gives up competitive information for a marginal improvement in a shared tool, and process know-how is among the most guarded assets in this field. Acceptable mechanisms are federated contribution, benchmark contribution for citation, consortium arrangements, and contracted data-for-service. Asking before giving reads as extraction.
 
-**D18 — Solo maintainer, with governance published up front, actively open to co-founders.** `standing`
+**D18 — Solo maintainer, with governance published up front, actively open to co-founders.** `standing` — *operational detail added 2026-08-10*
 Publish the decision-making process, the maintainer-promotion path and a succession plan now, honestly describing a one-person project. Defer maintainer recruitment until there are contributors to promote — maintainers emerge from contributors, contributors from users, and inverting that means asking people to sign on to an idea.
 
 Reviewers and adopters don't require a headcount; they require a credible answer to single-point-of-failure, and a written succession path is that answer. A **co-founder** is a separate route and the project is actively open to one — peer-level from the start, not earned by accumulating commits.
+
+**What "actively open" means in practice**, since the posture without a method is just a sentence: *warm outreach to named individuals who already know the work* — not a public call. A public call advertises a seat before there is anything to sit on, and it sits close to the `D24` line. A co-founder comes from someone already familiar with the project, so this is the only route with a realistic yield, and it is also the longest-lead item on the board.
+
+**The credible answer to single-point-of-failure is only half written.** The succession path is published (`GOVERNANCE.md` §5), but the infrastructure — PyPI, the `engin.bio` domain, Read the Docs, the GitHub organization — is held by one person, and §2 names that as a single point of failure. **A continuity runbook is therefore a standing commitment**, kept privately because it describes recovery paths: where each credential lives, how it is recovered, and who to contact. It contains no secrets and is not a substitute for a second holder — it converts an undocumented single point of failure into a documented one, which is what a bus-factor question is actually asking about. A second credential holder follows a co-founder rather than preceding one.
 
 **D19 — Short public biosecurity statement with named boundaries.** `standing`
 An honest assessment stated plainly rather than hedged: bioprocess optimization is not meaningfully uplift-relevant, because nobody attempting harm is constrained by cost of goods. Plus an explicit list of what the project declines to build.
@@ -150,6 +154,21 @@ Ordering, recorded as a constraint so it survives the temptation to reverse it. 
 **Gate, concretely:** real-data calibration coverage published, the out-of-distribution failure mode published, and one non-synthetic worked example a stranger can run.
 
 **What this does not license.** Deferring a visibility push is not deferring contact. Answering questions, publishing honestly, and talking to individual practitioners are unrestricted. A version of this decision that becomes a reason to talk to nobody has failed, and would contradict the reason this repository is public at all.
+
+**D25 — No fiscal sponsor for now, with named triggers rather than a revisit date.** `standing` · 2026-08
+Engin has no fiscal host and is not seeking one. Recording it as a decision rather than leaving it as an unexamined gap, because it had been carried in the planning notes as *blocked*, and that was wrong in two ways.
+
+**It was blocked on the wrong thing.** The constraint was recorded as NumFOCUS's 3–5 signatories. The actual requirements are a leadership body of at least three people *not sharing a common affiliation*, an OSI licence, a Code of Conduct, and **an active community of reasonable size**. The licence and Code of Conduct are satisfied. The community is not, and no decision available today changes that — a project with no users cannot manufacture one by choosing a governance structure. Counting signatories mistook the symptom for the constraint.
+
+**And it was on nobody's critical path.** Fiscal sponsorship matters for tax-deductible donations and for grant routes that require a non-profit host. `D16` rules out donations. The primary grant target, NSF PESOSE, accepts US for-profit organizations directly, so `EnginBio` can submit with the founder as PI and needs no host at all. Being "blocked" on something nothing depends on is a cost that only looks like diligence.
+
+**Triggers to revisit** — any one of them, rather than a date:
+
+- a first sustained outside contributor, which is also the `D18` trigger for maintainer promotion;
+- a funding route the project actually wants that requires a non-profit host;
+- users in sufficient number that the *community* requirement is plausibly met.
+
+**NumFOCUS Affiliation is the lighter tier and is not ruled out.** Affiliated projects stay legally separate and receive no services, but gain community and funding-opportunity access. It is cheaper to qualify for than sponsorship and worth an enquiry when the first trigger fires — not before, since the answer today would be the same as the reason for this decision.
 
 ---
 
