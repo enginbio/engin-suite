@@ -180,8 +180,8 @@ class FitnessLandscape:
 
         This exists because pooling a prior campaign drawn from the *same* landscape
         measures "more data," not transfer, and would overstate the case for
-        cross-project priors — which are supposed to be the moat, so the test has to
-        be the honest one.
+        cross-project priors — a load-bearing claim of this project, so the test has
+        to be the honest one.
         """
         if not 0.0 <= similarity <= 1.0:
             raise ValueError(f"similarity must be in [0,1]; got {similarity}")

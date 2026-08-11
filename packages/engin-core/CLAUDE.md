@@ -30,9 +30,12 @@ recommender) hand-written. This is the public core; the closed product overlay
 - **Honest baselines.** Report against the naive-Gaussian multiplier (for
   calibration) and a random batch (for active-learning lift). Never quote a
   headline number without the baseline next to it.
-- **Open-core discipline.** Simulator + calibration + BO layer are public here.
-  Partner data, the TEA coupling, and cross-process priors stay in the private
-  `engin` overlay — do not port them into this package.
+- **Everything methodological is public, and that includes the TEA coupling.**
+  It lives in this package, at `engin_core/tea.py` (`D8`, shipped in PR #51).
+  An earlier version of this file said the opposite — *"do not port them into
+  this package"* — which by the time you read this would mean undoing shipped
+  work. Only partner data under NDA could sit outside the repository, and none
+  exists.
 - **Stand on mature libraries.** scipy/scikit-learn/MAPIE for the solved wheels;
   hand-write only the domain models. matplotlib is an `examples` extra only.
 

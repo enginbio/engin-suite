@@ -75,7 +75,8 @@ def main() -> None:
     print("  prior (similarity 0.0) still shows a positive mean lift, which means most")
     print("  of the effect is 'more training data' rather than transfer. Cross-project")
     print("  priors are NOT validated at M0. Establishing that needs many more seeds")
-    print("  and real campaigns — it is the moat claim, so it deserves a real experiment.")
+    print("  and real campaigns — it is a load-bearing claim, so it deserves a real")
+    print("  experiment rather than this one.")
 
 
 if __name__ == "__main__":
