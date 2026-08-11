@@ -29,6 +29,35 @@ Current status is recorded in [Benchmarks](benchmarks.md).
 - **Cost coupling is demonstrated on mechanistic grounds.** No public dataset found supports validating cost-per-kilogram predictions end to end.
 - **Calibrated intervals degrade out of distribution.** Coverage is reported for out-of-distribution cases rather than omitted.
 
+## Techno-economic constraints
+
+Two limitations of the cost head are specific enough to state plainly. Both are
+pinned as tests, so they cannot drift silently — if either test starts failing,
+the situation has improved and this page is what should be updated.
+
+- **The bundled simulator cannot reproduce industrial COGS structure.** With
+  realistic media prices (glucose ~$0.55/kg) and this simulator's
+  substrate-to-product ratio at 1–2 L scale, raw material lands at roughly **2%**
+  of modelled cost, against the 35–50% the literature reports for precision
+  fermentation. Reaching that share would require substrate priced near $28/kg,
+  which is a fiction rather than a feedstock. Realistic prices were kept and the
+  modelled process is therefore facility- and downstream-dominated. **The
+  consequence is concrete: the yield lever — the one that dominates real COGS — is
+  nearly invisible here.** Arguing about industrial economics needs a
+  representative process, not this one.
+
+- **Cost-optimal and titer-optimal designs coincide on this simulator**, so the
+  practical payoff of optimizing net $/kg cannot be demonstrated with what ships.
+  Titer and yield are positively correlated in the simulator, and the yield term is
+  too small a share to move the optimum even where they differ. Showing that a cost
+  objective picks a *different* design needs a process where pushing titer costs
+  yield or rate — a data problem, not a modelling one.
+
+The second point is a limitation of the **demonstration**, not of the decision
+behind it: optimizing net cost per kilogram rather than titer rests on the
+argument in [Decisions](decisions.md) (`D13`), which does not depend on this
+simulator.
+
 ## Reporting a limitation we have missed
 
 <https://github.com/enginbio/engin-suite/issues/new>
