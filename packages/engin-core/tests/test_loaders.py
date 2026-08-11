@@ -290,3 +290,44 @@ def test_unglossed_column_reports_that_no_default_exists():
     codes = {f.code for f in report.findings}
     assert "missing-units-unknown-channel" in codes
     assert "missing-units" not in codes
+
+
+def test_columns_claiming_the_same_channel_are_never_silently_merged():
+    """A real dataset offered four aeration-rate columns -- total, air, O2 and CO2.
+
+    All four matched `airflow`, all four were renamed to it, pandas produced
+    duplicate column names without complaint, and every one was gone from the
+    resulting Dataset. Silent loss is the worst available failure for a tool whose
+    argument is honesty about what it knows.
+    """
+    df = pd.DataFrame(
+        {
+            "run_id": ["R1", "R1"],
+            "time (h)": [0.0, 1.0],
+            "Aeration rate total (L/h)": [1.0, 1.1],
+            "Aeration rate air (L/h)": [0.8, 0.9],
+            "Aeration rate O2 (L/h)": [0.2, 0.2],
+        }
+    )
+    report = infer_columns(df)
+
+    contested = [g for g in report.guesses if g.contested]
+    assert len(contested) == 3, "all three claimants should be marked, not just the losers"
+    assert all(g.channel == "airflow" for g in contested)
+    assert "airflow" not in report.mapping().values(), "a contested channel must not be applied"
+
+    note = next(n for n in report.notes if n.code == "contested-channel")
+    assert note.level == "error"
+    assert "Aeration rate air (L/h)" in note.message
+
+    ds, _ = load_timeseries(df)
+    assert len(ds.data_vars) == 3, "every source column must survive"
+    assert all("Aeration" in name for name in ds.data_vars)
+
+
+def test_an_uncontested_mapping_still_applies():
+    """The collision check must not disable ordinary mapping."""
+    df = pd.DataFrame({"run_id": ["R1"], "time (h)": [0.0], "Titre (g/L)": [30.0]})
+    report = infer_columns(df)
+    assert report.mapping() == {"Titre (g/L)": "titer"}
+    assert not any(g.contested for g in report.guesses)
