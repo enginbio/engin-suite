@@ -21,12 +21,8 @@ Calibrated uncertainty is the whole point of the wedge: a scale-up decision need
 
 ## Install
 
-```bash
-pip install engin-core
-pip install "engin-core[examples]"   # + matplotlib for the demo/plots
-```
-
-Or from a checkout of the monorepo:
+**Not published to PyPI yet** — `pip install engin-core` will not find anything.
+Install from a checkout of the monorepo:
 
 ```bash
 git clone https://github.com/enginbio/engin-suite
