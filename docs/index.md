@@ -29,6 +29,7 @@ api/index
 api-stability
 methods/conformal-calibration
 methods/out-of-distribution
+methods/real-data-calibration
 benchmarks
 limitations
 ```
