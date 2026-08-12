@@ -1,11 +1,33 @@
 # Benchmarks
 
-```{warning}
-Results are not yet published. This page will carry the full table — including
-cases where Engin loses — once real-data validation lands.
+## Real data first
+
+Real-data validation has landed, so the numbers that matter lead:
+
+| | synthetic (tier 1) | **real, 406 industrial batches (tier 3)** |
+|---|---|---|
+| R² | 0.96 | **0.12** |
+| split-conformal coverage | 0.96 | **0.886** |
+| what it establishes | the loop runs | the calibration transfers |
+
+```bash
+python benchmarks/benchmark.py               # synthetic
+python benchmarks/benchmark.py --data real   # 406 industrial batches
 ```
 
-## What will be reported
+**Every run states which data it used in its first line of output.** That is the
+point of the flag. The gap between those two columns is the honest summary of
+this project: an R² of 0.96 against our own simulator says the code runs; an R²
+of 0.12 against a working plant says the modelling does not yet transfer, while
+the coverage says the *calibration* does.
+
+A number quoted without saying which column it came from is close to meaningless,
+and it is the easiest number in this project to quote carelessly.
+
+Full real-data results: [Calibration on real production
+data](methods/real-data-calibration.md).
+
+## What is reported
 
 Every claim is benchmarked against the simpler approach it says it beats:
 
@@ -16,6 +38,10 @@ Every claim is benchmarked against the simpler approach it says it beats:
 | Techno-economics | BioSTEAM |
 | Pathway ranking | step-count heuristic |
 | Host selection | "use *E. coli*" |
+
+Those baseline comparisons are not yet run on real data — the table above is the
+calibration result, not a head-to-head against DoE/RSM. That gap is real and is
+tracked rather than papered over.
 
 **Cases where a baseline wins are published in the same table as the wins.** A
 benchmark suite that always favours its author is not evidence.

@@ -13,10 +13,18 @@ Reports, averaged over several seeds so the numbers are not cherry-picked:
 3. Active-learning lift: best *true* titer found by an EI-recommended batch vs a
    random batch of the same size (the "fewer DoE rounds" claim).
 
-Run:  python benchmarks/benchmark.py
+Run:  python benchmarks/benchmark.py                # synthetic (D12 tier 1)
+      python benchmarks/benchmark.py --data real   # 406 industrial batches (tier 3)
+
+**Every run states which data it used**, in its first line of output. That is the
+point of the flag: the difference between "our simulator" and "a working plant"
+is the difference between demonstrating that the code runs and demonstrating that
+the method works, and a number quoted without it is close to meaningless.
 """
 
 from __future__ import annotations
+
+import argparse
 
 import numpy as np
 
@@ -80,14 +88,18 @@ def one_seed(seed: int, d: int = 5):
     )
 
 
-def main(seeds=None):
+def synthetic(seeds=None) -> None:
     seeds = range(8) if seeds is None else seeds
     rows = [one_seed(s) for s in seeds]
 
     def avg(k):
         return float(np.mean([r[k] for r in rows]))
 
-    print(f"=== engin-core benchmarks (mean over {len(rows)} seeds) ===\n")
+    print(f"=== engin-core benchmarks: SYNTHETIC (mean over {len(rows)} seeds) ===")
+    print("Source: engin_core.simulator -- this project's own mechanistic model.")
+    print("Establishes that the loop runs end to end. Establishes nothing about real")
+    print("bioprocess data: the model is being scored against its own assumptions.")
+    print("D12 tier 1. For real data, run with --data real.\n")
     print("Forecast (held-out):")
     print(f"  RMSE            {avg('rmse'):6.2f} g/L")
     print(f"  R^2             {avg('r2'):6.2f}\n")
@@ -99,6 +111,38 @@ def main(seeds=None):
     print("Active-learning lift over best true prior titer:")
     print(f"  EI batch      {avg('lift_ei'):+6.1f}%")
     print(f"  random batch  {avg('lift_rand'):+6.1f}%")
+
+
+def real() -> None:
+    """Delegate to the real-data benchmark, which fetches its own dataset."""
+    import real_data_coverage
+
+    print("=== engin-core benchmarks: REAL (406 industrial batches) ===")
+    print("Source: erythromycin production data, CC-BY-4.0, fetched and checksum-")
+    print("verified at run time. D12 tier 3. Downloads 8 MB the first time.\n")
+    real_data_coverage.main()
+
+
+def main(argv=None) -> None:
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "--data",
+        choices=("synthetic", "real"),
+        default="synthetic",
+        help=(
+            "which data to benchmark against. 'synthetic' is this project's own "
+            "simulator (D12 tier 1) and proves only that the code runs; 'real' is "
+            "406 industrial batches (tier 3). The flag is mandatory-by-design in "
+            "the output: every run says which it used."
+        ),
+    )
+    args = parser.parse_args(argv)
+    if args.data == "real":
+        real()
+    else:
+        synthetic()
 
 
 if __name__ == "__main__":
