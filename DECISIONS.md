@@ -170,6 +170,19 @@ Engin has no fiscal host and is not seeking one. Recording it as a decision rath
 
 **NumFOCUS Affiliation is the lighter tier and is not ruled out.** Affiliated projects stay legally separate and receive no services, but gain community and funding-opportunity access. It is cheaper to qualify for than sponsorship and worth an enquiry when the first trigger fires — not before, since the answer today would be the same as the reason for this decision.
 
+**D26 — The project is "Engin"; the packages are `engin-*`; nothing is ever named bare `engin`.** `standing` · 2026-08
+The question that prompted this was whether to rebrand from `engin` to `enginbio`. The answer is no, and the reasoning inverts partway through, so it is recorded rather than left as a preference.
+
+**Bare `engin` is unavailable, and that part is not a judgement call.** It belongs to an unrelated, actively maintained Python dependency-injection framework, which holds the PyPI distribution name, the top-level import module, the console script and the `engin.readthedocs.io` slug. Three of the four places this project already says `enginbio` — the GitHub organization, the Read the Docs slug, the entity — were forced by collisions of exactly this kind, not chosen. The rebrand had already half-happened by attrition.
+
+**But `enginbio` is the *more* collided name, not the less.** It is one silent letter from Engine Biosciences (`enginebio.com`, ~$86M raised) and a homophone of EnGen Bio (`engenbio.com`), and it shares a prefix and an industry with EnginZyme (cell-free biomanufacturing). The fair objection is that those three coexist without trouble — true, but they are mutually distinguishable in speech, and `EnginBio` against `EngineBio` is not. So a rebrand would trade a cheap collision (a 21-star library, in software, routed around by namespacing) for an expensive one (funded companies, in our own field, resolved by lawyers).
+
+**The resolution is the COBRApy pattern, which is the field norm rather than a workaround.** Brand and package name need not match: COBRApy ships as `cobra` against a 44k-star Go library of the same name and is unharmed, because "COBRApy" does all the public work and the generic word lives only at the import line. BioSTEAM, QSDsan, DNAChisel and eQuilibrator all carry a domain marker or are coined. Nobody in this space ships a bare common word as the brand.
+
+So: the product is **Engin**, the entity stays **EnginBio**, the domain stays `engin.bio`, packages are always `engin-*`, and no distribution, module or console script is ever named bare `engin`. The private overlay was renamed to `engin-app` under this decision.
+
+**What is *not* decided here.** No trademark clearance has been run — no register was queried and no live mark verified. A live `ENGIN` mark in class 9 or 42 would settle this outright and override this decision; that search is tracked privately and is the highest-information result available. Separately, PyPI has no prefix reservation (PEP 752 accepted, PEP 755 draft, Simple API still at 1.4), so `engin-*` cannot be reserved as a namespace — each name must be claimed by upload, which is why registering them is a live task rather than a formality.
+
 ---
 
 ## Superseded
