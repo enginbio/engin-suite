@@ -114,7 +114,9 @@ The realistic failure mode for a one-maintainer project is not conflict. It is s
 
 **5.3 Planned handover.** A maintainer intending to stop will announce it in a public issue with at least 30 days' notice, and will transfer commit rights, PyPI publishing rights and documentation access to willing contributors where transferable.
 
-**5.4 Names and infrastructure.** The `engin.bio` domain and PyPI package names are held by EnginBio. On handover these transfer with the project where transferable. Where not, a fork is free to rename, and this project will link to it.
+**5.4 Names and infrastructure.** The `engin.bio` domain is held by EnginBio. **No PyPI distribution name is currently registered to this project** — not `engin-core`, nor any of its siblings, nor `enginbio`. Nothing has been published to PyPI yet, and the bare name `engin` belongs to an unrelated project. An earlier version of this section stated that the PyPI names were held; that was never true, and it is corrected here rather than quietly amended.
+
+The practical consequence for anyone depending on this: **install from the repository, and do not assume a PyPI name is ours until this section says it is.** On handover, whatever is held transfers with the project where transferable. Where not, a fork is free to rename, and this project will link to it.
 
 ---
 

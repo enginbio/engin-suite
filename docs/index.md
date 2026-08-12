@@ -109,11 +109,15 @@ How Engin performs against plain DoE, BayBE and BioSTEAM — including where it 
 
 ## Install
 
+**Not on PyPI yet** — no distribution name is registered to this project, so
+`pip install engin-core` fetches nothing today. From source:
+
 ```bash
-pip install engin-core
+git clone https://github.com/enginbio/engin-suite
+cd engin-suite && pip install -r requirements-dev.txt
 ```
 
-Requires Python 3.11+. See [Install](install) for optional extras.
+Requires Python 3.10+. See [Install](install) for extras and the reasoning.
 
 ## Honest baselines
 
