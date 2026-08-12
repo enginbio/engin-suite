@@ -5,10 +5,17 @@ exists from the first release and is updated as validation progresses.
 
 ## Validation status
 
-**Results published so far come from a mechanistic simulator, not from real
+**Most results published here come from a mechanistic simulator, not from real
 fermentation campaigns.** A coefficient of determination measured against the
 simulator that produced the data demonstrates that the code runs. It does not
 demonstrate that the method works on real bioprocess data.
+
+**Tier 3 is now measured.** [Calibration on real production
+data](methods/real-data-calibration.md) reports coverage on 406 erythromycin
+batches from a working plant: the intervals cover at close to their nominal rate,
+and the forecasts they wrap are close to uninformative. Both halves are published,
+because the first without the second would be the more flattering and less true
+account.
 
 Validation is structured in five tiers, each reported with what it does and does
 not establish:
@@ -17,7 +24,7 @@ not establish:
 |---|---|---|---|
 | 1 | Engin's own simulator | the loop works end to end | anything about real data — the model is validated against its own assumptions |
 | 2 | An independent simulator | not overfitted to our own model's quirks | real-world behaviour |
-| 3 | Real industrial data, other domain | survives real noise, missingness, scale change | in-domain performance; cost coupling, where data is normalised |
+| 3 | Real industrial data | survives real noise, missingness, scale change | in-domain performance; cost coupling, where data is normalised |
 | 4 | In-domain literature DoE | the actual product claim | generalisation beyond small, heterogeneous samples |
 | 5 | Partner campaign data | end-to-end value | — not yet available |
 
