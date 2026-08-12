@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+"""Claim the ``engin-*`` distribution names on PyPI with honest placeholder releases.
+
+Why this script exists
+----------------------
+PyPI has **no prefix or namespace reservation**. Publishing ``engin-core`` does nothing
+for ``engin-protein``: each name is created by uploading a distribution under that exact
+name, and until then anyone may take it. `PEP 752 <https://peps.python.org/pep-0752/>`_
+specifies namespace grants and is accepted, but `PEP 755
+<https://peps.python.org/pep-0755/>`_ — the PyPI policy that would govern them — is still
+draft, and PyPI's Simple API is still at version 1.4 rather than the 1.5 the feature
+requires. So: six names, six uploads.
+
+Why placeholders rather than the real ``0.1.0``
+-----------------------------------------------
+The packages are real and their code is public, but the project is not ready to make the
+promises a release makes: ``D24`` gates any visibility push, and the API-stability policy
+(``D14``) attaches to a published version. A ``0.0.1.dev0`` marker claims the name without
+claiming readiness. Because it is a *dev* release, ``pip install engin-core`` will not
+select it — pip needs ``--pre`` — so nobody gets a stub by accident. They get the same
+"no matching distribution" they get today, which is what ``GOVERNANCE.md`` §5.4 tells them
+to expect.
+
+This is deliberately not name-squatting, and the metadata is written so a reviewer can see
+that: every placeholder points at the repository where the real code already lives, and
+names the release that will replace it.
+
+Usage
+-----
+    python scripts/pypi/reserve_names.py            # build + check, upload nothing
+    python scripts/pypi/reserve_names.py --upload   # build + check + twine upload
+
+``--upload`` shells out to ``twine``, which reads credentials from the environment or
+``~/.pypirc``. This script never handles a token itself.
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[2]
+PACKAGES = REPO / "packages"
+PLACEHOLDER_VERSION = "0.0.1.dev0"
+REPO_URL = "https://github.com/enginbio/engin-suite"
+
+PYPROJECT = """\
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{name}"
+version = "{version}"
+description = "Name reservation for {name} - the real package lives in the engin-suite repository."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{{ name = "EnginBio" }}]
+keywords = ["bioprocess", "fermentation", "uncertainty", "techno-economic"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.urls]
+Homepage = "https://docs.engin.bio"
+Repository = "{repo_url}"
+Issues = "{repo_url}/issues"
+
+[tool.setuptools]
+packages = []
+"""
+
+README = """\
+# {name}
+
+**This is a name reservation, not a usable release.**
+
+`{name}` is part of [engin-suite]({repo_url}), an Apache-2.0 toolkit for bioprocess
+forecasting under calibrated uncertainty, coupled to cost. The code for this package is
+real and public — it is in the repository — but no usable version has been published to
+PyPI yet.
+
+This `{version}` marker exists so the name is held by the project rather than by whoever
+takes it first. It contains no modules and does nothing if installed. Being a `.dev`
+release, `pip install {name}` will not select it without `--pre`.
+
+## What to do instead
+
+Install from the repository:
+
+```bash
+pip install "{name} @ git+{repo_url}#subdirectory=packages/{name}"
+```
+
+## When this gets replaced
+
+By a real release, once the project has published real-data calibration coverage, its
+out-of-distribution failure mode, and one non-synthetic worked example. Those gates are
+tracked in the repository. Until then, treat anything on PyPI under this name as a
+placeholder.
+"""
+
+
+def discover() -> list[str]:
+    """Read distribution names from the monorepo, so this cannot drift from reality."""
+    names = []
+    for pyproject in sorted(PACKAGES.glob("*/pyproject.toml")):
+        match = re.search(r'^name = "([^"]+)"', pyproject.read_text(), re.M)
+        if match:
+            names.append(match.group(1))
+    return names
+
+
+def build_one(name: str, outdir: Path) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        project = Path(tmp) / name
+        project.mkdir()
+        (project / "pyproject.toml").write_text(
+            PYPROJECT.format(name=name, version=PLACEHOLDER_VERSION, repo_url=REPO_URL)
+        )
+        (project / "README.md").write_text(
+            README.format(name=name, version=PLACEHOLDER_VERSION, repo_url=REPO_URL)
+        )
+        subprocess.run(
+            [sys.executable, "-m", "build", "--sdist", "--outdir", str(outdir), str(project)],
+            check=True,
+            capture_output=True,
+        )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--upload", action="store_true", help="twine upload after checking")
+    parser.add_argument("--outdir", default=str(REPO / "dist-placeholders"))
+    args = parser.parse_args()
+
+    names = discover()
+    if not names:
+        print("No packages discovered under packages/ - refusing to guess.", file=sys.stderr)
+        return 1
+
+    outdir = Path(args.outdir)
+    if outdir.exists():
+        shutil.rmtree(outdir)
+    outdir.mkdir(parents=True)
+
+    print(f"Claiming {len(names)} names at {PLACEHOLDER_VERSION}:")
+    for name in names:
+        print(f"  - {name}")
+        build_one(name, outdir)
+
+    artifacts = sorted(str(p) for p in outdir.glob("*.tar.gz"))
+    subprocess.run([sys.executable, "-m", "twine", "check", *artifacts], check=True)
+
+    if not args.upload:
+        print("\nBuilt and checked. Nothing uploaded. To publish:")
+        print(f"  python {Path(__file__).relative_to(REPO)} --upload")
+        return 0
+
+    print("\nUploading to PyPI. twine reads credentials from the environment or ~/.pypirc.")
+    subprocess.run([sys.executable, "-m", "twine", "upload", *artifacts], check=True)
+    print("\nDone. Update GOVERNANCE.md 5.4 to say which names are now held.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
