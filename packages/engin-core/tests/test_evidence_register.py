@@ -254,3 +254,20 @@ def test_a_known_code_ref_passes(tmp_path, monkeypatch):
     (pkg / "m.py").write_text("# implements D13; ref: 2024-someone-thing\n")
     monkeypatch.setattr(check_mod, "ROOT", tmp_path)
     assert check_mod.scan_code({"sources": [{"id": "2024-someone-thing"}]}) == []
+
+
+def test_docstring_refs_are_scanned_too(tmp_path, monkeypatch):
+    """A ``ref:`` in a docstring, with no leading ``#``, must still resolve.
+
+    Regression test for a real blind spot. The pattern required a ``#``, so a
+    docstring ``ref:`` in gp.py named a source id that had never been registered
+    while this check reported every ref resolving. **A guard that passes for the
+    wrong reason is worse than no guard**, because the pass gets taken as
+    evidence — which is precisely what happened for a day.
+    """
+    pkg = tmp_path / "packages" / "p" / "src" / "p"
+    pkg.mkdir(parents=True)
+    (pkg / "m.py").write_text('"""Doc.\n\n    ref: 1999-nobody-nothing\n    """\n')
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    bad = check_mod.scan_code({"sources": [{"id": "2024-someone-thing"}]})
+    assert bad and bad[0][2] == "1999-nobody-nothing"

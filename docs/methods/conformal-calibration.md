@@ -104,11 +104,16 @@ sd it predicted, and take the empirical quantile:
 $$q = \text{Quantile}_{1-\alpha}\left(\frac{|y_i - \hat{\mu}_i|}{\hat{\sigma}_i}\right)$$
 
 Then the interval is $\hat{\mu} \pm q\hat{\sigma}$. This is the classical
-**normalized** nonconformity measure (Papadopoulos, Gammerman and Vovk),
-normalizing by the model's own predictive sd so the interval stays
-heteroscedastic — wide where the model is unsure, narrow where it is confident.
+**normalized** nonconformity measure of Papadopoulos, Proedrou, Vovk and
+Gammerman (2002)[^2002-papadopoulos-inductive-confidence] — normalizing by the
+model's own predictive sd so the interval stays heteroscedastic, wide where the
+model is unsure and narrow where it is confident. The finite-sample guarantee for
+the split (inductive) construction is Lei et al. (2018).[^2018-lei-distribution-free]
 Engin keeps the thin multiplier form so an interval remains `mean ± q*sd` and can
 be read without a library.
+
+[^2002-papadopoulos-inductive-confidence]: Papadopoulos, Proedrou, Vovk & Gammerman, *Inductive Confidence Machines for Regression*, ECML 2002. [doi:10.1007/3-540-36755-1_29](https://doi.org/10.1007/3-540-36755-1_29)
+[^2018-lei-distribution-free]: Lei, G'Sell, Rinaldo, Tibshirani & Wasserman, *Distribution-Free Predictive Inference for Regression*, JASA 2018. [doi:10.1080/01621459.2017.1307116](https://doi.org/10.1080/01621459.2017.1307116)
 
 ```{code-cell} python
 U, y = campaign(0)
@@ -142,6 +147,32 @@ Bayesian-optimization loop generates its own covariate shift by construction: th
 acquisition function's whole job is to propose points unlike the ones already
 collected.
 
+## The guarantee is marginal, and that word is doing a lot of work
+
+Added 2026-08-13, during the literature pass for
+[#86](https://github.com/enginbio/engin-suite/issues/86). **This page previously
+never said it**, which was the most consequential omission in it.
+
+Split conformal guarantees that coverage holds **on average over the joint
+distribution of $(X, Y)$**. It does *not* guarantee coverage for any particular
+$x$, or for any subgroup you name afterwards. That is the difference between
+*marginal* and *conditional* coverage, and conditional coverage is provably
+unattainable in a distribution-free setting without further
+assumptions.[^2021-angelopoulos-gentle-intro]
+
+Why it matters concretely here: the [out-of-distribution
+page](out-of-distribution.md) reports coverage broken down by region — in
+distribution, just outside, far outside. **Those are measurements, not the
+theorem being honoured region by region.** A reader who takes "90% coverage,
+distribution-free" to mean "90% wherever I ask" has been over-promised, and until <!-- not-a-claim: the nominal level we asked for, quoted -->
+today this page did nothing to stop that reading.
+
+The honest statement is narrower and still worth having: *averaged over the query
+distribution the calibration set was drawn from*, the interval covers at its
+nominal rate, without assuming normality.
+
+[^2021-angelopoulos-gentle-intro]: Angelopoulos & Bates, *A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification*, arXiv:2107.07511 (2021).
+
 ## What this does not establish
 
 ```{warning}
@@ -149,7 +180,17 @@ Split conformal's guarantee assumes **exchangeability** between the calibration
 and test sets — and covariate shift is exactly a violation of that assumption. So
 conformal is not a proof of correctness here; it is a substantially better
 empirical estimate that happens to be conservative on this problem.
+
+This is not a gap in the literature, only in what this page can claim: the
+covariate-shift case has a weighted-conformal treatment,[^2019-tibshirani-covariate-shift]
+and the general non-exchangeable case has bounds on the coverage
+gap.[^2023-barber-beyond-exchangeability] **Engin implements neither.** It uses
+unweighted split conformal and reports where that degrades, which is a weaker
+position than the field's and is stated rather than obscured.
 ```
+
+[^2019-tibshirani-covariate-shift]: Tibshirani, Foygel Barber, Candès & Ramdas, *Conformal Prediction Under Covariate Shift*, NeurIPS 32 (2019). [arXiv:1904.06019](https://arxiv.org/abs/1904.06019)
+[^2023-barber-beyond-exchangeability]: Barber, Candès, Ramdas & Tibshirani, *Conformal prediction beyond exchangeability*, Annals of Statistics 51(2) (2023). [doi:10.1214/23-aos2276](https://doi.org/10.1214/23-aos2276)
 
 Two honest caveats, both visible in the numbers above:
 

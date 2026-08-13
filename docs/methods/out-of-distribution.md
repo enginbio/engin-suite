@@ -87,6 +87,15 @@ trivially available: report ±∞. Any coverage number quoted without the width
 beside it is close to meaningless, and this page is the reason the
 [benchmarks](../benchmarks.md) report both.
 
+```{important}
+**Every coverage number in that table is a measurement, not the conformal
+guarantee.** The guarantee is *marginal* — it holds on average over the whole
+distribution, and conditional coverage is provably unattainable distribution-free.
+Splitting results by region is precisely the kind of after-the-fact subgroup the
+theorem says nothing about. Added 2026-08-13; see [the marginal
+guarantee](conformal-calibration.md).
+```
+
 The genuinely dangerous zone is the narrow band just past the training data,
 where the model is still confident enough to give a usable-looking interval and
 already wrong enough to miss.

@@ -19,9 +19,11 @@ an order of magnitude rather than a measurement). Two honest fixes:
 
 - :func:`split_conformal_multiplier` -- the sd-scaled (heteroscedastic) split
   conformal we prefer, because the GP gives a per-point sd. This is the classical
-  normalized nonconformity measure (Papadopoulos/Gammerman/Vovk), normalizing by
-  the model's own predictive sd; we keep the thin multiplier form so intervals
-  stay ``mean +/- q*sd``.
+  normalized nonconformity measure (Papadopoulos, Proedrou, Vovk and Gammerman,
+  2002), normalizing by the model's own predictive sd; we keep the thin multiplier
+  form so intervals stay ``mean +/- q*sd``. Its coverage guarantee is **marginal**
+  -- see that function's docstring, because the distinction is easy to overstate
+  and this project's argument depends on not overstating it.
 - :func:`mapie_split_interval` -- a library-backed (MAPIE) constant-width split
   conformal, exposed as an honest baseline / cross-check.
 """
@@ -137,10 +139,19 @@ def split_conformal_multiplier(
     per-point sd.
 
     This is the classical **normalized nonconformity measure** of Papadopoulos,
-    Gammerman and Vovk, ``R_i = |y_i - yhat_i| / sigma_i``, with ``sigma_i`` taken
-    from the model's own predictive sd.
+    Proedrou, Vovk and Gammerman (2002), ``R_i = |y_i - yhat_i| / sigma_i``, with
+    ``sigma_i`` taken from the model's own predictive sd. The finite-sample split
+    conformal guarantee is Lei et al. (2018).
 
-    ref: papadopoulos-normalized-nonconformity
+    **The guarantee is marginal, not conditional.** Coverage holds on average over
+    the joint distribution of (X, Y) -- not for any particular x, and not for any
+    subgroup picked out afterwards. So a per-region coverage number, of the kind
+    the out-of-distribution methods page reports, is *not* the theorem being
+    honoured region by region: conditional coverage is provably unattainable
+    distribution-free without further assumptions. Those numbers are measurements.
+
+    # implements D8; ref: 2002-papadopoulos-inductive-confidence
+    # ref: 2018-lei-distribution-free
 
     **Not** the same as MAPIE's ``ResidualNormalisedScore``, despite an earlier
     claim here. That score belongs to the same family but estimates ``sigma_i``
