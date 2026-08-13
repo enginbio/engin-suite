@@ -64,7 +64,9 @@ priority.
 
 ## Why this exists
 
-Every bioprocess company rebuilds the same foundational software, because that software is either trade secret or has never existed. Large companies hold an advantage over small ones for no better reason than having already built the basic tooling.
+Practitioners describe rebuilding the same foundational software at company after company, because that software is either trade secret or has never existed. Large companies hold an advantage over small ones for no better reason than having already built the basic tooling.
+
+That is testimony rather than a survey, and it is stated as such deliberately — this project's whole argument is that an uncalibrated claim should be labelled as one.
 
 Engin makes that layer public infrastructure, so a team starts where the last one finished. Everything here is free, and always will be.
 
@@ -74,7 +76,7 @@ Engin makes that layer public infrastructure, so a team starts where the last on
 :gutter: 3
 
 :::{grid-item-card} Calibrated, not confident
-Most bioprocess optimizers return point predictions or intervals that are quietly overconfident. Engin uses split-conformal calibration and reports honest coverage — including when it degrades.
+Take a Gaussian process's own uncertainty, multiply by 1.645, call it a 90% interval — and it covers barely more than half the time. Engin uses split-conformal calibration and reports honest coverage, [including where it degrades](methods/out-of-distribution).
 :::
 
 :::{grid-item-card} Optimizes cost, not titer
@@ -82,7 +84,7 @@ Recovery cost is determined upstream but paid downstream, so maximizing titer ca
 :::
 
 :::{grid-item-card} Composes, doesn't replace
-Built on BayBE, BioSTEAM, COBRApy and MAPIE rather than reimplementing them. Your data stays in xarray and pandas — no bespoke container to learn, and nothing locked inside Engin.
+MAPIE cross-checks the conformal intervals; BioSTEAM backs techno-economics as an optional extra. BayBE and COBRApy are *not* dependencies — they are why parts of the roadmap stay unbuilt (`D9`). Your data stays in xarray and pandas.
 :::
 
 ::::
@@ -103,7 +105,7 @@ From a spreadsheet of runs to a calibrated forecast in under ten minutes.
 :link: benchmarks
 :link-type: doc
 
-How Engin performs against plain DoE, BayBE and BioSTEAM — including where it loses.
+What has actually been measured — on 406 industrial batches and on the simulator — and which baseline comparisons are still unbuilt.
 :::
 
 ::::
@@ -122,7 +124,9 @@ Requires Python 3.10+. See [Install](install) for extras and the reasoning.
 
 ## Honest baselines
 
-Every claim on this site is benchmarked against the simpler thing it says it beats — plain DoE/RSM for optimization, BioSTEAM for techno-economics, step-count heuristics for pathway ranking, "just use *E. coli*" for host selection.
+The commitment is that every claim is benchmarked against the simpler thing it says it beats — plain DoE/RSM for optimization, BioSTEAM for techno-economics, step-count heuristics for pathway ranking, "just use *E. coli*" for host selection.
+
+**One of those four is implemented today**, and that sentence used to be written as though all of them were. What runs is an expected-improvement batch against a random batch of the same size, on the simulator. [Benchmarks](benchmarks) marks which is which, because a page promising honest baselines is the last place to overstate what has been run.
 
 Cases where a simpler baseline wins are published in the same table as the wins. A benchmark suite that always favours its author is worthless, and we would rather you trusted the ones we do win.
 

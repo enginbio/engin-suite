@@ -11,9 +11,14 @@ Real-data validation has landed, so the numbers that matter lead:
 | what it establishes | the loop runs | the calibration transfers |
 
 ```bash
+cd packages/engin-core
 python benchmarks/benchmark.py               # synthetic
 python benchmarks/benchmark.py --data real   # 406 industrial batches
 ```
+
+The `cd` is load-bearing and was missing here until 2026-08-13: the script lives
+in the package, not at the repository root, so the command as previously printed
+failed with `No such file or directory` for anyone who copied it.
 
 **Every run states which data it used in its first line of output.** That is the
 point of the flag. The gap between those two columns is the honest summary of
@@ -27,21 +32,32 @@ and it is the easiest number in this project to quote carelessly.
 Full real-data results: [Calibration on real production
 data](methods/real-data-calibration.md).
 
-## What is reported
+## Baselines: what runs, and what is still a plan
 
-Every claim is benchmarked against the simpler approach it says it beats:
+The commitment is that every claim is benchmarked against the simpler approach it
+says it beats. **This table used to be written as though that had been done.** It
+had not, and the distinction is now in the table itself:
 
-| Engin component | Baseline |
-|---|---|
-| Process optimization | plain design-of-experiments / response surface methodology |
-| Optimizer | an off-the-shelf Bayesian optimization library |
-| Techno-economics | BioSTEAM |
-| Pathway ranking | step-count heuristic |
-| Host selection | "use *E. coli*" |
+| Engin component | Baseline | Status |
+|---|---|---|
+| Next-experiment recommendation | random batch of the same size | **implemented** — synthetic only |
+| Process optimization | plain design-of-experiments / response surface methodology | not built |
+| Optimizer | an off-the-shelf Bayesian optimization library (BayBE, Ax) | not built |
+| Techno-economics | BioSTEAM | not built |
+| Pathway ranking | step-count heuristic | not built |
+| Host selection | "use *E. coli*" | not built |
 
-Those baseline comparisons are not yet run on real data — the table above is the
-calibration result, not a head-to-head against DoE/RSM. That gap is real and is
-tracked rather than papered over.
+So the one head-to-head that exists is expected-improvement against random, on
+the simulator, and it is reported in the run above. Nothing here has been
+compared to DoE/RSM, to BayBE, or to BioSTEAM on any data — synthetic or real.
+
+**Correcting this cost the page its best-sounding paragraph, which is the right
+trade.** A benchmarks page that overstates its own coverage is worse than one
+with gaps, because the gaps are recoverable and the credibility is not.
+
+The work has been tracked the whole time, as
+[#20](https://github.com/enginbio/engin-suite/issues/20), which names these same
+five baselines. The roadmap knew; this page did not say so.
 
 **Cases where a baseline wins are published in the same table as the wins.** A
 benchmark suite that always favours its author is not evidence.

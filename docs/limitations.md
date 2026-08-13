@@ -55,15 +55,18 @@ Two limitations of the cost head are specific enough to state plainly. Both are
 pinned as tests, so they cannot drift silently — if either test starts failing,
 the situation has improved and this page is what should be updated.
 
-- **The bundled simulator cannot reproduce industrial COGS structure.** With
-  realistic media prices (glucose ~$0.55/kg) and this simulator's
+- **The bundled simulator cannot reproduce industrial COGS structure.** At the
+  cost model's default substrate price ($0.55/kg, glucose-scale) and this simulator's <!-- not-a-claim: our own model default, set in tea.py -->
   substrate-to-product ratio at 1–2 L scale, raw material lands at roughly **2%** <!-- not-a-claim: measured on our own simulator; pinned in test_tea.py -->
   of modelled cost, where the literature has substrate cost as a dominant term
   set by yield — "more than 50% of the total costs" for commodity chemicals
   ([Konzock & Nielsen 2024](https://doi.org/10.1016/j.tibtech.2024.04.007)).
   <!-- ref: 2024-konzock-try-costs -->
-  Reaching a comparable share here would require substrate priced near $28/kg,
-  which is a fiction rather than a feedstock. Realistic prices were kept and the
+  That $0.55 is a model default rather than a quoted market rate: no open,
+  citable price series for bulk industrial glucose was found, and the trade
+  sources that carry one are paywalled. Reaching a comparable cost share here
+  would require substrate priced near $28/kg, which is a fiction rather than a
+  feedstock. The default was kept and the
   modelled process is therefore facility- and downstream-dominated. **The
   consequence is concrete: the yield lever — the one that dominates real COGS — is
   nearly invisible here.** Arguing about industrial economics needs a
