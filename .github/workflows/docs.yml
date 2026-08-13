@@ -70,6 +70,12 @@ jobs:
             exit 1
           fi
 
+      # sources.yaml is the source of truth and docs/references.md is generated from
+      # it. A hand-edited view, or one left stale after a register change, makes the
+      # published citations say something the register does not (D23).
+      - name: Verify the evidence register and its rendered view
+        run: python scripts/evidence/render.py --check
+
       - name: Build (warnings are errors, examples execute)
         run: sphinx-build -W --keep-going -b html docs docs/_build/html
 

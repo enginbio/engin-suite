@@ -32,6 +32,7 @@ methods/out-of-distribution
 methods/real-data-calibration
 benchmarks
 limitations
+references
 ```
 
 ```{toctree}
