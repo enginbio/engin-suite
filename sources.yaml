@@ -218,6 +218,67 @@ sources:
       Workshop paper, no DOI minted. arXiv is the canonical pointer.
     type: paper
 
+  # -- Conformal prediction lineage (D23 / #86). The trust wedge: the reason a
+  # reader is asked to believe an interval rather than a point estimate.
+
+  - id: 2002-papadopoulos-inductive-confidence
+    title: Inductive Confidence Machines for Regression
+    authors: [Papadopoulos, Harris, Proedrou, Kostas, Vovk, Volodya, Gammerman, Alex]
+    year: 2002
+    venue: "Machine Learning: ECML 2002, LNCS, pp. 345-356"
+    location: https://doi.org/10.1007/3-540-36755-1_29
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
+  - id: 2018-lei-distribution-free
+    title: Distribution-Free Predictive Inference for Regression
+    authors: [Lei, Jing, G'Sell, Max, Rinaldo, Alessandro, Tibshirani, Ryan J., Wasserman, Larry]
+    year: 2018
+    venue: Journal of the American Statistical Association 113(523):1094-1111
+    location: https://doi.org/10.1080/01621459.2017.1307116
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
+  - id: 2019-tibshirani-covariate-shift
+    title: Conformal Prediction Under Covariate Shift
+    authors: [Tibshirani, Ryan J., Foygel Barber, Rina, Candes, Emmanuel J., Ramdas, Aaditya]
+    year: 2019
+    venue: Advances in Neural Information Processing Systems 32
+    location: https://arxiv.org/abs/1904.06019
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      NeurIPS proceedings are open-access without DOIs. arXiv is the canonical
+      stable pointer.
+    type: paper
+
+  - id: 2023-barber-beyond-exchangeability
+    title: Conformal prediction beyond exchangeability
+    authors: [Barber, Rina Foygel, Candes, Emmanuel J., Ramdas, Aaditya, Tibshirani, Ryan J.]
+    year: 2023
+    venue: The Annals of Statistics 51(2)
+    location: https://doi.org/10.1214/23-aos2276
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
+  - id: 2021-angelopoulos-gentle-intro
+    title: >-
+      A Gentle Introduction to Conformal Prediction and Distribution-Free
+      Uncertainty Quantification
+    authors: [Angelopoulos, Anastasios N., Bates, Stephen]
+    year: 2021
+    venue: arXiv preprint
+    location: https://arxiv.org/abs/2107.07511
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      A tutorial that circulates as a preprint; no journal version. Cited for
+      exposition of the marginal-versus-conditional distinction, not for a result.
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -282,6 +343,73 @@ claims:
       baseline using an architecture built for the purpose.
     strength: partially supports
     reviewed: 2026-08-11
+
+  - doc: packages/engin-core/src/engin_core/gp.py
+    tier: A
+    source_id: 2002-papadopoulos-inductive-confidence
+    claim: >-
+      `split_conformal_multiplier` implements the classical normalized
+      nonconformity measure R_i = |y_i - yhat_i| / sigma_i.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      Attribution corrected 2026-08-13. Three places said "Papadopoulos,
+      Gammerman and Vovk", dropping Proedrou and reordering the rest. The paper
+      is Papadopoulos, Proedrou, Vovk and Gammerman (2002). A citation that names
+      the wrong author set is not a small thing in a register whose entire
+      purpose is that claims resolve.
+
+  - doc: docs/methods/conformal-calibration.md
+    tier: A
+    source_id: 2018-lei-distribution-free
+    claim: >-
+      Split conformal has a finite-sample, distribution-free coverage guarantee.
+    strength: supports
+    reviewed: 2026-08-13
+
+  - doc: docs/methods/conformal-calibration.md
+    tier: A
+    source_id: 2021-angelopoulos-gentle-intro
+    claim: >-
+      The conformal guarantee is *marginal* — average coverage over the joint
+      distribution — and conditional coverage is unattainable distribution-free
+      without further assumptions.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      **The finding of this pass.** The word "marginal" appeared nowhere in the
+      conformal documentation or in gp.py before 2026-08-13 — only in "log
+      marginal likelihood", which is unrelated. Meanwhile the out-of-distribution
+      page reports coverage broken down by region, which is exactly the
+      after-the-fact subgroup the theorem does not cover. Nothing measured was
+      wrong; what was missing was the sentence stopping a reader from taking
+      "90% coverage, distribution-free" as "90% wherever I ask". Added to both
+      pages and to the function's docstring.
+
+  - doc: docs/methods/conformal-calibration.md
+    tier: A
+    source_id: 2019-tibshirani-covariate-shift
+    claim: >-
+      Covariate shift violates exchangeability, and the literature has a weighted
+      conformal treatment for it that Engin does not implement.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      Cited for what Engin does *not* do. The page said the guarantee assumes
+      exchangeability and that covariate shift breaks it, but left the impression
+      this was an open problem. It is not — it is an unimplemented one here.
+
+  - doc: docs/methods/conformal-calibration.md
+    tier: A
+    source_id: 2023-barber-beyond-exchangeability
+    claim: >-
+      The non-exchangeable case has published bounds on the coverage gap.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      Same purpose as the row above: the honest statement is that Engin uses
+      unweighted split conformal and reports where it degrades, which is weaker
+      than the field's position and is now said outright rather than implied.
 
   - doc: BIOSECURITY.md
     tier: A

@@ -162,11 +162,16 @@ def _overlaps(line: str, claim: str) -> bool:
     return bool(line_nums & claim_nums)
 
 
-CODE_REF = re.compile(r"#\s*(?:.*?;\s*)?ref:\s*([a-z0-9-]+)")
+# Matches `ref: id` whether it sits in a `#` comment or in a docstring. The `#`
+# was required until 2026-08-13, and a docstring `ref:` pointing at a source id
+# that had never been added sat in gp.py the whole time while this check reported
+# every ref resolving. A guard with a blind spot is worse than no guard, because
+# its passing is taken as evidence.
+CODE_REF = re.compile(r"(?:#\s*(?:.*?;\s*)?|^\s*)ref:\s*([a-z0-9-]+)", re.MULTILINE)
 
 
 def scan_code(register: dict) -> list[tuple[Path, int, str]]:
-    """Every ``# ref: id`` in shipped source must resolve to a register row.
+    """Every ``ref: id`` in shipped source must resolve to a register row.
 
     A code comment claiming evidence that is not in the register is the same
     failure as an uncited number, one layer down: it looks like provenance and
