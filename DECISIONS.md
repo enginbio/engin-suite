@@ -71,7 +71,9 @@ Titer is the wrong optimization target, for four reasons:
 
 - **Titer is an integrative metric.** It can be inflated by running the fermentation longer or at higher biomass — a better number without a better process.
 - **TRY splits into three cost centres**: titer → downstream processing, rate → reactor size, yield → raw material.
-- **Raw material dominates COGS.** Media is roughly 35–50% of precision-fermentation cost of goods, ahead of facility depreciation (20–25%) and downstream processing (15–20%). That cost is governed by *yield*, which titer does not capture.
+- **Raw material cost is set by yield, and is a dominant term.** Konzock & Nielsen (2024) put it directly: yield "directly defines the substrate costs, which, for commodity products such as ethanol, can account for more than 50% of the total costs." That cost is governed by *yield*, which titer does not capture. <!-- ref: 2024-konzock-try-costs -->
+
+  > **Corrected 2026-08-11 by the D23 evidence pass.** This bullet previously read "Media is roughly 35–50% of precision-fermentation cost of goods, ahead of facility depreciation (20–25%) and downstream processing (15–20%)." The direction survives and is now cited; the three-way percentage split does not. It traces to industry blog material rather than a peer-reviewed breakdown, and the nearest citable figure is for a *different product class* — commodity chemicals, not precision fermentation. The register keeps the row as `contested` rather than deleting it.
 - **Cost is non-linear in TRY**, with thresholds and inflection points, so no single metric is a usable proxy for the objective.
 
 **Accepted consequence: Engin looks worse on the metric everyone currently reports.** That trade is deliberate and is explained prominently rather than left to be discovered in a benchmark table.

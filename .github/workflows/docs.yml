@@ -76,6 +76,13 @@ jobs:
       - name: Verify the evidence register and its rendered view
         run: python scripts/evidence/render.py --check
 
+      # D23's mechanism. Under a solo maintainer a review cadence decays and a
+      # failing check does not -- without this, the register is a more ceremonious
+      # hand-maintained table. Every finding is clearable four ways, one of which
+      # is saying out loud that the number is a fact about this repository.
+      - name: Fail on uncited claims in Tier A documents
+        run: python scripts/evidence/check_claims.py
+
       - name: Build (warnings are errors, examples execute)
         run: sphinx-build -W --keep-going -b html docs docs/_build/html
 

@@ -25,14 +25,22 @@ map to three cost centres:
 
 | Metric | Cost centre | Typical share of precision-fermentation COGS |
 |---|---|---|
-| **yield** | raw material / media | 35–50% |
-| **rate** | facility, reactor occupancy | 20–25% |
-| **titer** | downstream processing | 15–20% |
+| **yield** | raw material / media | dominant; >50% for commodities [1] |
+| **rate** | facility, reactor occupancy | sets reactor scale [1] |
+| **titer** | downstream processing | sets separation burden [1] |
+
+[1] Konzock & Nielsen, *TRYing to evaluate production costs in microbial
+biotechnology*, Trends in Biotechnology (2024), doi:10.1016/j.tibtech.2024.04.007.
+The mapping is theirs; titer is "an integrative metric [that] does not say much
+about either the performance of the cell factory or the fermentation process".
+An earlier version of this table gave a 35-50 / 20-25 / 15-20 split. Those
+figures were not sourceable and are gone -- see D13.
 
 **The bundled simulator cannot reproduce those shares, and that is worth knowing.**
 With realistic media prices (glucose ~$0.55/kg) and this simulator's substrate-to-
 product ratio of ~3.6 kg/kg at 1–2 L scale, raw material lands near **2%** of modelled
-cost, not 35–50%. Hitting the literature share would require pricing substrate at
+cost, not the dominant share the literature describes. Reaching a comparable
+share would require pricing substrate at
 roughly **$28/kg**, which is not a feedstock, it is a fiction.
 
 So the defaults keep realistic unit costs and the modelled process is

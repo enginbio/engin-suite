@@ -15,6 +15,7 @@ register rather than a bibliography.
 | id | work | year | type | stability |
 |---|---|---|---|---|
 | `2019-goldrick-indpensim` | [Modern day monitoring and control challenges outlined on an industrial-scale benchmark fermentation process](https://doi.org/10.1016/j.compchemeng.2019.05.037)<br/>Goldrick, S., et al. — *Computers & Chemical Engineering* | 2019 | paper | doi |
+| `2024-konzock-try-costs` | [TRYing to evaluate production costs in microbial biotechnology](https://doi.org/10.1016/j.tibtech.2024.04.007)<br/>Konzock, Oliver, Nielsen, Jens — *Trends in Biotechnology* | 2024 | paper | doi |
 | `2025-sun-master-efp` | [Multi-scale trend decomposition mixture of experts and time series retrieval-augmented modeling for erythromycin fermentation process](https://doi.org/10.1016/j.neucom.2025.131701)<br/>Sun, Yifei, Yan, Xuefeng — *Neurocomputing 657* | 2025 | paper | doi |
 | `2025-zenodo-erythromycin-efp` | [Erythromycin fermentation process dataset](https://doi.org/10.5281/zenodo.14619074)<br/>Yan, Xuefeng, Sun, Yifei — *Zenodo* | 2025 | dataset | doi |
 | `2026-cf-xarray-units` | [Units — cf_xarray documentation](https://cf-xarray.readthedocs.io/en/latest/units.html)<br/>cf_xarray contributors — *cf-xarray.readthedocs.io* | 2026 | software | url |
@@ -26,6 +27,9 @@ register rather than a bibliography.
 
 | document | claim | source | strength |
 |---|---|---|---|
+| `DECISIONS.md` | Titer is an integrative metric that "does not say much about either the performance of the cell factory or the fermentation process" — D13's central argument, in the source's own words. | `2024-konzock-try-costs` | supports |
+| `DECISIONS.md` | TRY maps onto cost centres: titer to downstream processing (a low titer "may cause challenges in the downstream processing"), yield to substrate cost, which it "directly defines", and rate to reactor scale. | `2024-konzock-try-costs` | supports |
+| `DECISIONS.md` | "Media is roughly 35-50% of precision-fermentation cost of goods, ahead of facility depreciation (20-25%) and downstream processing (15-20%)." | `2024-konzock-try-costs` | contested |
 | `DECISIONS.md` | NumFOCUS fiscal sponsorship requires a leadership body of at least three people not sharing a common affiliation, an OSI licence, a Code of Conduct, and an active community of reasonable size (D25). | `2026-numfocus-fiscal-sponsorship` | supports |
 | `docs/benchmarks.md` | IndPenSim is a simulation validated against industrial data, not measurements from a real plant — placing it at D12 tier 2, not tier 3. | `2019-goldrick-indpensim` | supports |
 | `docs/benchmarks.md` | 406 industrial fed-batch production batches, hourly, with a product-potency target, licensed CC-BY-4.0. | `2025-zenodo-erythromycin-efp` | supports |

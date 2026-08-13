@@ -46,7 +46,7 @@ Two things can shift, and they fail differently.
 
 ## Shift one: querying outside the design region
 
-The model is trained on the lower 60% of every knob, then asked about designs
+The model is trained on the lower 60% of every knob, then asked about designs <!-- not-a-claim: our own experimental design -->
 progressively further outside it.
 
 ```{code-cell} python
@@ -78,7 +78,7 @@ outside it. Taken alone that says the far field is safe, which is exactly
 backwards.
 
 The width column is what makes it legible. Titers on this simulator run around
-50 g/L, so an interval that has grown to comparable width or beyond is not a
+50 g/L, so an interval that has grown to comparable width or beyond is not a <!-- not-a-claim: this simulator's own titer scale -->
 forecast — it is the model declining to answer. Coverage recovers far out
 because the intervals become large enough to contain almost anything.
 

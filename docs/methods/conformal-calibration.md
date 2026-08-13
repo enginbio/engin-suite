@@ -95,7 +95,7 @@ The argument for conformal is not that row two fails here. It is that row two
 Gaussian with exactly the sd the model claims — and that sd comes from
 hyperparameters fitted on a small design, so it is an estimate standing in for a
 guarantee. When the assumption holds you cannot tell, and when it stops holding
-you also cannot tell. The interval keeps reporting 90% either way.
+you also cannot tell. The interval keeps reporting 90% either way. <!-- not-a-claim: the nominal level we asked for -->
 
 Split conformal replaces the assumption with a measurement. Hold out a calibration split the model
 never trained on, measure how large its residuals *actually* are relative to the
