@@ -279,6 +279,19 @@ sources:
       exposition of the marginal-versus-conditional distinction, not for a result.
     type: paper
 
+  # -- Downstream-cost economics (D23 / #87). D13 is the decision the product
+  # rests on; this is the literature under it.
+
+  - id: 2011-straathof-downstream-costs
+    title: The Proportion of Downstream Costs in Fermentative Production Processes
+    authors: [Straathof, Adrie J. J.]
+    year: 2011
+    venue: "Comprehensive Biotechnology (2nd ed.), pp. 811-814"
+    location: https://doi.org/10.1016/B978-0-08-088504-9.00492-X
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -410,6 +423,48 @@ claims:
       Same purpose as the row above: the honest statement is that Engin uses
       unweighted split conformal and reports where it degrades, which is weaker
       than the field's position and is now said outright rather than implied.
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      The downstream-processing share of production cost is strongly
+      product-class dependent: reported as 45-92% for biopharmaceuticals against
+      20-40% for bulk fermentation products.
+    strength: partially supports
+    reviewed: 2026-08-13
+    note: >-
+      **Read the strength qualifier before quoting the numbers.** The chapter is
+      paywalled and the figures here come from its abstract, which several
+      independent sources quote consistently in the same words -- not from the
+      chapter's own data tables, which is where the conditions and the
+      product-by-product breakdown live. Corroborated secondary reporting is
+      better than the industry-blog provenance that sank the earlier 35-50%
+      claim, and it is still not primary. Recorded at `partially supports` until
+      someone reads the chapter; founder has institutional access. What is
+      *robust* regardless of the exact percentages, and what the documents now
+      say, is the qualitative shape: DSP dominates for high-value low-titer
+      products and does not for bulk ones.
+
+  - doc: docs/index.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      "Recovery cost is determined upstream but paid downstream, so maximizing
+      titer can move the real objective backwards."
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      This mechanism is backwards and was **withdrawn in DECISIONS.md on
+      2026-08-10** -- higher titer *reduces* downstream cost, because there is
+      less water to remove. The withdrawal did not propagate: the claim was still
+      published on 2026-08-13 in README.md, on the docs front page as one of
+      three headline cards, and in docs/guides/cost.md, which cited `D13` as its
+      authority for a claim `D13` had explicitly retracted. Straathof is the
+      source that settles the direction. Corrected in all three.
+      **The lesson is about propagation, not about the original error**: the
+      canonical document was fixed and the documents repeating it were not, so
+      for three days the front page led with retracted reasoning.
 
   - doc: BIOSECURITY.md
     tier: A

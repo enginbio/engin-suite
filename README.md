@@ -44,16 +44,26 @@ thin domain layers over one shared engine, `engin-core`.
   the economics coupling alike (`D1`, `D8`). There is no held-back core. The only
   thing that could sit outside this repository is partner data under NDA, which
   does not exist yet.
-- **The objective is net $/kg, not titer** (`D13`) — recovery cost is determined
-  upstream but incurred downstream, so an optimizer maximizing titer can move the
-  true objective backwards. Titer is also inflatable by running longer, and says
-  nothing about the raw-material cost that dominates COGS. **The accepted
+- **The objective is net $/kg, not titer** (`D13`) — titer captures one of three
+  cost centres, and which one dominates is a property of the product: downstream
+  processing is reported at 45–92% of production cost for biopharmaceuticals
+  against 20–40% for bulk fermentation products, where raw material takes the
+  larger share instead (Straathof 2011). <!-- ref: 2011-straathof-downstream-costs -->
+  Titer is also inflatable by running
+  longer, and says nothing about the raw-material cost that *yield* governs.
+  *(Corrected 2026-08-13: this read "recovery cost is determined upstream but
+  incurred downstream, so an optimizer maximizing titer can move the true
+  objective backwards" — a mechanism `D13` withdrew as backwards on 2026-08-10.)*
+  **The accepted
   consequence is that Engin will look worse on the metric everyone reports**, and
   it is better to say so here than to let it be discovered in a benchmark table.
   `engin_core.tea.recommend_batch_by_cost` optimizes cost;
   `engin_core.recommend_batch` optimizes titer and is kept for comparison.
-- **Stand on mature libraries** — scipy (integration), scikit-learn/GPyTorch (GP),
-  MAPIE (conformal), pydantic (schemas). Hand-write only the domain models.
+- **Stand on mature libraries** — scipy (integration), scikit-learn (GP),
+  MAPIE (conformal), pydantic (schemas), BioSTEAM (techno-economics, optional
+  extra). Hand-write only the domain models. *(Corrected 2026-08-13: this listed
+  GPyTorch, which is not a dependency and is imported nowhere — the same
+  overclaim fixed on the docs front page in #95.)*
 
 ## Develop
 
