@@ -147,6 +147,77 @@ sources:
     stability: doi
     type: paper
 
+  # -- Dependency evidence (D23 / #85). Each of these is the library's own
+  # published description. That evidences "published, peer-reviewed where
+  # applicable, and maintained" -- it does NOT by itself evidence "dominant".
+  # Where this register claims dominance, the claim row says what it rests on.
+
+  - id: 2011-pedregosa-scikit-learn
+    title: "Scikit-learn: Machine Learning in Python"
+    authors: [Pedregosa, F., et al.]
+    year: 2011
+    venue: Journal of Machine Learning Research 12:2825-2830
+    location: https://www.jmlr.org/papers/v12/pedregosa11a.html
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      JMLR publishes open-access without minting DOIs for this volume. The URL is
+      the publisher's own and is as stable as JMLR itself.
+    type: paper
+
+  - id: 2022-taquet-mapie
+    title: >-
+      MAPIE: an open-source library for distribution-free uncertainty
+      quantification
+    authors: [Taquet, Vianney, Blot, Vincent, Morzadec, Thomas, Lacombe, Louis, Brunel, Nicolas]
+    year: 2022
+    venue: arXiv preprint
+    location: https://arxiv.org/abs/2207.12274
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      Preprint only. Searched Crossref for a peer-reviewed version and found
+      none, which is worth recording: the conformal library this project
+      cross-checks against has no journal publication behind it.
+    type: paper
+
+  - id: 2020-cortespena-biosteam
+    title: >-
+      BioSTEAM: A Fast and Flexible Platform for the Design, Simulation, and
+      Techno-Economic Analysis of Biorefineries under Uncertainty
+    authors: [Cortes-Peña, Yoel, Kumar, Deepak, Singh, Vijay, Guest, Jeremy S.]
+    year: 2020
+    venue: ACS Sustainable Chemistry & Engineering 8:3302-3310
+    location: https://doi.org/10.1021/acssuschemeng.9b07040
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
+  - id: 2020-balandat-botorch
+    title: "BoTorch: A Framework for Efficient Monte-Carlo Bayesian Optimization"
+    authors: [Balandat, Maximilian, et al.]
+    year: 2020
+    venue: Advances in Neural Information Processing Systems 33
+    location: https://arxiv.org/abs/1910.06403
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      NeurIPS proceedings are open-access without DOIs; arXiv is the canonical
+      stable pointer the authors themselves use.
+    type: paper
+
+  - id: 2019-fey-pytorch-geometric
+    title: Fast Graph Representation Learning with PyTorch Geometric
+    authors: [Fey, Matthias, Lenssen, Jan Eric]
+    year: 2019
+    venue: ICLR Workshop on Representation Learning on Graphs and Manifolds
+    location: https://arxiv.org/abs/1903.02428
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      Workshop paper, no DOI minted. arXiv is the canonical pointer.
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -311,17 +382,31 @@ components:
     package: engin-core
     stance: standard
     standard_impl: scikit-learn GaussianProcessRegressor
-    evidence: []
+    evidence: [2011-pedregosa-scikit-learn]
     adr: adr/0002-light-default-dependency-path
-    reviewed: 2026-08-11
+    reviewed: 2026-08-13
+    note: >-
+      scikit-learn is the standard general-purpose ML library, and that is what
+      the citation supports. It is *not* the standard for GPs specifically --
+      GPyTorch and GPy are the specialist implementations, and a scalable or
+      deep-kernel GP would use one of them. The stance is `standard` because
+      ADR 0002 chose the light dependency path deliberately, not because
+      sklearn's GP is the field's best GP.
 
   - component: Split-conformal calibration
     package: engin-core
     stance: wrapped
     standard_impl: MAPIE (cross-check) + sd-normalized multiplier
-    evidence: []
+    evidence: [2022-taquet-mapie]
     adr: null
-    reviewed: 2026-08-11
+    reviewed: 2026-08-13
+    note: >-
+      MAPIE is the widely-used Python conformal library and is kept here as an
+      independent cross-check, not as the default -- it is deliberately a
+      *different* method (constant-width), which is the point of a cross-check.
+      Recorded absence: MAPIE has a preprint and no peer-reviewed publication.
+      The underlying method's grounding is #86, a separate question from the
+      library's.
 
   - component: Data convention over xarray/pandas
     package: engin-core
@@ -341,11 +426,17 @@ components:
 
   - component: Techno-economic coupling
     package: engin-core
-    stance: unaudited
+    stance: standard
     standard_impl: BioSTEAM (behind the [tea] extra)
-    evidence: []
+    evidence: [2020-cortespena-biosteam]
     adr: null
-    reviewed: null
+    reviewed: 2026-08-13
+    note: >-
+      BioSTEAM is the open, peer-reviewed platform for biorefinery TEA under
+      uncertainty, which is exactly the thing D8 declines to rebuild. Note the
+      dependency is real but *optional* (the [tea] extra, Python 3.12+): the
+      front page claimed a firmer coupling than exists until corrected
+      2026-08-13.
 
   - component: Mechanistic fed-batch simulator
     package: engin-core
@@ -357,11 +448,19 @@ components:
 
   - component: Expected-improvement recommender
     package: engin-core
-    stance: unaudited
+    stance: bespoke-justified
     standard_impl: BoTorch / Ax / BayBE
-    evidence: []
+    evidence: [2020-balandat-botorch]
     adr: adr/0002-light-default-dependency-path
-    reviewed: null
+    reviewed: 2026-08-13
+    note: >-
+      Reclassified from `unaudited`. BoTorch is the reference implementation for
+      Monte-Carlo BO and BayBE is a well-built Apache-2.0 campaign layer
+      (verified 2026-08-13: Apache-2.0, maintained by Merck KGaA, 0.15.0 released
+      2026-06-11). Engin ships a thin analytic EI on its own GP instead, and the
+      justification is ADR 0002 -- adopting BoTorch drags PyTorch into the
+      default install. That is a dependency-weight argument, not a claim to a
+      better acquisition function, and it should never be written as one.
 
   - component: Host-capability knowledge base and scoring
     package: engin-host
@@ -373,11 +472,20 @@ components:
 
   - component: Route-as-graph embedding
     package: engin-pathway
-    stance: unaudited
+    stance: bespoke-justified
     standard_impl: PyTorch Geometric (M1 upgrade)
-    evidence: []
+    evidence: [2019-fey-pytorch-geometric]
     adr: adr/0002-light-default-dependency-path
-    reviewed: null
+    reviewed: 2026-08-13
+    note: >-
+      PyG is the standard GNN framework and the cited paper is its own
+      publication. What ships today is a *random-weight* GCN stand-in (M0), not a
+      trained model, and ADR 0002 is the justification for not pulling torch yet.
+      No PyG-versus-DGL performance comparison is made anywhere in this
+      repository, and none should be added without a dated, version-pinned
+      benchmark: a "~30% faster than DGL" claim was asserted and withdrawn in the
+      private notes on 2026-08-10 after tracing to no source, and that is the
+      class of claim #85 exists to stop.
 
   - component: Protein fitness ridge head
     package: engin-protein
@@ -397,8 +505,13 @@ components:
 
   - component: Graph embedding
     package: engin-graph
-    stance: unaudited
+    stance: bespoke-justified
     standard_impl: PyTorch Geometric
-    evidence: []
+    evidence: [2019-fey-pytorch-geometric]
     adr: adr/0002-light-default-dependency-path
-    reviewed: null
+    reviewed: 2026-08-13
+    note: >-
+      Same position as engin-pathway's row: PyG is the standard, networkx plus
+      numpy is what ships, and ADR 0002 carries the reason. Whether the
+      *topology* result this package reports survives contact with the GNN
+      literature is a different question and is #88.

@@ -14,9 +14,14 @@ register rather than a bibliography.
 
 | id | work | year | type | stability |
 |---|---|---|---|---|
+| `2011-pedregosa-scikit-learn` | [Scikit-learn: Machine Learning in Python](https://www.jmlr.org/papers/v12/pedregosa11a.html)<br/>Pedregosa, F., et al. — *Journal of Machine Learning Research 12:2825-2830* | 2011 | paper | url |
+| `2019-fey-pytorch-geometric` | [Fast Graph Representation Learning with PyTorch Geometric](https://arxiv.org/abs/1903.02428)<br/>Fey, Matthias, Lenssen, Jan Eric — *ICLR Workshop on Representation Learning on Graphs and Manifolds* | 2019 | paper | url |
 | `2019-goldrick-indpensim` | [Modern day monitoring and control challenges outlined on an industrial-scale benchmark fermentation process](https://doi.org/10.1016/j.compchemeng.2019.05.037)<br/>Goldrick, S., et al. — *Computers & Chemical Engineering* | 2019 | paper | doi |
 | `2019-martiny-culturable` | [High proportions of bacteria are culturable across major biomes](https://doi.org/10.1038/s41396-019-0410-3)<br/>Martiny, Adam C. — *The ISME Journal 13:2125-2128* | 2019 | paper | doi |
 | `2019-steen-uncultured-majority` | [High proportions of bacteria and archaea across most biomes remain uncultured](https://doi.org/10.1038/s41396-019-0484-y)<br/>Steen, Andrew D., et al. — *The ISME Journal 13:3126-3130* | 2019 | paper | doi |
+| `2020-balandat-botorch` | [BoTorch: A Framework for Efficient Monte-Carlo Bayesian Optimization](https://arxiv.org/abs/1910.06403)<br/>Balandat, Maximilian, et al. — *Advances in Neural Information Processing Systems 33* | 2020 | paper | url |
+| `2020-cortespena-biosteam` | [BioSTEAM: A Fast and Flexible Platform for the Design, Simulation, and Techno-Economic Analysis of Biorefineries under Uncertainty](https://doi.org/10.1021/acssuschemeng.9b07040)<br/>Cortes-Peña, Yoel, Kumar, Deepak, Singh, Vijay, Guest, Jeremy S. — *ACS Sustainable Chemistry & Engineering 8:3302-3310* | 2020 | paper | doi |
+| `2022-taquet-mapie` | [MAPIE: an open-source library for distribution-free uncertainty quantification](https://arxiv.org/abs/2207.12274)<br/>Taquet, Vianney, Blot, Vincent, Morzadec, Thomas, Lacombe, Louis, Brunel, Nicolas — *arXiv preprint* | 2022 | paper | url |
 | `2024-konzock-try-costs` | [TRYing to evaluate production costs in microbial biotechnology](https://doi.org/10.1016/j.tibtech.2024.04.007)<br/>Konzock, Oliver, Nielsen, Jens — *Trends in Biotechnology* | 2024 | paper | doi |
 | `2024-responsible-biodesign-statement` | [Community Values, Guiding Principles, and Commitments for the Responsible Development of AI for Protein Design](https://responsiblebiodesign.ai/)<br/>Responsible AI x Biodesign signatories — *responsiblebiodesign.ai* | 2024 | web | url |
 | `2025-sun-master-efp` | [Multi-scale trend decomposition mixture of experts and time series retrieval-augmented modeling for erythromycin fermentation process](https://doi.org/10.1016/j.neucom.2025.131701)<br/>Sun, Yifei, Yan, Xuefeng — *Neurocomputing 657* | 2025 | paper | doi |
@@ -47,24 +52,24 @@ register rather than a bibliography.
 
 ## Components
 
-**4 of 12 audited.** `unaudited` is the honest
+**8 of 12 audited.** `unaudited` is the honest
 default, not an oversight — reducing it is the programme this register exists
 to serve.
 
 | component | package | stance | standard implementation | evidence |
 |---|---|---|---|---|
-| Gaussian-process titer forecast | `engin-core` | standard | scikit-learn GaussianProcessRegressor | — |
-| Split-conformal calibration | `engin-core` | wrapped | MAPIE (cross-check) + sd-normalized multiplier | — |
+| Gaussian-process titer forecast | `engin-core` | standard | scikit-learn GaussianProcessRegressor | `2011-pedregosa-scikit-learn` |
+| Split-conformal calibration | `engin-core` | wrapped | MAPIE (cross-check) + sd-normalized multiplier | `2022-taquet-mapie` |
 | Data convention over xarray/pandas | `engin-core` | bespoke-justified | none exists | `2026-cf-xarray-units` |
 | Ingest layer / schema inference | `engin-core` | bespoke-justified | none exists | `2026-frictionless-detector` |
-| Techno-economic coupling | `engin-core` | **unaudited** | BioSTEAM (behind the [tea] extra) | — |
+| Techno-economic coupling | `engin-core` | standard | BioSTEAM (behind the [tea] extra) | `2020-cortespena-biosteam` |
 | Mechanistic fed-batch simulator | `engin-core` | **unaudited** | none claimed | — |
-| Expected-improvement recommender | `engin-core` | **unaudited** | BoTorch / Ax / BayBE | — |
+| Expected-improvement recommender | `engin-core` | bespoke-justified | BoTorch / Ax / BayBE | `2020-balandat-botorch` |
 | Host-capability knowledge base and scoring | `engin-host` | **unaudited** | unknown | — |
-| Route-as-graph embedding | `engin-pathway` | **unaudited** | PyTorch Geometric (M1 upgrade) | — |
+| Route-as-graph embedding | `engin-pathway` | bespoke-justified | PyTorch Geometric (M1 upgrade) | `2019-fey-pytorch-geometric` |
 | Protein fitness ridge head | `engin-protein` | **unaudited** | unknown | — |
 | Monomer featurization | `engin-materials` | **unaudited** | RDKit | — |
-| Graph embedding | `engin-graph` | **unaudited** | PyTorch Geometric | — |
+| Graph embedding | `engin-graph` | bespoke-justified | PyTorch Geometric | `2019-fey-pytorch-geometric` |
 
 ## Known weaknesses in this register
 
