@@ -234,3 +234,23 @@ def test_a_ref_to_an_unknown_source_is_caught(tmp_path, monkeypatch):
         {"sources": [{"id": "2024-someone-thing"}]},
     )
     assert any("unknown source id" in f[2] for f in findings)
+
+
+def test_code_refs_must_resolve(tmp_path, monkeypatch):
+    """A `# ref:` naming a source that is not registered looks like provenance
+    and resolves to nothing — the same failure as an uncited number, one layer
+    down."""
+    pkg = tmp_path / "packages" / "p" / "src" / "p"
+    pkg.mkdir(parents=True)
+    (pkg / "m.py").write_text("# implements D13; ref: 1999-nobody-nothing\n")
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    bad = check_mod.scan_code({"sources": [{"id": "2024-someone-thing"}]})
+    assert bad and bad[0][2] == "1999-nobody-nothing"
+
+
+def test_a_known_code_ref_passes(tmp_path, monkeypatch):
+    pkg = tmp_path / "packages" / "p" / "src" / "p"
+    pkg.mkdir(parents=True)
+    (pkg / "m.py").write_text("# implements D13; ref: 2024-someone-thing\n")
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    assert check_mod.scan_code({"sources": [{"id": "2024-someone-thing"}]}) == []

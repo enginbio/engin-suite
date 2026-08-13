@@ -1,7 +1,7 @@
 """Techno-economic head: a calibrated titer posterior in, a cost distribution out.
 
 Implements **D8** (the cost model is public) and **D13** (the objective is net cost
-per kilogram, not titer).
+per kilogram, not titer).  # ref: 2024-konzock-try-costs
 
 ## What this module is, and deliberately is not
 
