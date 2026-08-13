@@ -80,7 +80,7 @@ Take a Gaussian process's own uncertainty, multiply by 1.645, call it a 90% inte
 :::
 
 :::{grid-item-card} Optimizes cost, not titer
-Recovery cost is determined upstream but paid downstream, so maximizing titer can move the real objective backwards. The recommender optimizes net $/kg. This makes Engin look *worse* on the metric everyone reports, deliberately.
+Titer captures one of three cost centres, and which one dominates depends on the product — downstream for high-value low-titer products, raw material for bulk ones. So the recommender optimizes net $/kg. This makes Engin look *worse* on the metric everyone reports, deliberately.
 :::
 
 :::{grid-item-card} Composes, doesn't replace
