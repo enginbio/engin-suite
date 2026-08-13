@@ -25,6 +25,17 @@ _spec = importlib.util.spec_from_file_location("evidence_render", SCRIPT)
 render_mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(render_mod)
 
+CHECKER = REPO / "scripts" / "evidence" / "check_claims.py"
+_cspec = importlib.util.spec_from_file_location("evidence_check", CHECKER)
+check_mod = importlib.util.module_from_spec(_cspec)
+_cspec.loader.exec_module(check_mod)
+
+
+def scan_text(tmp_path, text, register=None):
+    doc = tmp_path / "doc.md"
+    doc.write_text(text)
+    return check_mod.scan(doc, register or {})
+
 
 def source(**overrides):
     base = {
@@ -169,3 +180,57 @@ def test_render_reports_how_many_components_are_audited():
         }
     )
     assert "1 of 2 audited" in text
+
+
+# ------------------------------------------------- the uncited-claim gate (#80)
+
+
+def test_the_corpus_currently_passes():
+    """Tier A is clean. If this fails, a claim was added without evidence."""
+    assert check_mod.main([]) == 0
+
+
+def test_a_claim_about_the_world_is_caught(tmp_path, monkeypatch):
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    findings = scan_text(tmp_path, "Media is roughly 35-50% of fermentation COGS.")
+    assert findings and "no source" in findings[0][2]
+
+
+def test_a_bare_count_is_not_a_claim(tmp_path, monkeypatch):
+    """Counts of our own things are checkable by looking, not by citing."""
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    assert scan_text(tmp_path, "The suite has 237 tests across six packages.") == []
+
+
+def test_a_nominal_level_is_not_a_claim(tmp_path, monkeypatch):
+    """'a 90% interval' says what we asked for, not what anyone measured."""
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    assert scan_text(tmp_path, "The interval keeps reporting 90% coverage either way.") == []
+
+
+def test_code_blocks_are_not_scanned(tmp_path, monkeypatch):
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    assert scan_text(tmp_path, "```\nshare = 0.42  # 42% of cost\n```") == []
+
+
+def test_a_footnote_anywhere_in_the_paragraph_clears_it(tmp_path, monkeypatch):
+    """Prose is hard-wrapped; demanding same-line citation would make it worse."""
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    text = "Media is roughly 35-50% of fermentation COGS,\nwhich is a lot [^2024-someone-thing]."
+    assert scan_text(tmp_path, text) == []
+
+
+def test_the_escape_hatch_works_and_carries_a_reason(tmp_path, monkeypatch):
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    text = "Raw material lands at 2% here. <!-- not-a-claim: measured on our simulator -->"
+    assert scan_text(tmp_path, text) == []
+
+
+def test_a_ref_to_an_unknown_source_is_caught(tmp_path, monkeypatch):
+    monkeypatch.setattr(check_mod, "ROOT", tmp_path)
+    findings = scan_text(
+        tmp_path,
+        "Something costly. <!-- ref: 1999-nobody-nothing -->",
+        {"sources": [{"id": "2024-someone-thing"}]},
+    )
+    assert any("unknown source id" in f[2] for f in findings)

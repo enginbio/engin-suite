@@ -99,7 +99,54 @@ sources:
       recorded and D25 names re-checking as a trigger.
     type: web
 
+  - id: 2024-konzock-try-costs
+    title: TRYing to evaluate production costs in microbial biotechnology
+    authors: [Konzock, Oliver, Nielsen, Jens]
+    year: 2024
+    venue: Trends in Biotechnology
+    location: https://doi.org/10.1016/j.tibtech.2024.04.007
+    accessed: 2026-08-11
+    stability: doi
+    type: paper
+
 claims:
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2024-konzock-try-costs
+    claim: >-
+      Titer is an integrative metric that "does not say much about either the
+      performance of the cell factory or the fermentation process" — D13's
+      central argument, in the source's own words.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2024-konzock-try-costs
+    claim: >-
+      TRY maps onto cost centres: titer to downstream processing (a low titer
+      "may cause challenges in the downstream processing"), yield to substrate
+      cost, which it "directly defines", and rate to reactor scale.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2024-konzock-try-costs
+    claim: >-
+      "Media is roughly 35-50% of precision-fermentation cost of goods, ahead of
+      facility depreciation (20-25%) and downstream processing (15-20%)."
+    strength: contested
+    reviewed: 2026-08-11
+    note: >-
+      The source supports the *direction* — substrate cost is set by yield and
+      dominates — but not these figures. It says substrate "can account for more
+      than 50% of the total costs" for *commodity products such as ethanol*,
+      which is a different product class and a different number. The 35-50%
+      split traces to industry blog material, not to a peer-reviewed
+      breakdown for precision fermentation. Corrected in the documents
+      2026-08-11: the direction is kept and cited, the invented precision
+      dropped.
   - doc: docs/benchmarks.md
     tier: A
     source_id: 2025-zenodo-erythromycin-efp

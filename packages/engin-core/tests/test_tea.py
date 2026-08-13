@@ -142,7 +142,14 @@ def test_recommend_batch_by_cost_returns_diverse_designs():
 
 
 def test_this_simulator_cannot_reproduce_industrial_cost_shares():
-    """Raw material is ~2% here, where the literature reports 35–50% of real COGS.
+    """Raw material is ~2% here, where the literature has it as a dominant term.
+
+    The comparison figure was corrected 2026-08-11 by the D23 evidence pass: an
+    earlier version cited "35-50% of precision-fermentation COGS", which was not
+    sourceable. Konzock & Nielsen (2024) support the direction -- yield directly
+    defines substrate cost, "more than 50% of the total costs" for commodity
+    chemicals -- but not that split. The finding this test pins is unaffected:
+    ~2% is far below any of them.
 
     Not a bug in the cost model. With realistic media prices and this simulator's
     substrate-to-product ratio at 1–2 L scale, the yield lever is nearly invisible;
