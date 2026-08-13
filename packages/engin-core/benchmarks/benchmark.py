@@ -13,8 +13,15 @@ Reports, averaged over several seeds so the numbers are not cherry-picked:
 3. Active-learning lift: best *true* titer found by an EI-recommended batch vs a
    random batch of the same size (the "fewer DoE rounds" claim).
 
-Run:  python benchmarks/benchmark.py                # synthetic (D12 tier 1)
+Run, from ``packages/engin-core`` (the script lives in the package, not at the
+repository root -- the docs printed the rootward path until 2026-08-13):
+
+      python benchmarks/benchmark.py               # synthetic (D12 tier 1)
       python benchmarks/benchmark.py --data real   # 406 industrial batches (tier 3)
+
+The only baseline implemented here is EI batch vs random batch (item 3). DoE/RSM,
+BayBE, BioSTEAM, step-count and "use E. coli" are #20 and are not built; see
+docs/benchmarks.md, which now says so rather than implying otherwise.
 
 **Every run states which data it used**, in its first line of output. That is the
 point of the flag: the difference between "our simulator" and "a working plant"

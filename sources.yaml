@@ -109,6 +109,44 @@ sources:
     stability: doi
     type: paper
 
+  - id: 2024-responsible-biodesign-statement
+    title: >-
+      Community Values, Guiding Principles, and Commitments for the Responsible
+      Development of AI for Protein Design
+    authors: [Responsible AI x Biodesign signatories]
+    year: 2024
+    venue: responsiblebiodesign.ai
+    location: https://responsiblebiodesign.ai/
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      A community statement published on its own site, with a signatory list
+      still open. No DOI exists, and the signatory count is a moving figure --
+      which is itself why BIOSECURITY.md now dates the number it quotes.
+    type: web
+
+  - id: 2019-steen-uncultured-majority
+    title: >-
+      High proportions of bacteria and archaea across most biomes remain
+      uncultured
+    authors: [Steen, Andrew D., et al.]
+    year: 2019
+    venue: The ISME Journal 13:3126-3130
+    location: https://doi.org/10.1038/s41396-019-0484-y
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
+  - id: 2019-martiny-culturable
+    title: High proportions of bacteria are culturable across major biomes
+    authors: [Martiny, Adam C.]
+    year: 2019
+    venue: The ISME Journal 13:2125-2128
+    location: https://doi.org/10.1038/s41396-019-0410-3
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -173,6 +211,59 @@ claims:
       baseline using an architecture built for the purpose.
     strength: partially supports
     reviewed: 2026-08-11
+
+  - doc: BIOSECURITY.md
+    tier: A
+    source_id: 2024-responsible-biodesign-statement
+    claim: >-
+      The statement identifies nucleic acid synthesis as the key biosecurity
+      checkpoint for computational biodesign, on the reasoning that no designed
+      construct causes physical harm until it is manufactured.
+    strength: supports
+    reviewed: 2026-08-13
+
+  - doc: BIOSECURITY.md
+    tier: A
+    source_id: 2024-responsible-biodesign-statement
+    claim: >-
+      The statement is "supported by IBBIS, NTI | bio, the International Gene
+      Synthesis Consortium and others."
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      The source says the opposite, twice: affiliations "are for identification
+      only and do not imply any institutional endorsement." Signatories sign as
+      individuals. The count is also a moving figure -- 189 as of 2026-02-06 on a
+      list still open -- against a statement released 2024-03-08. Corrected
+      2026-08-13: the endorsement claim is withdrawn and the count is dated. A
+      biosecurity policy borrowing institutional authority it was never granted
+      is the worst place in this repository for this class of error.
+
+  - doc: BIOSECURITY.md
+    tier: A
+    source_id: 2019-steen-uncultured-majority
+    claim: >-
+      Most bacterial and archaeal taxa across most biomes remain uncultured, so
+      cultivation is a genuine barrier -- BIOSECURITY.md section 6's premise.
+    strength: supports
+    reviewed: 2026-08-13
+
+  - doc: BIOSECURITY.md
+    tier: A
+    source_id: 2019-martiny-culturable
+    claim: >-
+      Roughly half of sequences and a third of taxa across major biomes have a
+      closely related cultured relative, which would make the cultivation
+      barrier smaller than section 6 assumed.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      A live disagreement in the primary literature: Steen et al. is a direct
+      rebuttal of this paper, in the same journal and year. Section 6 stated the
+      majority view as settled; it now states both and notes which way the
+      disagreement cuts. It cuts *against* our own safeguard's necessity, which
+      is the reason to publish it rather than the reason to omit it. The
+      safeguard is unchanged -- a contested barrier is not an absent one.
 
   - doc: docs/benchmarks.md
     tier: A

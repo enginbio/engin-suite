@@ -146,7 +146,7 @@ Not to be discouraging — these are specific and rare:
 
 - **Uncalibrated point estimates.** Calibrated uncertainty is the project's core commitment. A model that returns a number without an honest interval doesn't fit here.
 - **Optimizing titer instead of net cost.** Titer is inflatable by running longer and says nothing about the substrate cost that yield governs, so it is the wrong objective (`D13`). Engin looks worse on the metric everyone reports as a result, and that is a considered trade. Both recommenders exist on purpose — `engin_core.tea.recommend_batch_by_cost` optimizes net $/kg and `engin_core.recommend_batch` optimizes titer as the comparison baseline. A change that deepens the dependence on titer is going the wrong way. *(Corrected 2026-08-11: this previously said the cost path "is not built". It shipped in PR #51.)*
-- **Reimplementing what already exists.** We compose with BayBE, BioSTEAM, COBRApy and MAPIE rather than rebuilding them (`D9`).
+- **Reimplementing what already exists.** `D9` names BayBE, BioSTEAM, COBRApy, MAPIE and eQuilibrator as the things not to rebuild. Two of those are wired in today — MAPIE as a dependency, BioSTEAM as an optional extra — and the rest are deferred-to rather than composed with, which is a rule about what not to build rather than a description of the dependency graph. *(Corrected 2026-08-13: this said "we compose with" all four.)*
 - **Anything on the declined list in `BIOSECURITY.md`.**
 
 ## Reporting issues

@@ -1,6 +1,8 @@
 # Biosecurity Policy
 
-**Version 1.0 · Effective 2026-08-07 · Next scheduled review 2027-02-07**
+**Version 1.1 · Effective 2026-08-13 · Next scheduled review 2027-02-07**
+
+*1.1 is a correction, not a scheduled review: §3 overstated who endorses the community statement it cites, and §6 stated a contested empirical claim as settled. Both are marked in place. The §3 risk assessment and the §5 declined scope are unchanged.*
 
 Maintainer contact: **biosecurity@engin.bio**
 
@@ -47,7 +49,9 @@ This is stated plainly rather than hedged, because vague reassurance is less use
 
 The components are individually oriented the same way. Pathway ranking scores manufacturability and holds no model of physiological activity; it cannot distinguish a pharmaceutical intermediate from a solvent. Host selection matches a chassis to a production requirement. Neither answers *what to make* — only *how this would be made at industrial scale*.
 
-**Where the field locates the real chokepoint.** The 2024 community statement *Community Values, Guiding Principles, and Commitments for the Responsible Development of AI for Protein Design* — signed by 189 researchers and supported by IBBIS, NTI | bio, the International Gene Synthesis Consortium and others — identifies nucleic acid synthesis as the key biosecurity checkpoint for computational biodesign, on the reasoning that no computationally designed construct causes physical harm until it is manufactured. Engin sits downstream of design and upstream of nothing that bypasses that checkpoint.
+**Where the field locates the real chokepoint.** The community statement *Community Values, Guiding Principles, and Commitments for the Responsible Development of AI for Protein Design* (released 2024-03-08; 189 signatories as of 2026-02-06, a list that is still open) identifies nucleic acid synthesis as the key biosecurity checkpoint for computational biodesign, on the reasoning that no computationally designed construct causes physical harm until it is manufactured. Engin sits downstream of design and upstream of nothing that bypasses that checkpoint.
+
+*Corrected 2026-08-13:* this paragraph previously described the statement as "supported by IBBIS, NTI | bio, the International Gene Synthesis Consortium and others." **That was wrong, and wrong in the direction that flattered this document.** Signatories sign as individuals, and the statement says twice that affiliations "are for identification only and do not imply any institutional endorsement." People from those organizations signed; the organizations did not endorse. Claiming named biosecurity institutions stand behind a document they have not endorsed is precisely the kind of borrowed authority a biosecurity policy has no business trading on, so it is corrected here rather than quietly dropped.
 
 **This assessment is not permanent.** It is reviewed on the cadence in §8 and reassessed whenever §7's triggers fire.
 
@@ -91,7 +95,9 @@ A contribution touching any of the above will be closed with reference to this s
 
 The roadmap includes predicting cultivation conditions (media, temperature, pH, oxygen tolerance) for non-model and uncultured organisms from genome sequence.
 
-**This is the one component where the dual-use question is not theoretical.** Most microbial diversity has never been cultured, and "how do I grow this organism" is a genuine barrier — for legitimate work, and equally for illegitimate work involving an organism the actor could not otherwise propagate. Unlike the rest of the suite, this addresses a bottleneck that is not purely economic.
+**This is the one component where the dual-use question is not theoretical.** "How do I grow this organism" is a genuine barrier — for legitimate work, and equally for illegitimate work involving an organism the actor could not otherwise propagate. Unlike the rest of the suite, this addresses a bottleneck that is not purely economic.
+
+**How large that barrier is, is contested in the primary literature, and this policy should say so.** The majority position is that most bacterial and archaeal taxa remain uncultured (Steen et al. 2019, *ISME J* 13:3126, [doi:10.1038/s41396-019-0484-y](https://doi.org/10.1038/s41396-019-0484-y)). It is a direct rebuttal to Martiny 2019, *ISME J* 13:2125, [doi:10.1038/s41396-019-0410-3](https://doi.org/10.1038/s41396-019-0410-3), which reports that roughly half of sequences and a third of taxa across major biomes have a closely related cultured relative. Note which way that cuts: if Martiny is nearer right, the cultivation barrier is *lower* than this section assumes, and the uplift argument for building the safeguard is correspondingly weaker. The safeguard is kept anyway — a contested barrier is not an absent one, and §6's constraint costs little if the pessimistic reading is wrong.
 
 The capability is judged worth building: non-model organism onboarding currently costs research groups years, and the benefit is broad and concrete. It ships with the following constraint, or it does not ship.
 
