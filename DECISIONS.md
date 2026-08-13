@@ -151,7 +151,15 @@ Ordering, recorded as a constraint so it survives the temptation to reverse it. 
 
 **The asymmetry.** There is roughly one first introduction to any given community. Someone shown a tool calibrated only on synthetic data draws a conclusion about the project rather than about the demo, and doesn't revisit it. Early and quiet is recoverable; early and visibly thin is much less so. The cost of waiting is a few months of obscurity for a project nobody is currently waiting on.
 
-**Gate, concretely:** real-data calibration coverage published, the out-of-distribution failure mode published, and one non-synthetic worked example a stranger can run.
+**Gate, concretely — two conditions, not one.**
+
+*Validation.* Real-data calibration coverage published, the out-of-distribution failure mode published, and one non-synthetic worked example a stranger can run. **All three are done** as of 2026-08-11.
+
+*Evidence.* **Every main component backed by a curated literature review** covering its implementation, its motivation and its conclusions, **with citations** — and any defect that review surfaces actually fixed, not merely logged. This is `D23`'s programme, and it is **not started**: the packages currently carry zero citations between them.
+
+**Amended 2026-08-11, because the first condition was read as the whole gate.** It was not, and the ordering matters: the validation items say the tool works; the evidence items say the project knows *why* it built what it built, and can show its reasoning to someone qualified to disagree. A tool that passes the first and fails the second is one whose author cannot answer "why this method rather than the obvious alternative" — which is the first question any serious reader asks, and the question this project's own audits keep answering badly.
+
+The precedent is on the record: the Pass-1 component audit found **five of seven load-bearing claims wrong, overstated or narrower than stated**, and none of them was a coding error. Shipping to an audience before the remaining components get the same treatment would be shipping the same class of error, having already been shown it exists.
 
 **What this does not license.** Deferring a visibility push is not deferring contact. Answering questions, publishing honestly, and talking to individual practitioners are unrestricted. A version of this decision that becomes a reason to talk to nobody has failed, and would contradict the reason this repository is public at all.
 
