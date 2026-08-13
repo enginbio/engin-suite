@@ -12,6 +12,7 @@
 
 -r requirements-dev.txt
 
+pyyaml>=6.0        # scripts/evidence/render.py -- the D23 register
 sphinx>=7.2
 myst-nb>=1.1
 pydata-sphinx-theme>=0.15

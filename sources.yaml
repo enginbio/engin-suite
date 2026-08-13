@@ -1,0 +1,266 @@
+# Engin evidence register (public half) — implements D23.
+#
+# Source of truth. Every markdown view is generated from this file:
+#   python scripts/evidence/render.py            # writes docs/references.md
+#   python scripts/evidence/render.py --check    # CI: fails if the view is stale
+#
+# The private half is sources.vault.yaml in the vault, holding Tier B/C rows only
+# and sharing this id namespace. **A public citation must never resolve to a
+# private path**; render.py enforces that rather than trusting it.
+#
+# `strength: contradicts` and `superseded` rows are the point of the exercise,
+# not a failure of it. They become edits to the document, and the row stays as
+# the record of the correction.
+
+sources:
+  - id: 2019-goldrick-indpensim
+    title: >-
+      Modern day monitoring and control challenges outlined on an
+      industrial-scale benchmark fermentation process
+    authors: [Goldrick, S., et al.]
+    year: 2019
+    venue: Computers & Chemical Engineering
+    location: https://doi.org/10.1016/j.compchemeng.2019.05.037
+    accessed: 2026-08-11
+    stability: doi
+    type: paper
+
+  - id: 2025-zenodo-erythromycin-efp
+    title: Erythromycin fermentation process dataset
+    authors: [Yan, Xuefeng, Sun, Yifei]
+    year: 2025
+    venue: Zenodo
+    location: https://doi.org/10.5281/zenodo.14619074
+    accessed: 2026-08-11
+    stability: doi
+    type: dataset
+
+  - id: 2025-sun-master-efp
+    title: >-
+      Multi-scale trend decomposition mixture of experts and time series
+      retrieval-augmented modeling for erythromycin fermentation process
+    authors: [Sun, Yifei, Yan, Xuefeng]
+    year: 2025
+    venue: Neurocomputing 657
+    location: https://doi.org/10.1016/j.neucom.2025.131701
+    accessed: 2026-08-11
+    stability: doi
+    type: paper
+
+  - id: 2026-zenodo-cho-k1-cultivations
+    title: >-
+      Dataset Based on Chinese Hamster Ovary (CHO) Cultivations including
+      Turbidity, Permittivity, O2 and CO2 Measurements
+    authors: [Uhlendorff, S., Fulek, R., Eimler, J., Pein-Hackelbusch, M., Frahm, B.]
+    year: 2026
+    venue: Zenodo
+    location: https://doi.org/10.5281/zenodo.20829178
+    accessed: 2026-08-11
+    stability: doi
+    type: dataset
+
+  - id: 2026-frictionless-detector
+    title: Detector — Frictionless Framework documentation
+    authors: [Frictionless Data]
+    year: 2026
+    venue: framework.frictionlessdata.io
+    location: https://framework.frictionlessdata.io/docs/framework/detector.html
+    accessed: 2026-08-11
+    stability: url
+    url_only_because: >-
+      Library documentation. The claim is about what this software does, and the
+      documentation is where it says so; there is no paper to cite instead.
+    type: software
+
+  - id: 2026-cf-xarray-units
+    title: Units — cf_xarray documentation
+    authors: [cf_xarray contributors]
+    year: 2026
+    venue: cf-xarray.readthedocs.io
+    location: https://cf-xarray.readthedocs.io/en/latest/units.html
+    accessed: 2026-08-11
+    stability: url
+    url_only_because: >-
+      Library documentation, as above. The evaluation that rejected cf_xarray was
+      run against the library itself; this is the reference for what it claims.
+    type: software
+
+  - id: 2026-numfocus-fiscal-sponsorship
+    title: "Overview: NumFOCUS Projects — fiscal sponsorship requirements"
+    authors: [NumFOCUS]
+    year: 2026
+    venue: numfocus.org
+    location: https://numfocus.org/information-fiscal-sponsorship
+    accessed: 2026-08-11
+    stability: url
+    url_only_because: >-
+      An organisation's own statement of its requirements. It exists only as a
+      web page and can change without notice, which is exactly why `accessed` is
+      recorded and D25 names re-checking as a trigger.
+    type: web
+
+claims:
+  - doc: docs/benchmarks.md
+    tier: A
+    source_id: 2025-zenodo-erythromycin-efp
+    claim: >-
+      406 industrial fed-batch production batches, hourly, with a
+      product-potency target, licensed CC-BY-4.0.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: docs/methods/real-data-calibration.md
+    tier: A
+    source_id: 2025-sun-master-efp
+    claim: >-
+      `hx` is the dataset's target column (chemical potency) — taken from the
+      authors' own run_EFP.py, which defaults --target to hx.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: docs/methods/real-data-calibration.md
+    tier: A
+    source_id: 2025-sun-master-efp
+    claim: >-
+      The dataset's authors report considerably better prediction than this
+      baseline using an architecture built for the purpose.
+    strength: partially supports
+    reviewed: 2026-08-11
+
+  - doc: docs/benchmarks.md
+    tier: A
+    source_id: 2019-goldrick-indpensim
+    claim: >-
+      IndPenSim is a simulation validated against industrial data, not
+      measurements from a real plant — placing it at D12 tier 2, not tier 3.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: packages/engin-core/src/engin_core/loaders.py
+    tier: A
+    source_id: 2026-frictionless-detector
+    claim: >-
+      frictionless `field_confidence` is a type-casting tolerance, not semantic
+      confidence, and it maps nothing to a domain vocabulary — so it does not
+      serve D11's ingest need.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: packages/engin-core/src/engin_core/convention.py
+    tier: A
+    source_id: 2026-cf-xarray-units
+    claim: >-
+      cf_xarray's vocabulary is geoscience-specific and reports n/a across the
+      board on bioprocess data, so the CF *mechanism* was adopted and the
+      package was not.
+    strength: supports
+    reviewed: 2026-08-11
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2026-numfocus-fiscal-sponsorship
+    claim: >-
+      NumFOCUS fiscal sponsorship requires a leadership body of at least three
+      people not sharing a common affiliation, an OSI licence, a Code of
+      Conduct, and an active community of reasonable size (D25).
+    strength: supports
+    reviewed: 2026-08-11
+
+# One row per major code component. `stance: unaudited` is the honest default
+# and is what the D23 programme exists to reduce — see issues #84 to #90.
+components:
+  - component: Gaussian-process titer forecast
+    package: engin-core
+    stance: standard
+    standard_impl: scikit-learn GaussianProcessRegressor
+    evidence: []
+    adr: adr/0002-light-default-dependency-path
+    reviewed: 2026-08-11
+
+  - component: Split-conformal calibration
+    package: engin-core
+    stance: wrapped
+    standard_impl: MAPIE (cross-check) + sd-normalized multiplier
+    evidence: []
+    adr: null
+    reviewed: 2026-08-11
+
+  - component: Data convention over xarray/pandas
+    package: engin-core
+    stance: bespoke-justified
+    standard_impl: none exists
+    evidence: [2026-cf-xarray-units]
+    adr: null
+    reviewed: 2026-08-11
+
+  - component: Ingest layer / schema inference
+    package: engin-core
+    stance: bespoke-justified
+    standard_impl: none exists
+    evidence: [2026-frictionless-detector]
+    adr: null
+    reviewed: 2026-08-11
+
+  - component: Techno-economic coupling
+    package: engin-core
+    stance: unaudited
+    standard_impl: BioSTEAM (behind the [tea] extra)
+    evidence: []
+    adr: null
+    reviewed: null
+
+  - component: Mechanistic fed-batch simulator
+    package: engin-core
+    stance: unaudited
+    standard_impl: none claimed
+    evidence: []
+    adr: null
+    reviewed: null
+
+  - component: Expected-improvement recommender
+    package: engin-core
+    stance: unaudited
+    standard_impl: BoTorch / Ax / BayBE
+    evidence: []
+    adr: adr/0002-light-default-dependency-path
+    reviewed: null
+
+  - component: Host-capability knowledge base and scoring
+    package: engin-host
+    stance: unaudited
+    standard_impl: unknown
+    evidence: []
+    adr: null
+    reviewed: null
+
+  - component: Route-as-graph embedding
+    package: engin-pathway
+    stance: unaudited
+    standard_impl: PyTorch Geometric (M1 upgrade)
+    evidence: []
+    adr: adr/0002-light-default-dependency-path
+    reviewed: null
+
+  - component: Protein fitness ridge head
+    package: engin-protein
+    stance: unaudited
+    standard_impl: unknown
+    evidence: []
+    adr: null
+    reviewed: null
+
+  - component: Monomer featurization
+    package: engin-materials
+    stance: unaudited
+    standard_impl: RDKit
+    evidence: []
+    adr: null
+    reviewed: null
+
+  - component: Graph embedding
+    package: engin-graph
+    stance: unaudited
+    standard_impl: PyTorch Geometric
+    evidence: []
+    adr: adr/0002-light-default-dependency-path
+    reviewed: null
