@@ -162,6 +162,31 @@ def _overlaps(line: str, claim: str) -> bool:
     return bool(line_nums & claim_nums)
 
 
+CODE_REF = re.compile(r"#\s*(?:.*?;\s*)?ref:\s*([a-z0-9-]+)")
+
+
+def scan_code(register: dict) -> list[tuple[Path, int, str]]:
+    """Every ``# ref: id`` in shipped source must resolve to a register row.
+
+    A code comment claiming evidence that is not in the register is the same
+    failure as an uncited number, one layer down: it looks like provenance and
+    resolves to nothing.
+    """
+    known = {s.get("id") for s in register.get("sources") or []}
+    bad: list[tuple[Path, int, str]] = []
+    # Shipped source only. Test files legitimately contain `ref:` strings as
+    # fixtures for this very check, and scanning them makes the checker fail on
+    # its own test suite.
+    for path in sorted((ROOT / "packages").glob("*/src/**/*.py")):
+        if any(part in {".venv", "_build"} for part in path.parts):
+            continue
+        for n, line in enumerate(path.read_text().splitlines(), start=1):
+            for ref in CODE_REF.findall(line):
+                if ref not in known:
+                    bad.append((path, n, ref))
+    return bad
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", action="store_true", help="list findings, exit 0")
@@ -181,8 +206,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {n:>4}  {reason}")
             print(f"        {line}")
 
+    for path, n, ref in scan_code(register):
+        total += 1
+        print(f"\n{path.relative_to(ROOT)}")
+        print(f"  {n:>4}  code cites unknown source id {ref!r}")
+
     if not total:
-        print(f"no uncited claims across {len(TIER_A)} Tier A documents")
+        print(
+            f"no uncited claims across {len(TIER_A)} Tier A documents, "
+            "and every code `ref:` resolves"
+        )
         return 0
 
     print(f"\n{total} uncited claim(s) across Tier A documents.")

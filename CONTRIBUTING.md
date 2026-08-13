@@ -70,6 +70,59 @@ Before opening a pull request:
 - New behaviour has a test
 - `ruff format --check .` is clean (READMEs are excluded; their examples are hand-aligned)
 
+## Citing evidence
+
+Every substantive claim in a public document resolves to a row in
+[`sources.yaml`](https://github.com/enginbio/engin-suite/blob/main/sources.yaml). CI enforces this, so the convention is short.
+
+**In prose**, footnote by source id:
+
+```markdown
+Yield directly defines the substrate cost.[^2024-konzock-try-costs]
+```
+
+**In code**, a `# ref:` comment at the implementing function, alongside the
+existing decision reference:
+
+```python
+# implements D13; ref: 2024-konzock-try-costs
+```
+
+Those two are orthogonal and both are worth having. **`D<n>` says why we chose;
+`ref:` says what evidence backed it.** A decision can be well-reasoned and
+unevidenced, and the pair makes that visible instead of blurring it.
+
+### Three rules
+
+**1. A number in a public document has a citation or it doesn't ship.** The check
+is `scripts/evidence/check_claims.py`, and it runs on every pull request. If the
+number is a fact about *this repository* rather than about the world — a test
+count, a nominal interval level, a figure from our own worked example — mark it:
+
+```markdown
+Raw material lands at roughly 2% of modelled cost. <!-- not-a-claim: measured on our simulator -->
+```
+
+Using that marker is deliberately visible in the diff. An unevidenced claim
+should cost a sentence of justification, not be impossible.
+
+**2. Claims from practitioner interviews are testimony, not evidence.** Twelve
+founders saying feedstock is the blocker is a strong signal about *demand*. It is
+not a measurement, and presenting it as one is the fastest available way to lose
+the readers this project wants. Record interview sources with `type: interview`
+and say "practitioners report" rather than "studies show".
+
+**3. Editorial framing stays uncited and clearly marked.** Do not manufacture
+citations for opinions. "We think titer is the wrong target" is a position, and
+it is stronger stated as one than dressed as a finding.
+
+### When the evidence disagrees with the document
+
+Fix the document, and **keep the register row** with `strength: contradicts` or
+`superseded`. The row is the record that the claim was corrected, which is worth
+more than a clean-looking bibliography. This has already happened once, to `D13`
+— see the `contested` row for the cost-share split.
+
 ### If you changed a documentation page that runs code
 
 Rebuild the docs and **commit the refreshed `docs/.jupyter_cache`** along with your change:
@@ -92,7 +145,7 @@ expect it to show as modified. Commit it anyway.
 Not to be discouraging — these are specific and rare:
 
 - **Uncalibrated point estimates.** Calibrated uncertainty is the project's core commitment. A model that returns a number without an honest interval doesn't fit here.
-- **Optimizing titer instead of net cost.** The recommender is *intended* to optimize net $/kg, because titer is inflatable by running longer and omits raw-material cost, which dominates COGS. This makes Engin look worse on the metric everyone reports, and that is a considered trade (`D13`). It currently maximizes titer only because the techno-economic head (`D8`) is not built — a change that deepens that dependence on titer is going the wrong way.
+- **Optimizing titer instead of net cost.** Titer is inflatable by running longer and says nothing about the substrate cost that yield governs, so it is the wrong objective (`D13`). Engin looks worse on the metric everyone reports as a result, and that is a considered trade. Both recommenders exist on purpose — `engin_core.tea.recommend_batch_by_cost` optimizes net $/kg and `engin_core.recommend_batch` optimizes titer as the comparison baseline. A change that deepens the dependence on titer is going the wrong way. *(Corrected 2026-08-11: this previously said the cost path "is not built". It shipped in PR #51.)*
 - **Reimplementing what already exists.** We compose with BayBE, BioSTEAM, COBRApy and MAPIE rather than rebuilding them (`D9`).
 - **Anything on the declined list in `BIOSECURITY.md`.**
 
