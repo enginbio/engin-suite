@@ -9,19 +9,23 @@ the wrong chassis.
 ## Why
 
 Host selection is a crucial design parameter still chosen empirically ("just use
-E. coli" or tribal knowledge), and we know of no open tool that scores it with
-calibrated uncertainty. Circuit failures are frequently host-interaction failures
+E. coli" or tribal knowledge). **No published tool scores candidate chassis against
+a production requirement with calibrated uncertainty** — searched 2026-08-13 and
+written up, with the near-misses, in
+[docs/design/host-selection.md](https://docs.engin.bio/en/latest/design/host-selection.html).
+The honest competitor is not other software: it is building the constructs in six
+hosts and measuring. Circuit failures are frequently host-interaction failures
 rather than failures of the circuit itself — the contextual causes are catalogued
 in [Cardinale & Arkin (2012)](https://doi.org/10.1002/biot.201200085).
 <!-- ref: 2012-cardinale-context -->
 
-*Corrected 2026-08-13 by the `D23` pass (#91). This read "with no standard
-commercial tool — genuine whitespace", which is an **absence claim about a
-market, never searched** — and on the day #90 applied that test to the data
-convention, the equivalent claim there proved flatly wrong. It also read "**Most**
-circuit failures are host-interaction failures"; the mechanism is well supported,
-the proportion is not. Both narrowed to what is actually held. The market search
-is tracked as #107.*
+*Corrected 2026-08-13 by the `D23` pass (#91), then searched under #107. This read
+"with no standard commercial tool — genuine whitespace": an **absence claim about a
+market, never searched**, on the day the equivalent claim about the data convention
+proved flatly wrong. The search found no published tool, so the absence holds — but
+"commercial" was dropped, because a literature and package search cannot settle what
+sits inside a proprietary platform. It also read "**Most** circuit failures are
+host-interaction failures"; the mechanism is well supported, the proportion is not.*
 
 ## What it does
 
