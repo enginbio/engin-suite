@@ -400,6 +400,36 @@ sources:
     stability: doi
     type: paper
 
+  # -- MCDA library evaluation (D23 / #103). A rejection, evidenced the way D9
+  # requires -- run against the actual requirement, not reasoned about.
+
+  - id: 2026-pymcdm-methods
+    title: pymcdm 1.4.0 — methods API
+    authors: [pymcdm contributors]
+    year: 2026
+    venue: PyPI / pymcdm.readthedocs.io
+    location: https://pypi.org/project/pymcdm/
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      The claim is about what this library's API accepts, and the installed
+      package is the reference for that. Evaluated at 1.4.0; the version is
+      recorded because the answer can change.
+    type: software
+
+  - id: 2026-scikit-criteria
+    title: scikit-criteria 0.10 — aggregation methods
+    authors: [scikit-criteria contributors]
+    year: 2026
+    venue: PyPI / scikit-criteria.quatrope.org
+    location: https://pypi.org/project/scikit-criteria/
+    accessed: 2026-08-13
+    stability: url
+    url_only_because: >-
+      As above -- a claim about an API, referenced to the package that defines
+      it. Evaluated at 0.10.
+    type: software
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -760,6 +790,47 @@ claims:
       capability is often unpublished. What is supportable is the narrower
       published-tool claim, which is what the README now makes. Re-check 2027-08.
 
+  - doc: packages/engin-host/src/engin_host/scoring.py
+    tier: A
+    source_id: 2026-pymcdm-methods
+    claim: >-
+      pymcdm propagates per-criterion uncertainty into a scored interval, and
+      supports demoting infeasible alternatives below every feasible one.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      Evaluated at 1.4.0 rather than reasoned about, per D9. Every method takes a
+      point-valued decision matrix -- `TOPSIS.__call__(matrix, weights, types,
+      ...)` -- with no per-cell standard deviation anywhere in the signature, and
+      no module under `pymcdm/methods/` mentions propagation or uncertainty at
+      all. There is no feasibility or constraint concept in the package. Both of
+      this component's requirements are unmet.
+
+  - doc: packages/engin-host/src/engin_host/scoring.py
+    tier: A
+    source_id: 2026-scikit-criteria
+    claim: >-
+      scikit-criteria propagates per-criterion uncertainty, and supports
+      hard-constraint demotion.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      Evaluated at 0.10. `mkdm(matrix, objectives, weights=...)` is point-valued;
+      `WeightedSumModel`'s source contains no reference to std, sigma, variance or
+      uncertainty; and there is no constraint or feasibility concept. Same verdict
+      as pymcdm.
+
+      **The honest reading of both, and the reason this row is worth keeping.**
+      The weighted sum itself *is* a commodity and both libraries provide it --
+      but it is also one line of numpy, and it is not the part that was hard. What
+      neither provides is the uncertainty propagation or the demotion, which is
+      the whole of what `scoring.py` adds. So "compose, don't reimplement" would
+      here mean taking a dependency for the trivial half and still writing the
+      other half. Rejection recorded with what was run: signatures inspected,
+      `WeightedSumModel` source read, and the installed trees grepped for
+      propagation and uncertainty. Re-check if either library gains stochastic or
+      interval-valued inputs.
+
   - doc: BIOSECURITY.md
     tier: A
     source_id: 2024-responsible-biodesign-statement
@@ -981,9 +1052,9 @@ components:
 
   - component: Host-capability knowledge base and scoring
     package: engin-host
-    stance: bespoke-unjustified
+    stance: bespoke-justified
     standard_impl: pymcdm / scikit-criteria (weighted-sum MCDA)
-    evidence: []
+    evidence: [2026-pymcdm-methods, 2026-scikit-criteria]
     adr: null
     reviewed: 2026-08-13
     note: >-
@@ -996,13 +1067,21 @@ components:
       evidence too" was not met.
 
       The knowledge base and its capability semantics are genuinely bespoke
-      domain content and are not in question. What is in question is the ~40
-      lines of scoring arithmetic on top. There is a real argument for keeping it
-      -- the uncertainty propagation and the hard-constraint demotion are the
-      parts that matter here, and a generic MCDA library gives neither -- but
-      that argument has not been checked against what these libraries actually
-      do. Until it is, this stays `bespoke-unjustified`, which is the honest
-      state and the work queue #84 asked for. Tracked as #103.
+      domain content and were never in question. What was in question is the ~40
+      lines of scoring arithmetic on top.
+
+      **Resolved 2026-08-13 by running the evaluation (#103), not by arguing it.**
+      pymcdm 1.4.0 and scikit-criteria 0.10 were installed and inspected: both
+      take point-valued decision matrices, neither propagates a per-criterion
+      standard deviation, and neither has any feasibility or constraint concept.
+      Both of this component's requirements are unmet, so the row moves to
+      `bespoke-justified` -- see the two claim rows above for what was run.
+
+      Note what the evaluation did *not* vindicate: the weighted sum itself is a
+      commodity and both libraries provide it. It is also one line of numpy. The
+      justification rests entirely on the uncertainty propagation and the
+      demotion, and if either library gains interval-valued or stochastic inputs
+      this should be revisited rather than assumed settled.
 
   - component: Route-as-graph embedding
     package: engin-pathway
