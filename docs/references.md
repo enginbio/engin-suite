@@ -42,7 +42,9 @@ register rather than a bibliography.
 | `2026-frictionless-detector` | [Detector — Frictionless Framework documentation](https://framework.frictionlessdata.io/docs/framework/detector.html)<br/>Frictionless Data — *framework.frictionlessdata.io* | 2026 | software | url |
 | `2026-georgakilas-mife-mifd` | [MIFE and MIFD: Minimum information for fermentation experiments and devices](https://doi.org/10.1093/gigascience/giag038)<br/>Georgakilas, Georgios K., Metcalfe, Brett, Bize, Ariane, Owen, Stuart, Koehorst, Jasper J., et al. — *GigaScience 15, giag038* | 2026 | paper | doi |
 | `2026-numfocus-fiscal-sponsorship` | [Overview: NumFOCUS Projects — fiscal sponsorship requirements](https://numfocus.org/information-fiscal-sponsorship)<br/>NumFOCUS — *numfocus.org* | 2026 | web | url |
+| `2026-pymcdm-methods` | [pymcdm 1.4.0 — methods API](https://pypi.org/project/pymcdm/)<br/>pymcdm contributors — *PyPI / pymcdm.readthedocs.io* | 2026 | software | url |
 | `2026-rdkit-descriptors` | [Descriptor Calculation — RDKit documentation](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-descriptors)<br/>RDKit contributors — *rdkit.org* | 2026 | software | url |
+| `2026-scikit-criteria` | [scikit-criteria 0.10 — aggregation methods](https://pypi.org/project/scikit-criteria/)<br/>scikit-criteria contributors — *PyPI / scikit-criteria.quatrope.org* | 2026 | software | url |
 | `2026-zenodo-cho-k1-cultivations` | [Dataset Based on Chinese Hamster Ovary (CHO) Cultivations including Turbidity, Permittivity, O2 and CO2 Measurements](https://doi.org/10.5281/zenodo.20829178)<br/>Uhlendorff, S., Fulek, R., Eimler, J., Pein-Hackelbusch, M., Frahm, B. — *Zenodo* | 2026 | dataset | doi |
 
 ## Claims
@@ -75,6 +77,8 @@ register rather than a bibliography.
 | `packages/engin-core/src/engin_core/loaders.py` | frictionless `field_confidence` is a type-casting tolerance, not semantic confidence, and it maps nothing to a domain vocabulary — so it does not serve D11's ingest need. | `2026-frictionless-detector` | supports |
 | `packages/engin-host/README.md` | Circuit failures are frequently host-interaction failures rather than failures of the circuit design itself. | `2012-cardinale-context` | partially supports |
 | `packages/engin-host/README.md` | No published tool scores candidate microbial chassis against a production requirement with calibrated uncertainty. | `2025-chan-broad-host-range` | supports |
+| `packages/engin-host/src/engin_host/scoring.py` | pymcdm propagates per-criterion uncertainty into a scored interval, and supports demoting infeasible alternatives below every feasible one. | `2026-pymcdm-methods` | **contradicts** |
+| `packages/engin-host/src/engin_host/scoring.py` | scikit-criteria propagates per-criterion uncertainty, and supports hard-constraint demotion. | `2026-scikit-criteria` | **contradicts** |
 | `packages/engin-materials/README.md` | "The graph engine transfers to domains where topology carries signal" — offered as a general, transferable design rule. | `2021-jiang-gnn-vs-descriptors` | **contradicts** |
 | `packages/engin-protein/src/engin_protein/model.py` | "Low-N" in this literature means tens of assayed variants — as few as 24 — which places engin-protein's 60-variant campaign squarely in the regime. | `2021-biswas-low-n` | supports |
 | `packages/engin-protein/src/engin_protein/model.py` | Simple regression baselines are competitive with, and often outperform, more sophisticated models for protein fitness prediction — so ridge beating the GP here is the expected regime rather than an accident. | `2022-hsu-protein-fitness-baselines` | supports |
@@ -96,7 +100,7 @@ to serve.
 | Techno-economic coupling | `engin-core` | standard | BioSTEAM (behind the [tea] extra) | `2020-cortespena-biosteam` |
 | Mechanistic fed-batch simulator | `engin-core` | bespoke-justified | SBML + COPASI / libRoadRunner (representation and simulation) | `2003-hucka-sbml` |
 | Expected-improvement recommender | `engin-core` | bespoke-justified | BoTorch / Ax / BayBE | `2020-balandat-botorch` |
-| Host-capability knowledge base and scoring | `engin-host` | **bespoke-unjustified** | pymcdm / scikit-criteria (weighted-sum MCDA) | — |
+| Host-capability knowledge base and scoring | `engin-host` | bespoke-justified | pymcdm / scikit-criteria (weighted-sum MCDA) | `2026-pymcdm-methods`, `2026-scikit-criteria` |
 | Route-as-graph embedding | `engin-pathway` | bespoke-justified | PyTorch Geometric (M1 upgrade) | `2019-fey-pytorch-geometric` |
 | Protein fitness ridge head | `engin-protein` | standard | ridge regression on one-hot / physicochemical features | `2022-hsu-protein-fitness-baselines`, `2021-biswas-low-n` |
 | Monomer featurization | `engin-materials` | bespoke-justified | none applicable (RDKit was a category error) | `2026-rdkit-descriptors` |
@@ -114,3 +118,5 @@ copy was used; `accessed` records when it was last read.
 - **`2026-cf-xarray-units`** (accessed 2026-08-11) — Library documentation, as above. The evaluation that rejected cf_xarray was run against the library itself; this is the reference for what it claims.
 - **`2026-frictionless-detector`** (accessed 2026-08-11) — Library documentation. The claim is about what this software does, and the documentation is where it says so; there is no paper to cite instead.
 - **`2026-numfocus-fiscal-sponsorship`** (accessed 2026-08-11) — An organisation's own statement of its requirements. It exists only as a web page and can change without notice, which is exactly why `accessed` is recorded and D25 names re-checking as a trigger.
+- **`2026-pymcdm-methods`** (accessed 2026-08-13) — The claim is about what this library's API accepts, and the installed package is the reference for that. Evaluated at 1.4.0; the version is recorded because the answer can change.
+- **`2026-scikit-criteria`** (accessed 2026-08-13) — As above -- a claim about an API, referenced to the package that defines it. Evaluated at 0.10.
