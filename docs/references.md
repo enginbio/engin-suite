@@ -15,6 +15,7 @@ register rather than a bibliography.
 | id | work | year | type | stability |
 |---|---|---|---|---|
 | `2002-papadopoulos-inductive-confidence` | [Inductive Confidence Machines for Regression](https://doi.org/10.1007/3-540-36755-1_29)<br/>Papadopoulos, Harris, Proedrou, Kostas, Vovk, Volodya, Gammerman, Alex — *Machine Learning: ECML 2002, LNCS, pp. 345-356* | 2002 | paper | doi |
+| `2003-hucka-sbml` | [The systems biology markup language (SBML): a medium for representation and exchange of biochemical network models](https://doi.org/10.1093/bioinformatics/btg015)<br/>Hucka, M., Finney, A., Sauro, H. M., Bolouri, H., Doyle, J. C., Kitano, H., et al. — *Bioinformatics 19(4):524-531* | 2003 | paper | doi |
 | `2011-pedregosa-scikit-learn` | [Scikit-learn: Machine Learning in Python](https://www.jmlr.org/papers/v12/pedregosa11a.html)<br/>Pedregosa, F., et al. — *Journal of Machine Learning Research 12:2825-2830* | 2011 | paper | url |
 | `2011-straathof-downstream-costs` | [The Proportion of Downstream Costs in Fermentative Production Processes](https://doi.org/10.1016/B978-0-08-088504-9.00492-X)<br/>Straathof, Adrie J. J. — *Comprehensive Biotechnology (2nd ed.), pp. 811-814* | 2011 | paper | doi |
 | `2018-lei-distribution-free` | [Distribution-Free Predictive Inference for Regression](https://doi.org/10.1080/01621459.2017.1307116)<br/>Lei, Jing, G'Sell, Max, Rinaldo, Alessandro, Tibshirani, Ryan J., Wasserman, Larry — *Journal of the American Statistical Association 113(523):1094-1111* | 2018 | paper | doi |
@@ -38,6 +39,7 @@ register rather than a bibliography.
 | `2026-cf-xarray-units` | [Units — cf_xarray documentation](https://cf-xarray.readthedocs.io/en/latest/units.html)<br/>cf_xarray contributors — *cf-xarray.readthedocs.io* | 2026 | software | url |
 | `2026-frictionless-detector` | [Detector — Frictionless Framework documentation](https://framework.frictionlessdata.io/docs/framework/detector.html)<br/>Frictionless Data — *framework.frictionlessdata.io* | 2026 | software | url |
 | `2026-numfocus-fiscal-sponsorship` | [Overview: NumFOCUS Projects — fiscal sponsorship requirements](https://numfocus.org/information-fiscal-sponsorship)<br/>NumFOCUS — *numfocus.org* | 2026 | web | url |
+| `2026-rdkit-descriptors` | [Descriptor Calculation — RDKit documentation](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-descriptors)<br/>RDKit contributors — *rdkit.org* | 2026 | software | url |
 | `2026-zenodo-cho-k1-cultivations` | [Dataset Based on Chinese Hamster Ovary (CHO) Cultivations including Turbidity, Permittivity, O2 and CO2 Measurements](https://doi.org/10.5281/zenodo.20829178)<br/>Uhlendorff, S., Fulek, R., Eimler, J., Pein-Hackelbusch, M., Frahm, B. — *Zenodo* | 2026 | dataset | doi |
 
 ## Claims
@@ -76,7 +78,7 @@ register rather than a bibliography.
 
 ## Components
 
-**8 of 12 audited.** `unaudited` is the honest
+**12 of 12 audited.** `unaudited` is the honest
 default, not an oversight — reducing it is the programme this register exists
 to serve.
 
@@ -87,12 +89,12 @@ to serve.
 | Data convention over xarray/pandas | `engin-core` | bespoke-justified | none exists | `2026-cf-xarray-units` |
 | Ingest layer / schema inference | `engin-core` | bespoke-justified | none exists | `2026-frictionless-detector` |
 | Techno-economic coupling | `engin-core` | standard | BioSTEAM (behind the [tea] extra) | `2020-cortespena-biosteam` |
-| Mechanistic fed-batch simulator | `engin-core` | **unaudited** | none claimed | — |
+| Mechanistic fed-batch simulator | `engin-core` | bespoke-justified | SBML + COPASI / libRoadRunner (representation and simulation) | `2003-hucka-sbml` |
 | Expected-improvement recommender | `engin-core` | bespoke-justified | BoTorch / Ax / BayBE | `2020-balandat-botorch` |
-| Host-capability knowledge base and scoring | `engin-host` | **unaudited** | unknown | — |
+| Host-capability knowledge base and scoring | `engin-host` | **bespoke-unjustified** | pymcdm / scikit-criteria (weighted-sum MCDA) | — |
 | Route-as-graph embedding | `engin-pathway` | bespoke-justified | PyTorch Geometric (M1 upgrade) | `2019-fey-pytorch-geometric` |
-| Protein fitness ridge head | `engin-protein` | **unaudited** | unknown | — |
-| Monomer featurization | `engin-materials` | **unaudited** | RDKit | — |
+| Protein fitness ridge head | `engin-protein` | standard | ridge regression on one-hot / physicochemical features | `2022-hsu-protein-fitness-baselines`, `2021-biswas-low-n` |
+| Monomer featurization | `engin-materials` | bespoke-justified | none applicable (RDKit was a category error) | `2026-rdkit-descriptors` |
 | Graph embedding | `engin-graph` | bespoke-justified | PyTorch Geometric | `2019-fey-pytorch-geometric` |
 
 ## Known weaknesses in this register
