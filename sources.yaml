@@ -314,6 +314,21 @@ sources:
     stability: doi
     type: paper
 
+  # -- GNN property prediction (D23 / #88). Checking engin-materials' topology
+  # finding against the field before it hardens into doctrine.
+
+  - id: 2021-jiang-gnn-vs-descriptors
+    title: >-
+      Could graph neural networks learn better molecular representation for drug
+      discovery? A comparison study of descriptor-based and graph-based models
+    authors: [Jiang, Dejun, Wu, Zhenxing, Hsieh, Chang-Yu, Chen, Guangyong, Liao, Ben, Wang, Zhe, Shen, Chao, Cao, Dongsheng, Wu, Jian, Hou, Tingjun]
+    year: 2021
+    venue: Journal of Cheminformatics 13, article 12
+    location: https://doi.org/10.1186/s13321-020-00479-8
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -599,6 +614,35 @@ claims:
       features. That is a kernel mismatch, not an architecture verdict; a GP with
       a sequence-appropriate kernel is a different experiment this project has
       not run. The docstring implied the distinction and now states it.
+
+  - doc: packages/engin-materials/README.md
+    tier: A
+    source_id: 2021-jiang-gnn-vs-descriptors
+    claim: >-
+      "The graph engine transfers to domains where topology carries signal" —
+      offered as a general, transferable design rule.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      **Two independent problems, which is what #88 was opened to catch.**
+
+      First, the result is close to tautological on the generator that produced
+      it. `PropertyModel.raw` is `(1 - w) * structural + w * topo`, where `topo`
+      is a function of crosslink density alone and the composition baseline
+      cannot see it -- the source comment says so outright. So the only region of
+      the target where the graph model *can* win is the topology term, and
+      dialing `topology_weight` up makes it win there. That is a correct
+      implementation check and it is not evidence about materials.
+
+      Second, the broader reading points the wrong way. Across 11 public datasets
+      and 8 algorithms, Jiang et al. find that "descriptor-based models outperform
+      the graph-based models in terms of prediction accuracy and computational
+      efficiency". So graph structure earning its keep is the exception in this
+      literature, not the default. The README's transfer claim is narrowed to what
+      the experiment supports: the engine recovers connectivity signal that a
+      composition average is blind to, *if* a domain has such signal -- which is a
+      statement about the engine, conditional on an assumption about the domain
+      that this package has not tested.
 
   - doc: BIOSECURITY.md
     tier: A
