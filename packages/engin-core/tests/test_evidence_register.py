@@ -271,3 +271,75 @@ def test_docstring_refs_are_scanned_too(tmp_path, monkeypatch):
     monkeypatch.setattr(check_mod, "ROOT", tmp_path)
     bad = check_mod.scan_code({"sources": [{"id": "2024-someone-thing"}]})
     assert bad and bad[0][2] == "1999-nobody-nothing"
+
+
+# --- retracted-claim checker (scripts/evidence/check_corrections.py) ---------
+
+_NOTICE = (
+    "> **Withdrawn justification, kept because the error is instructive.** This decision\n"
+    'previously read: *"Recovery cost is set upstream by the strain and the broth, and an\n'
+    'optimizer chasing titer alone will therefore move the real objective backwards."*\n'
+)
+
+
+def _corrections_module():
+    import importlib.util
+
+    path = REPO / "scripts" / "evidence" / "check_corrections.py"
+    spec = importlib.util.spec_from_file_location("check_corrections", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_a_retracted_claim_republished_is_caught(tmp_path):
+    """The failure this exists for: a correction that reached one document only."""
+    cm = _corrections_module()
+    cores = cm.retracted_phrases(_NOTICE)
+    assert cores, "the notice should yield a retracted phrase"
+
+    doc = tmp_path / "guide.md"
+    doc.write_text(
+        "# Cost\n\nRecovery cost is set upstream by the strain and the broth, and an\n"
+        "optimizer chasing titer alone will therefore move the real objective backwards.\n"
+    )
+    assert cm.scan([doc], cores)
+
+
+def test_a_retracted_claim_cannot_vouch_for_itself(tmp_path):
+    """Regression: context vocabulary must never overlap the claims themselves.
+
+    The first version of the checker treated the word "backwards" as evidence
+    that surrounding prose was *discussing* a retraction. That word is in the
+    retracted claim, so a planted claim suppressed its own detection and the
+    check passed while republishing it. Words about the act of correcting only.
+    """
+    cm = _corrections_module()
+    assert not cm.DISCUSSING.search("move the real objective backwards")
+    assert not cm.DISCUSSING.search("that mechanism was wrong")
+    assert cm.DISCUSSING.search("this bullet previously read")
+
+
+def test_quoting_a_retraction_is_allowed(tmp_path):
+    """A correction notice quotes what it retracts. That is the house style."""
+    cm = _corrections_module()
+    cores = cm.retracted_phrases(_NOTICE)
+    doc = tmp_path / "decisions.md"
+    doc.write_text(
+        "# Decisions\n\nCorrected 2026-08-10: this decision previously read\n"
+        '"Recovery cost is set upstream by the strain and the broth, and an\n'
+        'optimizer chasing titer alone will therefore move the real objective backwards."\n'
+    )
+    assert not cm.scan([doc], cores)
+
+
+def test_the_explicit_opt_out_marker_works(tmp_path):
+    cm = _corrections_module()
+    cores = cm.retracted_phrases(_NOTICE)
+    doc = tmp_path / "audit.md"
+    doc.write_text(
+        "<!-- quotes-retracted: this document is the audit that found it -->\n\n"
+        "Recovery cost is set upstream by the strain and the broth, and an\n"
+        "optimizer chasing titer alone will therefore move the real objective backwards.\n"
+    )
+    assert not cm.scan([doc], cores)

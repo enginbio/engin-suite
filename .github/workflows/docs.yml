@@ -83,6 +83,15 @@ jobs:
       - name: Fail on uncited claims in Tier A documents
         run: python scripts/evidence/check_claims.py
 
+      # D23's third mechanism. The gate above catches an *uncited* claim; this
+      # catches a *retracted* one that is still published somewhere else. Three
+      # times in one week a correction reached one canonical document and not the
+      # documents repeating it, and all three were found by accident. DECISIONS.md
+      # already gives the instruction -- "grep the tree for the phrase, not the
+      # decision id" -- so this is that instruction run by CI instead of memory.
+      - name: Fail on retracted claims still published
+        run: python scripts/evidence/check_corrections.py
+
       - name: Build (warnings are errors, examples execute)
         run: sphinx-build -W --keep-going -b html docs docs/_build/html
 
