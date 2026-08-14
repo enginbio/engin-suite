@@ -33,9 +33,39 @@ correlates strongly with that chain's minimum, so min-pooling adds little the me
 hadn't already implied. Metabolic routes may differ — there the worst step is a sharp
 thermodynamic cliff rather than a draw from the same distribution as its neighbours.
 
-This matters beyond this package: it says the graph engine transfers to domains where
-**topology carries signal**, which is a narrower and more useful claim than "domains
-with a worst part."
+### How much of that is a finding, and how much is the generator
+
+**Checked 2026-08-13 for issue #88, and the table above says less than it first
+appears.** The ground truth in `PropertyModel.raw` is
+
+```
+value = (1 - topology_weight) * structural + topology_weight * topo
+```
+
+where `topo` depends on crosslink density alone, and a composition average is blind to
+it *by construction* — the source comment there says as much. So the only part of the
+target where a graph model **can** beat the baseline is the topology term, and turning
+`topology_weight` up makes it win exactly there. That is a correct check that the
+implementation recovers a signal it ought to recover. **It is not a discovery about
+materials.** The weakest-link rows read the same way: both models see the same
+per-unit features, which is a simpler explanation than min-pooling being redundant.
+
+**The field's evidence also points the other way on the general claim.** Comparing
+descriptor-based and graph-based models across 11 public datasets and 8 algorithms,
+[Jiang et al. (2021)](https://doi.org/10.1186/s13321-020-00479-8) conclude that
+"descriptor-based models outperform the graph-based models in terms of prediction
+accuracy and computational efficiency". A graph model earning its keep is the
+exception in that literature, not the default.
+
+So the claim this package makes is now the narrow one: **the engine recovers
+connectivity signal that a composition average cannot see, in a domain that has such
+signal.** Whether real biomaterial properties have it in the amount this simulator
+assumes is untested here — and on the balance of published evidence, a descriptor
+baseline deserves to be beaten before a graph model is preferred.
+
+*This section previously read: "it says the graph engine transfers to domains where
+topology carries signal, which is a narrower and more useful claim than 'domains with
+a worst part.'" The narrowing was real. It was not narrow enough.*
 
 ## Use it
 
