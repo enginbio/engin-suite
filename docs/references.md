@@ -90,7 +90,7 @@ to serve.
 |---|---|---|---|---|
 | Gaussian-process titer forecast | `engin-core` | standard | scikit-learn GaussianProcessRegressor | `2011-pedregosa-scikit-learn` |
 | Split-conformal calibration | `engin-core` | wrapped | MAPIE (cross-check) + sd-normalized multiplier | `2022-taquet-mapie` |
-| Data convention over xarray/pandas | `engin-core` | **bespoke-unjustified** | MIFE / MIFD (metadata layer) | `2026-cf-xarray-units`, `2026-georgakilas-mife-mifd` |
+| Data convention over xarray/pandas | `engin-core` | bespoke-justified | MIFE / MIFD (metadata layer) | `2026-cf-xarray-units`, `2026-georgakilas-mife-mifd` |
 | Ingest layer / schema inference | `engin-core` | bespoke-justified | none exists for the inference step; MIFE/MIFD is the target vocabulary | `2026-frictionless-detector`, `2026-georgakilas-mife-mifd` |
 | Techno-economic coupling | `engin-core` | standard | BioSTEAM (behind the [tea] extra) | `2020-cortespena-biosteam` |
 | Mechanistic fed-batch simulator | `engin-core` | bespoke-justified | SBML + COPASI / libRoadRunner (representation and simulation) | `2003-hucka-sbml` |

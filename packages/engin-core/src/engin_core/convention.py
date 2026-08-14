@@ -181,6 +181,77 @@ class ConventionReport(BaseModel):
         )
 
 
+# --------------------------------------------------------------- MIFE alignment
+
+#: Where each channel sits relative to **MIFE/MIFD**, the published minimum-information
+#: standard for fermentation experiments and devices (Georgakilas et al., *GigaScience*
+#: 2026, doi:10.1093/gigascience/giag038).
+#:
+#: `D11` resolved to **adopt rather than compete**: where a standard exists, the durable
+#: position is the reference implementation, because a competing format yields two
+#: half-adopted standards and an unmaintained converter. This table is that resolution
+#: made checkable instead of asserted -- the register carried
+#: ``standard_impl: none exists`` for this component until 2026-08-13, which was simply
+#: false.
+#:
+#: **The two layers are complementary, and the split is not arbitrary.** MIFE specifies
+#: the *controlled* variables and provenance of an experiment -- what was set, fed,
+#: stirred, harvested and purified. This convention specifies *measured and derived
+#: time series*. Checked against the published slot index on 2026-08-13, MIFE defines no
+#: slot for the metabolic rates (OUR, CER, RQ), for kLa, for biomass during cultivation
+#: (``sample_dry_mass`` is a sample property, not a cultivation channel), or for specific
+#: growth rate. Those are exactly the channels a *real* export forced this project to add
+#: and a simulator never needed.
+#:
+#: ``None`` means no MIFE slot corresponds, with the reason. It is a gap in coverage
+#: rather than a disagreement, and worth reporting upstream.
+MIFE_SLOTS: dict[str, str | None] = {
+    # Controlled conditions -- MIFE owns these, and we defer to its naming.
+    "feed_rate": "feed_flow_rate",
+    "agitation": "agitation_rate",
+    "airflow": "aeration_rate",
+    "temperature": "temperature",
+    "ph": "pH",
+    "do": "pO2",
+    "volume": "volume",
+    # Measured outcomes -- partial correspondence.
+    "titer": "concentration",  # MIFE pairs it with target_metabolite
+    "substrate": "concentration",  # same slot, distinguished by the metabolite named
+    # No MIFE slot. Derived metabolic rates and gas-phase measurements.
+    "our": None,
+    "cer": None,
+    "rq": None,
+    "kla": None,
+    "mu": None,
+    "biomass": None,  # sample_dry_mass is a sample property, not a cultivation channel
+    "offgas_o2": None,  # gas_input_composition is the *input*, not the exhaust
+    "offgas_co2": None,
+}
+
+#: Why each unmapped channel has no MIFE slot, so the gap is documented rather than
+#: implied. Reporting these upstream is the reference-implementation move.
+MIFE_GAPS: dict[str, str] = {
+    "our": "derived metabolic rate; no MIFE slot",
+    "cer": "derived metabolic rate; no MIFE slot",
+    "rq": "derived from OUR/CER; no MIFE slot",
+    "kla": "derived transfer coefficient; no MIFE slot",
+    "mu": "derived growth rate; no MIFE slot",
+    "biomass": "MIFE's sample_dry_mass is a sample property, not a cultivation time series",
+    "offgas_o2": "MIFE gas_input_composition describes the input gas, not the exhaust",
+    "offgas_co2": "MIFE gas_input_composition describes the input gas, not the exhaust",
+}
+
+
+def mife_slot(channel: str) -> str | None:
+    """The MIFE/MIFD slot a registered channel corresponds to, or ``None``.
+
+    ``None`` is a documented gap rather than an unknown: see :data:`MIFE_GAPS`.
+    """
+    if channel not in CHANNELS:
+        raise KeyError(f"{channel!r} is not a registered channel")
+    return MIFE_SLOTS.get(channel)
+
+
 def register_domain_units(registry: Any | None = None) -> bool:
     """Teach pint the fermentation units it does not ship (currently ``vvm``).
 

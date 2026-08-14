@@ -12,6 +12,7 @@ import pytest
 xr = pytest.importorskip("xarray", reason="requires the [io] extra")
 pd = pytest.importorskip("pandas", reason="requires the [io] extra")
 
+from engin_core import convention  # noqa: E402
 from engin_core.convention import (  # noqa: E402
     CONVENTION_ATTR,
     CONVENTION_VERSION,
@@ -223,3 +224,47 @@ def test_report_summary_counts_by_level():
     summary = validate_timeseries(ds).summary()
     assert "does not conform" in summary
     assert CONVENTION_VERSION in summary
+
+
+# ------------------------------------------------------- MIFE/MIFD alignment (D11)
+
+
+def test_every_channel_has_a_mife_verdict():
+    """A channel with no entry is an unexamined one, which is what D11 forbids.
+
+    The register carried `standard_impl: none exists` for this convention until
+    2026-08-13, when MIFE/MIFD turned out to be published and this project's own
+    D11 already named it. The mapping is what keeps that from being re-asserted:
+    adding a channel now forces a decision about whether the standard covers it.
+    """
+    assert set(convention.MIFE_SLOTS) == set(convention.CHANNELS)
+
+
+def test_every_unmapped_channel_states_why():
+    """`None` must be a documented gap, never a shrug."""
+    unmapped = {k for k, v in convention.MIFE_SLOTS.items() if v is None}
+    assert unmapped == set(convention.MIFE_GAPS)
+    assert all(len(reason) > 20 for reason in convention.MIFE_GAPS.values())
+
+
+def test_controlled_conditions_defer_to_mife_naming():
+    """Where MIFE has a slot, we map to it rather than inventing a name."""
+    assert convention.mife_slot("feed_rate") == "feed_flow_rate"
+    assert convention.mife_slot("agitation") == "agitation_rate"
+    assert convention.mife_slot("do") == "pO2"
+
+
+def test_the_gaps_are_the_derived_rates():
+    """The boundary between the two layers, asserted rather than described.
+
+    MIFE specifies controlled conditions; this convention adds measured and
+    derived series. These four are exactly the channels a real industrial export
+    forced into the registry and that a simulator never needed.
+    """
+    for derived in ("our", "cer", "rq", "kla"):
+        assert convention.mife_slot(derived) is None
+
+
+def test_an_unregistered_channel_is_an_error_not_a_gap():
+    with pytest.raises(KeyError):
+        convention.mife_slot("not_a_channel")
