@@ -18,6 +18,14 @@ GP configuration is wrong for these features; it does not say Gaussian processes
 to ridge on protein fitness. A GP with a sequence-appropriate kernel is a different
 experiment, and this project has not run it.
 
+**The ordering holds; the margins in that table do not.** Re-measured over 12 campaign
+seeds with plain ``fit_gp``, ridge leads by ρ 0.755 at e=0 (12/12 seeds), 0.246 at
+e=0.5 and 0.096 at e=0.8 (11/12 each) — so the bottom row is a ~0.1 lead against a
+0.09 spread, not the 3x it reads as. Note also that "best config" above is not
+recorded anywhere and so cannot be regenerated: the benchmark runs ``fit_gp`` as
+shipped, which scores *below* that column. Treat the GP column as an anecdote and the
+ordering as the claim.
+
 So the estimator here is **ridge with a bagged ensemble for spread** — which is the
 *expected* choice in this regime rather than a lucky one. Hsu et al. (2022) assess
 protein fitness predictors systematically and find that "a simple baseline approach we
@@ -34,7 +42,7 @@ for a crossover N above which the more expressive model starts winning does not 
 one up: the regime statement is qualitative, and the boundary depends on how much of
 the signal is epistatic relative to the labelled budget, not on N alone. What *is*
 measurable here is the epistasis crossover in the interaction-feature numbers below —
-additive wins at e=0, pairwise wins by e=0.8. Use that to decide, and treat the
+additive wins at e=0, pairwise from about e=0.4 up. Use that to decide, and treat the
 absence of a clean N* as a documented finding rather than an unasked question.
 
 This is not a departure from the "reuse
@@ -55,13 +63,26 @@ rather than tuned away.
 
 **On interaction features.** Pairwise one-hot expansion is available via
 ``interactions=True`` and is *off by default*, because it did not reliably beat the
-additive model at these sample sizes — it wins only at high epistasis (ρ 0.313 vs
-0.292 at e=0.8) and loses meaningfully at low (0.816 vs 0.942 at e=0). **That pair is
+additive model at these sample sizes — it loses meaningfully at low epistasis
+(ρ 0.816 vs 0.942 at e=0) and wins at high (ρ 0.313 vs 0.292 at e=0.8). **That pair is
 the switch condition referred to above**: it is the one crossover this package can
 actually document, and it is in epistasis rather than N.
 
+**The crossover is near e≈0.4, not at the top of the range.** A pair of endpoints says
+a switch exists without saying where it sits. Over 20 campaign seeds the additive model
+leads by ρ 0.094 at e=0.2 and 0.037 at e=0.3, is level at e=0.4 (8 seeds of 20), and
+trails by 0.044 at e=0.5. So turn interactions on above roughly e=0.4 — this said "wins
+only at high epistasis" until it was measured, which gives away the middle of the range.
+
 Additive models being hard to beat in low-N protein work is a well-reported result
 (Hsu et al. 2022), not a surprise.
+
+**Every ρ quoted above is a single seed, and lands at the optimistic end.** Campaign
+seed changes them by ~0.05-0.10, and more at high epistasis: the e=0.8 pair reads
+0.292/0.313 here against a 20-seed mean of 0.140/0.206. Read each as "roughly this"
+and the *orderings* as the claim. Regenerate them with
+``python benchmarks/docstring_claims.py --seeds 20``; ``tests/test_docstring_claims.py``
+asserts the orderings on every run, so these numbers can no longer drift unnoticed.
 """
 
 from __future__ import annotations
@@ -148,8 +169,11 @@ class CalibratedFitnessModel:
         X = self._design_matrix(seqs)
         # The mean comes from a fit on *all* the data; the ensemble supplies only the
         # spread. Using the bagged mean instead measurably costs ranking accuracy
-        # (Spearman 0.806 vs 0.975 at zero epistasis) because each member sees a
-        # bootstrap resample — pure loss when a full-data fit is available.
+        # (Spearman 0.806 vs 0.873 at zero epistasis) because each member sees a
+        # bootstrap resample — pure loss when a full-data fit is available. This
+        # comment read "0.806 vs 0.975" until 2026-08-13, which compared the bagged
+        # mean against the *uncalibrated* full-campaign ridge from a different
+        # experiment and so tripled the apparent cost of bagging.
         self._full = Ridge(alpha=self.alpha).fit(X, y)
         self._models = []
         for b in range(self.n_estimators):
