@@ -358,6 +358,20 @@ sources:
       molecular structures -- and its own documentation is where that is stated.
     type: software
 
+  # -- Absence evidence (D23 / #90). The highest bar in the scheme: "nobody has
+  # built this" is the most self-serving sentence available to this project.
+
+  - id: 2026-georgakilas-mife-mifd
+    title: >-
+      MIFE and MIFD: Minimum information for fermentation experiments and devices
+    authors: [Georgakilas, Georgios K., Metcalfe, Brett, Bize, Ariane, Owen, Stuart, Koehorst, Jasper J., et al.]
+    year: 2026
+    venue: GigaScience 15, giag038
+    location: https://doi.org/10.1093/gigascience/giag038
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -800,19 +814,38 @@ components:
 
   - component: Data convention over xarray/pandas
     package: engin-core
-    stance: bespoke-justified
-    standard_impl: none exists
-    evidence: [2026-cf-xarray-units]
+    stance: bespoke-unjustified
+    standard_impl: MIFE / MIFD (metadata layer)
+    evidence: [2026-cf-xarray-units, 2026-georgakilas-mife-mifd]
     adr: null
-    reviewed: 2026-08-11
+    reviewed: 2026-08-13
+    note: >-
+      **`standard_impl: none exists` was false, and this project's own decision
+      record already said so.** MIFE and MIFD -- minimum information for
+      fermentation experiments and devices -- are peer-reviewed (GigaScience 2026),
+      LinkML-schema'd, deposited in BioPortal and integrated with FAIR Data
+      Station. The vault's D11 entry names them and resolves to *adopt rather than
+      compete*, on the reasoning that where a standard exists the durable position
+      is the reference implementation. The public register meanwhile claimed the
+      slot was empty. See docs/design/data-convention.md for the full search and
+      the boundary. Reclassified `bespoke-unjustified` until the convention is
+      positioned against MIFE in code rather than in a vault note.
 
   - component: Ingest layer / schema inference
     package: engin-core
     stance: bespoke-justified
-    standard_impl: none exists
-    evidence: [2026-frictionless-detector]
+    standard_impl: none exists for the inference step; MIFE/MIFD is the target vocabulary
+    evidence: [2026-frictionless-detector, 2026-georgakilas-mife-mifd]
     adr: null
-    reviewed: 2026-08-11
+    reviewed: 2026-08-13
+    note: >-
+      The absence survives here, but narrower than it was stated. Nothing
+      published maps arbitrary vendor bioreactor exports onto a domain vocabulary
+      -- frictionless infers *types*, not semantics, which is why it was rejected.
+      What changed on 2026-08-13 is the other end: **the vocabulary to map onto is
+      no longer ours to invent.** MIFE/MIFD supplies it, so the honest description
+      of this component is a mapper into a published standard rather than a
+      standard-shaped gap.
 
   - component: Techno-economic coupling
     package: engin-core
