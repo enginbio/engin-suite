@@ -167,9 +167,54 @@ def main() -> int:
         return 0
 
     print("\nUploading to PyPI. twine reads credentials from the environment or ~/.pypirc.")
-    subprocess.run([sys.executable, "-m", "twine", "upload", *artifacts], check=True)
-    print("\nDone. Update GOVERNANCE.md 5.4 to say which names are now held.")
-    return 0
+    # --skip-existing makes this resumable. PyPI rate-limits *new project
+    # creation*, and on 2026-08-13 the first real run got four of six names
+    # before a 429; without this flag, re-running fails on the four that already
+    # exist and the remaining two stay unclaimed. A partial upload is the
+    # expected case here, not an edge one.
+    #
+    # Note the failure mode that run exposed: twine printed a 100% progress bar
+    # for a fifth distribution that PyPI then rejected. **The progress bar is not
+    # a receipt** -- verify against the index, which is what --verify does.
+    subprocess.run(
+        [sys.executable, "-m", "twine", "upload", "--skip-existing", *artifacts],
+        check=True,
+    )
+    print()
+    return 0 if _report(names) else 1
+
+
+def _report(names: list[str]) -> bool:
+    """Check each name against PyPI itself and say which are actually claimed."""
+    import json
+    import urllib.error
+    import urllib.request
+
+    held, missing = [], []
+    for name in names:
+        try:
+            with urllib.request.urlopen(f"https://pypi.org/pypi/{name}/json", timeout=20) as r:
+                held.append((name, json.load(r)["info"]["version"]))
+        except urllib.error.HTTPError:
+            missing.append(name)
+        except OSError as exc:  # network trouble is not the same as unclaimed
+            print(f"  {name}: could not verify ({exc})")
+            missing.append(name)
+
+    for name, version in held:
+        print(f"  claimed   {name} {version}")
+    for name in missing:
+        print(f"  MISSING   {name}")
+
+    if missing:
+        print(
+            f"\n{len(missing)} name(s) not claimed. PyPI rate-limits new project "
+            "creation, so wait and re-run:\n"
+            f"  python {Path(__file__).relative_to(REPO)} --upload"
+        )
+        return False
+    print("\nAll names held. Update GOVERNANCE.md 5.4 to say so.")
+    return True
 
 
 if __name__ == "__main__":
