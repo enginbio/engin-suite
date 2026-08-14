@@ -59,18 +59,42 @@ documents kept asserting, and a cost figure the repo dropped that the vault kept
 days. **The failure is never the original error. It is that fixing one document is taken
 for fixing the claim.**
 
-## Where this leaves the component
+## Where the boundary actually falls
 
-Reclassified `bespoke-unjustified`. Not because the convention is wrong — it may well
-survive as the array-layout complement to a metadata standard that does not specify
-in-memory layout — but because that positioning currently exists in a vault note rather
-than in code, and an unevidenced "we're compatible" is exactly what this register is for
-catching.
+**Positioned in code as of 2026-08-13**: `engin_core.convention.MIFE_SLOTS` maps every
+registered channel to its MIFE slot or to a documented gap, and tests fail if a channel
+is added without a verdict. That is what moved this row off `bespoke-unjustified` — an
+unevidenced "we're compatible" is exactly what the register exists to catch.
 
-**What would settle it:** generate the data model, JSON Schema and validators from the
-published LinkML spec, and state precisely which MIFE terms the convention's channel
-registry corresponds to. `D11`'s own reasoning already points there — it converts the
-headline task from design to code generation, and inherits future revisions for free.
+Of 17 channels, **9 map to MIFE and 8 are gaps**, and the split is not arbitrary.
+
+| | |
+|---|---|
+| **MIFE owns** the controlled conditions and provenance | `feed_flow_rate`, `agitation_rate`, `aeration_rate`, `temperature`, `pH`, `pO2`, `volume`, `concentration` — plus the downstream slots `D13` needs |
+| **This convention adds** measured and derived time series | `our`, `cer`, `rq`, `kla`, `mu`, `biomass`, `offgas_o2`, `offgas_co2` |
+
+Checked against the published slot index on 2026-08-13: MIFE defines no slot for the
+metabolic rates, for kLa, for specific growth rate, or for biomass during cultivation —
+`sample_dry_mass` is a *sample* property, not a cultivation channel. And
+`gas_input_composition` describes the gas going **in**, so exhaust composition has no
+home either.
+
+**Those are precisely the channels a real industrial export forced into this registry and
+a simulator never needed.** The erythromycin dataset arrived with OUR, CER, RQ and kLa
+because a working plant measures its exhaust gas; Engin's own simulator has none, which
+is why the vocabulary was missing until real data landed. That the standard has the same
+shape of gap is the more interesting observation, and it is worth reporting upstream —
+being the reference implementation means contributing findings back, not just consuming
+the schema.
+
+## Still outstanding
+
+Generating the data model, JSON Schema and validators from the published LinkML spec.
+`D11`'s reasoning points there — it converts the headline task from design to code
+generation and inherits future revisions free. **Note one thing found while checking:**
+the schema documentation site does not link a downloadable LinkML or JSON Schema
+artifact from its home view, so "generate from the spec" needs the artifact located
+before it can be planned rather than assumed.
 
 Timing favours it. The standard is months post-publication, so real adoption is near
 zero: a well-designed, institutionally backed standard with no tooling yet is the best

@@ -861,7 +861,7 @@ components:
 
   - component: Data convention over xarray/pandas
     package: engin-core
-    stance: bespoke-unjustified
+    stance: bespoke-justified
     standard_impl: MIFE / MIFD (metadata layer)
     evidence: [2026-cf-xarray-units, 2026-georgakilas-mife-mifd]
     adr: null
@@ -874,9 +874,17 @@ components:
       Station. The vault's D11 entry names them and resolves to *adopt rather than
       compete*, on the reasoning that where a standard exists the durable position
       is the reference implementation. The public register meanwhile claimed the
-      slot was empty. See docs/design/data-convention.md for the full search and
-      the boundary. Reclassified `bespoke-unjustified` until the convention is
-      positioned against MIFE in code rather than in a vault note.
+      slot was empty.
+
+      **Resolved 2026-08-13**: `convention.MIFE_SLOTS` maps all 17 channels to a
+      MIFE slot (9) or a documented gap (8), with tests failing if a channel is
+      added without a verdict. The boundary is real rather than convenient -- MIFE
+      specifies controlled conditions and provenance; this convention adds measured
+      and derived series, and MIFE defines no slot for OUR, CER, RQ, kLa, mu,
+      cultivation biomass or exhaust composition. Those are exactly the channels a
+      real industrial export forced in and a simulator never needed. Generating the
+      data model from the LinkML spec remains outstanding; see
+      docs/design/data-convention.md.
 
   - component: Ingest layer / schema inference
     package: engin-core
