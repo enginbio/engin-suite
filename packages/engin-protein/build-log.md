@@ -74,10 +74,51 @@ spread, and a full-data fit is available for the mean.
 - **Light path held.** Default featurizer is one-hot + physicochemical descriptors — no downloads,
   no PyTorch (ADR 0002). `PrecomputedFeaturizer` covers the PLM case by accepting embeddings
   computed elsewhere, so the heavy dependency never enters this package.
-- **Pairwise interaction features are off by default.** They win only at high epistasis (0.313 vs
-  0.292 at e=0.8) and lose meaningfully at low (0.816 vs 0.942 at e=0).
+- **Pairwise interaction features are off by default.** ~~They win only at high epistasis~~ (0.313 vs
+  0.292 at e=0.8) and lose meaningfully at low (0.816 vs 0.942 at e=0). **"Only at high epistasis"
+  is withdrawn 2026-08-13** — re-measured over 20 seeds, the crossover is near e≈0.4. See the
+  2026-08-13 entry below.
 - The schema caught a real bug during the build: the planner pooled a seed campaign and a design
   library that both numbered variants from zero, and the uniqueness validator refused it.
 
 **Next:** M1 — ProteinGym / public DMS sets, PINDER, Adaptyv open results. That is where the kill
 criteria actually get tested; everything above is plumbing validation.
+
+## [2026-08-13] Session 2 — the docstring ρ values, re-measured and pinned
+
+`model.py` published six Spearman ρ values that no test recomputed, and #99 promoted one pair of
+them to a documented *switch condition*. Same shape as the docs execution cache before CI checked
+it, so: `benchmarks/docstring_claims.py` regenerates all of them and `tests/test_docstring_claims.py`
+asserts the orderings on every run. Seven tests, ~13 s.
+
+**The orderings hold. Every one of them.** Over 20 campaign seeds (12 where the GP is involved):
+
+| claim | measured gap | held on |
+|---|---|---|
+| additive over pairwise, e=0 | +0.136 ± 0.030 | 20/20 |
+| pairwise over additive, e=0.8 | +0.066 ± 0.042 | 18/20 |
+| full-data mean over bagged mean, e=0 | +0.052 ± 0.016 | 20/20 |
+| full campaign over 70% split, e=0 | +0.123 ± 0.051 | 20/20 |
+| ridge over GP, e=0 / 0.5 / 0.8 | +0.755 / +0.246 / +0.096 | 12/12, 11/12, 11/12 |
+
+**What did not hold is three things around them**, all now corrected in the docstring:
+
+1. **"They win only at high epistasis" was wrong.** The crossover is near **e≈0.4** — additive is
+   ahead by 0.037 at e=0.3, level at 0.4 (8 seeds of 20), behind by 0.044 at 0.5. Published as a
+   pair of endpoints, the rule silently told a reader at e=0.5 to leave interactions off. This is
+   the correction that matters, because #99 made that pair the switch condition.
+2. **An inline comment in `fit` read "0.806 vs 0.975"** — the bagged mean against the *uncalibrated*
+   full-campaign ridge, two different experiments, tripling the apparent cost of bagging. The
+   docstring's own 0.806 vs 0.873 was right; measured gap is +0.052.
+3. **The GP table's bottom row reads as a 3x lead and is a ~0.1 one** against a 0.09 spread. And
+   its "GP (best config)" column cannot be regenerated at all — the config search was never
+   recorded, and plain `fit_gp` scores *below* what is published there.
+
+**Every published figure sits at the optimistic end of its seed distribution**, the e=0.8 row most
+of all: 0.292/0.313 published against a 20-seed mean of 0.140/0.206. Kept as-is with the spread now
+stated beside them, per "corrections stay in the record" — they are honest single-seed
+illustrations, and the test asserts the orderings rather than the values.
+
+**Not fixed here:** epistasis is a knob on the synthetic landscape, so "switch above e≈0.4" is not
+something a reader can evaluate on a real campaign. The rule is sharper than it was and still needs
+an observable proxy before it is actionable outside this simulator.
