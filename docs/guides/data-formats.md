@@ -136,7 +136,9 @@ them — `"g/L"`, `"1/h"`, `"degC"`, `"rpm"` — and dimensionless quantities ar
 than carried.
 
 One domain unit needs teaching: `vvm`, gas volumes per liquid volume per minute,
-is standard in fermentation and absent from pint's registry.
+is conventional in fermentation practice and absent from pint's registry —
+verified against pint 0.25.3, where both `vvm` and `VVM` raise
+`UndefinedUnitError`. <!-- not-a-claim: checked against the installed dependency -->
 `register_domain_units()` defines it, and the validator calls it for you.
 
 ## Registered channels

@@ -372,6 +372,20 @@ sources:
     stability: doi
     type: paper
 
+  # -- Remaining Tier A pass (D23 / #91).
+
+  - id: 2012-cardinale-context
+    title: >-
+      Contextualizing context for synthetic biology - identifying causes of
+      failure of synthetic biological systems
+    authors: [Cardinale, Stefano, Arkin, Adam Paul]
+    year: 2012
+    venue: Biotechnology Journal 7(7):856-866
+    location: https://doi.org/10.1002/biot.201200085
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -686,6 +700,39 @@ claims:
       composition average is blind to, *if* a domain has such signal -- which is a
       statement about the engine, conditional on an assumption about the domain
       that this package has not tested.
+
+  - doc: packages/engin-host/README.md
+    tier: A
+    source_id: 2012-cardinale-context
+    claim: >-
+      Circuit failures are frequently host-interaction failures rather than
+      failures of the circuit design itself.
+    strength: partially supports
+    reviewed: 2026-08-13
+    note: >-
+      The README said "**Most** circuit failures are really host-interaction
+      failures", uncited and published. The mechanism is well supported --
+      Cardinale and Arkin catalogue the contextual causes of synthetic-system
+      failure -- but "most" is a quantitative claim about a distribution of
+      failure causes, and this source characterises causes rather than counting
+      them. Softened to the supported form and cited.
+
+  - doc: packages/engin-host/README.md
+    tier: A
+    source_id: 2012-cardinale-context
+    claim: >-
+      Host selection has "no standard commercial tool -- genuine whitespace".
+    strength: contested
+    reviewed: 2026-08-13
+    note: >-
+      **An absence claim, published, and never searched.** #90 sets the highest
+      bar in the scheme for exactly this sentence, and on the same day it was
+      applied to the data convention the "no standard exists" claim there turned
+      out to be flatly wrong -- MIFE/MIFD had been published, and this project's
+      own decision record already said so. That is reason enough not to leave a
+      second unexamined one in a published README. Softened from an assertion
+      about the market to a statement about what this package does, pending the
+      #90 procedure. Filed as #107.
 
   - doc: BIOSECURITY.md
     tier: A
