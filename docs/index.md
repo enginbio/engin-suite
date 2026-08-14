@@ -44,6 +44,7 @@ biosecurity
 contributing
 decisions
 design/data-convention
+design/host-selection
 adr/index
 ```
 

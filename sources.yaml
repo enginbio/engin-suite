@@ -386,6 +386,20 @@ sources:
     stability: doi
     type: paper
 
+  # -- Host-selection absence search (D23 / #107).
+
+  - id: 2025-chan-broad-host-range
+    title: >-
+      Broad-Host-Range Synthetic Biology: Rethinking Microbial Chassis as a
+      Design Variable
+    authors: [Chan, Dennis Tin Chat, Bjerg, Johan, Bernstein, Hans C.]
+    year: 2025
+    venue: ACS Synthetic Biology 14(10):3815-3821
+    location: https://doi.org/10.1021/acssynbio.5c00308
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -719,20 +733,32 @@ claims:
 
   - doc: packages/engin-host/README.md
     tier: A
-    source_id: 2012-cardinale-context
+    source_id: 2025-chan-broad-host-range
     claim: >-
-      Host selection has "no standard commercial tool -- genuine whitespace".
-    strength: contested
+      No published tool scores candidate microbial chassis against a production
+      requirement with calibrated uncertainty.
+    strength: supports
     reviewed: 2026-08-13
     note: >-
-      **An absence claim, published, and never searched.** #90 sets the highest
-      bar in the scheme for exactly this sentence, and on the same day it was
-      applied to the data convention the "no standard exists" claim there turned
-      out to be flatly wrong -- MIFE/MIFD had been published, and this project's
-      own decision record already said so. That is reason enough not to leave a
-      second unexamined one in a published README. Softened from an assertion
-      about the market to a statement about what this package does, pending the
-      #90 procedure. Filed as #107.
+      **Searched 2026-08-13 for #107, and this time the absence holds** -- unlike
+      the data convention's, which the same procedure demolished the same day.
+      Recorded so it is falsifiable rather than merely asserted.
+
+      What was searched: literature on chassis and host selection; PyPI for
+      candidate distributions; and the decision-support tooling named in
+      biomanufacturing reviews. Near-misses and why each is not this: Chan et al.
+      (2025) argue precisely that chassis should be treated as a *design
+      variable* rather than a default -- which motivates the tool and is not one;
+      the broad-host-range expression platforms are **wet-lab** screening,
+      answering the same question empirically rather than computationally; and
+      KEGG, MetaCyc and BRENDA hold capability data without scoring against a
+      requirement. Techno-economic tools address feedstock and siting, not host.
+
+      **The claim was still narrowed, because the search does not support what
+      the README said.** "No standard *commercial* tool" is a statement about a
+      vendor market that a literature and package search cannot settle -- vendor
+      capability is often unpublished. What is supportable is the narrower
+      published-tool claim, which is what the README now makes. Re-check 2027-08.
 
   - doc: BIOSECURITY.md
     tier: A
