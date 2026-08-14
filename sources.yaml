@@ -450,23 +450,75 @@ claims:
     tier: A
     source_id: 2011-straathof-downstream-costs
     claim: >-
-      The downstream-processing share of production cost is strongly
-      product-class dependent: reported as 45-92% for biopharmaceuticals against
-      20-40% for bulk fermentation products.
-    strength: partially supports
+      Downstream processing is 45-92% of production cost for biopharmaceuticals
+      against a typical 20-40% for bulk fermentation products.
+    strength: supports
     reviewed: 2026-08-13
     note: >-
-      **Read the strength qualifier before quoting the numbers.** The chapter is
-      paywalled and the figures here come from its abstract, which several
-      independent sources quote consistently in the same words -- not from the
-      chapter's own data tables, which is where the conditions and the
-      product-by-product breakdown live. Corroborated secondary reporting is
-      better than the industry-blog provenance that sank the earlier 35-50%
-      claim, and it is still not primary. Recorded at `partially supports` until
-      someone reads the chapter; founder has institutional access. What is
-      *robust* regardless of the exact percentages, and what the documents now
-      say, is the qualitative shape: DSP dominates for high-value low-titer
-      products and does not for bulk ones.
+      **Upgraded from `partially supports` the same day, on reading the primary
+      source.** The founder purchased the chapter after this row was first filed
+      against its abstract. Both figures verify verbatim: "For the analyzed
+      biopharmaceutical processes, the range is 45-92%" and "for bulk
+      fermentation products, the typical range is 20-40%." The chapter is
+      copyrighted Elsevier material and is deliberately **not** committed to this
+      repository (cf. D12's ship-no-data rule); the DOI is the pointer.
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      For bulk fermentation products, raw material takes a larger share of
+      production cost than downstream processing does.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      **Written 2026-08-13 from the abstract, corrected the same day from the
+      chapter.** The source says carbohydrate feedstock is 15-60% of production
+      cost and the most important *upstream* contributor -- but then: "only for
+      the ethanol and penicillin processes analyzed, carbohydrate costs were
+      larger than overall DSP costs." So substrate-beats-DSP is a statement about
+      particular processes, not about bulk products as a class. The generalized
+      version was mine, not the source's. Corrected in DECISIONS.md, README.md
+      and docs/guides/cost.md.
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      The relative DSP contribution rises with the product's selling price, and
+      purity requirement moves it independently of product class.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      The finding that improved the argument rather than merely confirming it.
+      "The relative DSP contribution tends to rise with the selling price" --
+      ~15% for ethanol at ~$0.5/kg up to 60-70% for enzymes -- which is a
+      continuum, not the two buckets the first draft described. And on purity:
+      crude penicillin G and crude lipase sit near 25%, where Straathof notes
+      purified and formulated versions "would have been closer to the 50-55%
+      range". **That is direct literature support for #17**, purity as a TEA
+      input: the same molecule at a different specification is a different
+      economics problem.
+
+  - doc: DECISIONS.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      The DSP cost percentages repeated across the industrial-biotechnology
+      literature are largely unsupported.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      Recorded for D23 rather than for D13. Straathof's motivating complaint is
+      that the widely-cited ranges -- 50-70%, 50-80%, 50-90%, 60-70%, 60-80%,
+      60-90% -- are "generally not supported by proper data or references",
+      appear in "reputed scientific journals and books", and are "often
+      exaggerating". A paper whose contribution is checking numbers everyone
+      repeats is the closest thing this programme has to an external argument for
+      its own existence. Note also the caveats the chapter attaches to its own
+      figures: the inputs are design data rather than plant data, and the DSP
+      boundary is hard to draw in an integrated biorefinery -- lignocellulosic
+      ethanol is excluded for that reason.
 
   - doc: docs/index.md
     tier: A

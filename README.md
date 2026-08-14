@@ -45,11 +45,12 @@ thin domain layers over one shared engine, `engin-core`.
   thing that could sit outside this repository is partner data under NDA, which
   does not exist yet.
 - **The objective is net $/kg, not titer** (`D13`) — titer captures one of three
-  cost centres, and which one dominates is a property of the product: downstream
-  processing is reported at 45–92% of production cost for biopharmaceuticals
-  against 20–40% for bulk fermentation products, where raw material takes the
-  larger share instead (Straathof 2011). <!-- ref: 2011-straathof-downstream-costs -->
-  Titer is also inflatable by running
+  cost centres, and which one dominates tracks the product's value: downstream
+  processing runs 45–92% of production cost for biopharmaceuticals against a
+  typical 20–40% for bulk fermentation products, rising with selling price
+  (Straathof 2011). <!-- ref: 2011-straathof-downstream-costs -->
+  Purity moves it too — crude penicillin G sits near 25%, purified and formulated
+  nearer 50–55%. Titer is also inflatable by running
   longer, and says nothing about the raw-material cost that *yield* governs.
   *(Corrected 2026-08-13: this read "recovery cost is determined upstream but
   incurred downstream, so an optimizer maximizing titer can move the true
