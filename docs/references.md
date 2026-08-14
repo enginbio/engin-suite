@@ -38,6 +38,7 @@ register rather than a bibliography.
 | `2025-zenodo-erythromycin-efp` | [Erythromycin fermentation process dataset](https://doi.org/10.5281/zenodo.14619074)<br/>Yan, Xuefeng, Sun, Yifei — *Zenodo* | 2025 | dataset | doi |
 | `2026-cf-xarray-units` | [Units — cf_xarray documentation](https://cf-xarray.readthedocs.io/en/latest/units.html)<br/>cf_xarray contributors — *cf-xarray.readthedocs.io* | 2026 | software | url |
 | `2026-frictionless-detector` | [Detector — Frictionless Framework documentation](https://framework.frictionlessdata.io/docs/framework/detector.html)<br/>Frictionless Data — *framework.frictionlessdata.io* | 2026 | software | url |
+| `2026-georgakilas-mife-mifd` | [MIFE and MIFD: Minimum information for fermentation experiments and devices](https://doi.org/10.1093/gigascience/giag038)<br/>Georgakilas, Georgios K., Metcalfe, Brett, Bize, Ariane, Owen, Stuart, Koehorst, Jasper J., et al. — *GigaScience 15, giag038* | 2026 | paper | doi |
 | `2026-numfocus-fiscal-sponsorship` | [Overview: NumFOCUS Projects — fiscal sponsorship requirements](https://numfocus.org/information-fiscal-sponsorship)<br/>NumFOCUS — *numfocus.org* | 2026 | web | url |
 | `2026-rdkit-descriptors` | [Descriptor Calculation — RDKit documentation](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-descriptors)<br/>RDKit contributors — *rdkit.org* | 2026 | software | url |
 | `2026-zenodo-cho-k1-cultivations` | [Dataset Based on Chinese Hamster Ovary (CHO) Cultivations including Turbidity, Permittivity, O2 and CO2 Measurements](https://doi.org/10.5281/zenodo.20829178)<br/>Uhlendorff, S., Fulek, R., Eimler, J., Pein-Hackelbusch, M., Frahm, B. — *Zenodo* | 2026 | dataset | doi |
@@ -86,8 +87,8 @@ to serve.
 |---|---|---|---|---|
 | Gaussian-process titer forecast | `engin-core` | standard | scikit-learn GaussianProcessRegressor | `2011-pedregosa-scikit-learn` |
 | Split-conformal calibration | `engin-core` | wrapped | MAPIE (cross-check) + sd-normalized multiplier | `2022-taquet-mapie` |
-| Data convention over xarray/pandas | `engin-core` | bespoke-justified | none exists | `2026-cf-xarray-units` |
-| Ingest layer / schema inference | `engin-core` | bespoke-justified | none exists | `2026-frictionless-detector` |
+| Data convention over xarray/pandas | `engin-core` | **bespoke-unjustified** | MIFE / MIFD (metadata layer) | `2026-cf-xarray-units`, `2026-georgakilas-mife-mifd` |
+| Ingest layer / schema inference | `engin-core` | bespoke-justified | none exists for the inference step; MIFE/MIFD is the target vocabulary | `2026-frictionless-detector`, `2026-georgakilas-mife-mifd` |
 | Techno-economic coupling | `engin-core` | standard | BioSTEAM (behind the [tea] extra) | `2020-cortespena-biosteam` |
 | Mechanistic fed-batch simulator | `engin-core` | bespoke-justified | SBML + COPASI / libRoadRunner (representation and simulation) | `2003-hucka-sbml` |
 | Expected-improvement recommender | `engin-core` | bespoke-justified | BoTorch / Ax / BayBE | `2020-balandat-botorch` |
