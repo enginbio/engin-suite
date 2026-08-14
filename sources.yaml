@@ -292,6 +292,28 @@ sources:
     stability: doi
     type: paper
 
+  # -- Low-N protein fitness (D23 / #89). engin-protein's ridge-over-GP result.
+
+  - id: 2022-hsu-protein-fitness-baselines
+    title: Learning protein fitness models from evolutionary and assay-labeled data
+    authors: [Hsu, Chloe, Nisonoff, Hunter, Fannjiang, Clara, Listgarten, Jennifer]
+    year: 2022
+    venue: Nature Biotechnology 40(7):1114-1122
+    location: https://doi.org/10.1038/s41587-021-01146-5
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
+  - id: 2021-biswas-low-n
+    title: Low-N protein engineering with data-efficient deep learning
+    authors: [Biswas, Surojit, Khimulya, Grigory, Alley, Ethan C., Esvelt, Kevin M., Church, George M.]
+    year: 2021
+    venue: Nature Methods 18:389-396
+    location: https://doi.org/10.1038/s41592-021-01100-y
+    accessed: 2026-08-13
+    stability: doi
+    type: paper
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -465,6 +487,66 @@ claims:
       **The lesson is about propagation, not about the original error**: the
       canonical document was fixed and the documents repeating it were not, so
       for three days the front page led with retracted reasoning.
+
+  - doc: packages/engin-protein/src/engin_protein/model.py
+    tier: A
+    source_id: 2022-hsu-protein-fitness-baselines
+    claim: >-
+      Simple regression baselines are competitive with, and often outperform,
+      more sophisticated models for protein fitness prediction — so ridge beating
+      the GP here is the expected regime rather than an accident.
+    strength: supports
+    reviewed: 2026-08-13
+    note: >-
+      The abstract states it directly: "a simple baseline approach we introduce
+      is competitive with and often outperforms more sophisticated methods." This
+      is what turns ADR 0006 from "we tried two things" into a design rule, which
+      is what #89 asked for.
+
+  - doc: packages/engin-protein/src/engin_protein/model.py
+    tier: A
+    source_id: 2021-biswas-low-n
+    claim: >-
+      "Low-N" in this literature means tens of assayed variants — as few as 24 —
+      which places engin-protein's 60-variant campaign squarely in the regime.
+    strength: supports
+    reviewed: 2026-08-13
+
+  - doc: packages/engin-protein/src/engin_protein/model.py
+    tier: A
+    source_id: 2022-hsu-protein-fitness-baselines
+    claim: >-
+      There is a clean crossover sample size N* above which the more expressive
+      model starts winning.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      **A documented absence, and the substance of #89's actual ask.** Searched
+      for a quantified N* in the low-N protein fitness literature (Hsu 2022,
+      Biswas 2021, and their framing of the problem) and did not find one. The
+      regime statement is qualitative, and the boundary is not sample size alone
+      — it depends on how much of the signal is epistatic relative to the
+      labelled budget. What *can* be documented is a crossover this package
+      measured itself, and it is in **epistasis, not N**: pairwise interaction
+      features lose at e=0 (rho 0.816 vs 0.942) and win at e=0.8 (0.313 vs
+      0.292). That is the switch condition, and it is now stated as one.
+
+  - doc: packages/engin-protein/src/engin_protein/model.py
+    tier: A
+    source_id: 2022-hsu-protein-fitness-baselines
+    claim: >-
+      The measured GP result is evidence that Gaussian processes lose to ridge on
+      protein fitness in general.
+    strength: contradicts
+    reviewed: 2026-08-13
+    note: >-
+      Guarding against a misreading of our own number rather than correcting a
+      published sentence. The GP was `engin_core.fit_gp` — an ARD-RBF kernel
+      initialized at length_scale 0.3 for a unit cube of six continuous
+      fermentation knobs — applied to a few hundred sparse binary sequence
+      features. That is a kernel mismatch, not an architecture verdict; a GP with
+      a sequence-appropriate kernel is a different experiment this project has
+      not run. The docstring implied the distinction and now states it.
 
   - doc: BIOSECURITY.md
     tier: A
