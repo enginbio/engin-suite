@@ -13,8 +13,31 @@ other. Predictions collapse toward the mean. Measured on the synthetic landscape
     0.5         0.508            0.100
     0.8         0.292            0.104
 
-So the estimator here is **ridge with a bagged ensemble for spread**, which is also
-what the low-N protein literature leans on. This is not a departure from the "reuse
+**Read that table as a kernel mismatch, not an architecture verdict.** It says this
+GP configuration is wrong for these features; it does not say Gaussian processes lose
+to ridge on protein fitness. A GP with a sequence-appropriate kernel is a different
+experiment, and this project has not run it.
+
+So the estimator here is **ridge with a bagged ensemble for spread** — which is the
+*expected* choice in this regime rather than a lucky one. Hsu et al. (2022) assess
+protein fitness predictors systematically and find that "a simple baseline approach we
+introduce is competitive with and often outperforms more sophisticated methods"; and
+"low-N" in this literature means tens of assayed variants — Biswas et al. (2021) build
+a usable landscape from as few as 24 — which puts a 60-variant campaign squarely
+inside it.
+
+# implements D9; ref: 2022-hsu-protein-fitness-baselines
+# ref: 2021-biswas-low-n
+
+**The switch condition is epistasis, not sample size.** Searching the low-N literature
+for a crossover N above which the more expressive model starts winning does not turn
+one up: the regime statement is qualitative, and the boundary depends on how much of
+the signal is epistatic relative to the labelled budget, not on N alone. What *is*
+measurable here is the epistasis crossover in the interaction-feature numbers below —
+additive wins at e=0, pairwise wins by e=0.8. Use that to decide, and treat the
+absence of a clean N* as a documented finding rather than an unasked question.
+
+This is not a departure from the "reuse
 the engine" rule: the engine's actual shared asset is its *uncertainty vocabulary* —
 ``split_conformal_multiplier``, ``prob_at_least``, ``expected_improvement`` — and all
 three are estimator-agnostic. All three are used here unchanged. What changed is the
@@ -33,8 +56,12 @@ rather than tuned away.
 **On interaction features.** Pairwise one-hot expansion is available via
 ``interactions=True`` and is *off by default*, because it did not reliably beat the
 additive model at these sample sizes — it wins only at high epistasis (ρ 0.313 vs
-0.292 at e=0.8) and loses meaningfully at low (0.816 vs 0.942 at e=0). Additive models
-being hard to beat in low-N protein work is a well-reported result, not a surprise.
+0.292 at e=0.8) and loses meaningfully at low (0.816 vs 0.942 at e=0). **That pair is
+the switch condition referred to above**: it is the one crossover this package can
+actually document, and it is in epistasis rather than N.
+
+Additive models being hard to beat in low-N protein work is a well-reported result
+(Hsu et al. 2022), not a surprise.
 """
 
 from __future__ import annotations
