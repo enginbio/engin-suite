@@ -26,6 +26,11 @@ dependencies = [
     "engin-core>=0.1.0",
 ]
 
+[project.scripts]
+# `engin-host`, not `engin host`: no package can depend on both stage packages, and
+# the bare `engin` script name is taken on PyPI by a maintained DI framework. See #141.
+engin-host = "engin_host.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/enginbio/engin-suite"
 Documentation = "https://docs.engin.bio"
@@ -33,7 +38,9 @@ Repository = "https://github.com/enginbio/engin-suite"
 
 [project.optional-dependencies]
 examples = ["matplotlib>=3.6"]
-dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
+# The `engin-host` console script; the project-file reader lives in engin-core.
+cli = ["engin-core[cli]"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6", "pyyaml>=6.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

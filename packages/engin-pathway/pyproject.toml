@@ -31,6 +31,10 @@ dependencies = [
     "engin-graph>=0.1.0",
 ]
 
+[project.scripts]
+# Per-stage script, not `engin <stage>`: see #141.
+engin-pathway = "engin_pathway.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/enginbio/engin-suite"
 Documentation = "https://docs.engin.bio"
@@ -38,7 +42,9 @@ Repository = "https://github.com/enginbio/engin-suite"
 
 [project.optional-dependencies]
 examples = ["matplotlib>=3.6"]
-dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6"]
+# The `engin-pathway` console script; the project-file reader lives in engin-core.
+cli = ["engin-core[cli]"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6", "pyyaml>=6.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
