@@ -463,6 +463,22 @@ sources:
     stability: doi
     type: web
 
+  # -- Vocabulary-layer re-check (D23 / #115). The absence search behind D11 ran
+  # on 2026-08-13 and scheduled its re-check for 2027-08. PREFER had been public
+  # for six months by then and was missed. Recorded with a verdict; the cadence
+  # question it raises is in docs/design/data-convention.md.
+
+  - id: 2026-amigo-prefer
+    title: >-
+      PREFER: An Ontology for the PREcision FERmentation Community
+    authors: [Amigó, Txell, Tan, Shawn Zheng Kai, Nielsen, Lars K., Förster, Jochen, Palsson, Bernhard Ø., Sudarsan, Suresh, Santos, Alberto, et al.]
+    year: 2026
+    venue: arXiv 2602.16755
+    location: https://doi.org/10.48550/arXiv.2602.16755
+    accessed: 2026-08-14
+    stability: doi
+    type: preprint
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -998,6 +1014,48 @@ claims:
     strength: supports
     reviewed: 2026-08-14
 
+  - doc: docs/design/data-convention.md
+    tier: A
+    source_id: 2026-amigo-prefer
+    claim: >-
+      "The lack of community standards limits data accessibility and
+      interoperability, preventing integration across platforms" — third-party
+      corroboration of the premise behind D11, from authors with no stake in
+      this project.
+    strength: supports
+    reviewed: 2026-08-14
+    note: >-
+      Worth being precise about what this does and does not do. It corroborates
+      the *premise* — that the interoperability gap is real and is felt by
+      people who are not us — and it is the first such corroboration in the
+      register, which had evidenced the gap only by negation (cf_xarray is
+      geoscience, frictionless casts types). It says nothing about whether
+      Engin's ingest layer is the right answer to it. Quoted from the abstract,
+      which was fetched directly rather than through a summary.
+
+  - doc: docs/design/data-convention.md
+    tier: A
+    source_id: 2026-amigo-prefer
+    claim: >-
+      PREFER does not cite MIFE or MIFD, the standard D11 resolved to adopt —
+      so the vocabulary layer is fragmenting rather than consolidating.
+    strength: supports
+    reviewed: 2026-08-14
+    note: >-
+      **Checked rather than inferred, because the scan issue that raised it
+      flagged this exact sentence as unverified.** The v1 PDF was downloaded and
+      its full text extracted (18 pages, 43,551 characters); "MIFE", "MIFD",
+      "Minimum Information", "MIAPPE" and "MIBBI" return zero hits each, in body
+      and references alike. PREFER aligns instead with BFO, and reuses ChEBI,
+      PATO, IAO, BAO and RO.
+
+      Two limits on the claim. It is one version of one preprint — a published
+      version may cite differently. And absence of a citation is weaker than a
+      stated position: it shows the two efforts have not met, not that either
+      rejected the other. That is precisely why the entry below is `monitor`
+      rather than `adopt` or `reject`, and why reporting the relationship
+      upstream is the action this supports.
+
 # One row per major code component. `stance: unaudited` is the honest default
 # and is what the D23 programme exists to reduce — see issues #84 to #90.
 components:
@@ -1035,9 +1093,9 @@ components:
     package: engin-core
     stance: bespoke-justified
     standard_impl: MIFE / MIFD (metadata layer)
-    evidence: [2026-cf-xarray-units, 2026-georgakilas-mife-mifd]
+    evidence: [2026-cf-xarray-units, 2026-georgakilas-mife-mifd, 2026-amigo-prefer]
     adr: null
-    reviewed: 2026-08-13
+    reviewed: 2026-08-14
     note: >-
       **`standard_impl: none exists` was false, and this project's own decision
       record already said so.** MIFE and MIFD -- minimum information for
@@ -1057,6 +1115,14 @@ components:
       real industrial export forced in and a simulator never needed. Generating the
       data model from the LinkML spec remains outstanding; see
       docs/design/data-convention.md.
+
+      **Re-searched 2026-08-14 (#115).** PREFER, a BFO-aligned precision-fermentation
+      ontology out of DTU and UCSD, published 2026-02-18 -- six months before the
+      search above ran, and missed by it. Verdict `monitor`: a different layer
+      (semantics, not a minimum-information checklist), no adoption evidence yet. It
+      does not cite MIFE/MIFD, which is the fragmentation D11 named, and is the
+      finding to report upstream. The re-check is pulled in to 2027-02; whether
+      annual is the wrong cadence for standards claims generally is D23's call.
 
   - component: Ingest layer / schema inference
     package: engin-core
