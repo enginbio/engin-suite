@@ -30,6 +30,11 @@ dependencies = [
 
 [project.optional-dependencies]
 examples = ["matplotlib>=3.6"]
+# The project-file reader (engin_core.config) and the per-stage console scripts.
+# YAML rather than JSON because the starter file teaches through its comments, and
+# a format that cannot carry them would defeat the point. Optional so the modelling
+# path stays light (ADR 0002).
+cli = ["pyyaml>=6.0"]
 # BioSTEAM-backed techno-economics. Optional because BioSTEAM requires Python >= 3.12
 # while this package supports 3.10+, and pulls ~40 transitive dependencies including
 # numba and thermo. Keeping it out of the default install preserves the light path.
@@ -40,7 +45,11 @@ tea = ["biosteam>=2.51; python_version >= '3.12'"]
 # default install preserves the light path. pint is what turns a units attribute
 # from a comment into a checkable claim.
 io = ["xarray>=2023.1", "pandas>=2.0", "pint>=0.22"]
-dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6", "xarray>=2023.1", "pandas>=2.0", "pint>=0.22"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6", "xarray>=2023.1", "pandas>=2.0", "pint>=0.22", "pyyaml>=6.0"]
+
+[project.scripts]
+# Per-stage script, not `engin <stage>`: see #141.
+engin-process = "engin_core.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/enginbio/engin-suite"
