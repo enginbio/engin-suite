@@ -10,17 +10,22 @@ Real-data validation has landed, so the numbers that matter lead:
 | split-conformal coverage | 0.96 | **0.886** |
 | what it establishes | the loop runs | the calibration transfers |
 
-```{note}
-**This is the one table without a provenance line, and that is deliberate.** It
-combines two runs — the synthetic column from `benchmarks/benchmark.py`, the real
-column from `benchmarks/benchmark.py --data real` — so a single line under it
-would describe neither. Each column's provenance is on the page that owns it:
-the tables below for synthetic, [Calibration on real production
-data](methods/real-data-calibration.md) for real.
+**This table takes two provenance lines, because it combines two runs** — the
+synthetic column from `benchmarks/benchmark.py`, the real column from
+`benchmarks/benchmark.py --data real`. One line under it would describe neither.
+
+```text
+synthetic: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+real:      engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-4 (n=5)  |  erythromycin-efp EFP_long.csv (doi:10.5281/zenodo.14619074)  |  numpy 2.5.2  |  run 2026-08-15
+```
+
+The real figures above are the **72h process-only** row of that run — coverage
+0.886 at R² 0.123. [Calibration on real production
+data](methods/real-data-calibration.md) has the other five rows, including the
+two that use early potency as a feature.
 
 The real run takes roughly forty minutes on a laptop, which is worth knowing
-before you start it.
-```
+before starting it.
 
 ```bash
 cd packages/engin-core
