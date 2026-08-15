@@ -10,6 +10,7 @@ misses. A thin domain layer over ``engin_core``'s conformal calibration.
 from __future__ import annotations
 
 from .embed import GraphEmbedder
+from .handoff import to_ranking
 from .rank import PathwayRanker, labels, spearman, step_counts
 from .schema import FEATURES, Route, Step
 from .simulate import make_dataset, sample_route
@@ -27,5 +28,6 @@ __all__ = [
     "spearman",
     "make_dataset",
     "sample_route",
+    "to_ranking",
     "__version__",
 ]
