@@ -32,6 +32,7 @@ methods/out-of-distribution
 methods/real-data-calibration
 benchmarks
 limitations
+ecosystem
 references
 ```
 
@@ -86,7 +87,7 @@ Titer captures one of three cost centres, and which one dominates depends on the
 :::
 
 :::{grid-item-card} Composes, doesn't replace
-MAPIE cross-checks the conformal intervals; BioSTEAM backs techno-economics as an optional extra. BayBE and COBRApy are *not* dependencies — they are why parts of the roadmap stay unbuilt (`D9`). Your data stays in xarray and pandas.
+MAPIE cross-checks the conformal intervals; BioSTEAM backs techno-economics as an optional extra. BayBE and COBRApy are *not* dependencies — they are why parts of the roadmap stay unbuilt (`D9`). Your data stays in xarray and pandas. The [ecosystem map](ecosystem) says where to go for everything Engin deliberately doesn't build.
 :::
 
 ::::
