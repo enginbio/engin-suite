@@ -11,6 +11,34 @@
 # `strength: contradicts` and `superseded` rows are the point of the exercise,
 # not a failure of it. They become edits to the document, and the row stays as
 # the record of the correction.
+#
+# ---------------------------------------------------------------------------
+# Two open cadence questions, recorded here because DECISIONS.md is canonical
+# and neither is settled. D23 sets one re-check interval for everything; these
+# are the two classes where a calendar looks like the wrong instrument.
+#
+# 1. **API-behaviour rows expire on a release, not a date.** Four rows evidence
+#    what a library's API does *today*: 2026-frictionless-detector,
+#    2026-cf-xarray-units, 2026-pymcdm-methods, 2026-scikit-criteria. #127
+#    proposes moving them onto the quarterly `stability: url` liveness sweep.
+#    The MAPIE component row is the argument for it: it spent a year evidencing
+#    a cross-check against a preprint whose API had since been renamed.
+#
+# 2. **Absence claims about a consolidating field.** #115 raises the same
+#    question from the other side -- a vocabulary layer consolidates once, and
+#    an annual clock can put you eighteen months behind. PREFER was six months
+#    old when the D11 search missed it.
+#
+# Both are D23 amendments and the founder's call. Worth settling in one
+# amendment rather than separately, since they are the same argument.
+#
+# **One row is deliberately absent**: docs/limitations.md's "raw material is
+# ~2% of modelled cost" has no claim row yet, and that is a hold rather than an
+# oversight. #122 argues the limitation is measured against the wrong end of
+# D13's own continuum. Filing a `supports` row against Konzock now would codify
+# a framing another open issue disputes, and a row asserting a claim is settled
+# while it is under argument is worse than no row.
+# ---------------------------------------------------------------------------
 
 sources:
   - id: 2019-goldrick-indpensim
@@ -478,6 +506,70 @@ sources:
     accessed: 2026-08-14
     stability: doi
     type: preprint
+
+  # -- Parser-side near-misses (D23 / #116). The D11 near-miss table was entirely
+  # schema-side on a component whose contribution is a parser. These are the rows
+  # it was missing, and detl is also the file the ingest layer was measured on.
+
+  - id: 2026-jubiotech-detl
+    title: detl — processing of DASware raw data exports
+    authors: [Osthege, Michael, Tenhaef, Niklas, JuBiotech contributors]
+    year: 2026
+    venue: GitHub / JuBiotech
+    location: https://github.com/JuBiotech/detl
+    accessed: 2026-08-14
+    stability: url
+    url_only_because: >-
+      The claims are about what this repository contains -- an AGPL-3.0 licence
+      and six real DASGIP/DASware exports committed as test fixtures -- and the
+      repository is the reference for that. No release is published. Metadata
+      read from the GitHub API on the accessed date; the fixture measured was
+      tests/testfiles/v4_20180726.Control.csv.
+    type: software
+
+  - id: 2022-osthege-bletl
+    title: >-
+      bletl - A Python package for integrating BioLector microcultivation
+      devices in the Design-Build-Test-Learn cycle
+    authors: [Osthege, Michael, Tenhaef, Niklas, et al.]
+    year: 2022
+    venue: Engineering in Life Sciences 22
+    location: https://doi.org/10.1002/elsc.202100108
+    accessed: 2026-08-14
+    stability: doi
+    type: paper
+
+  - id: 2026-benchling-allotropy
+    title: allotropy — instrument data to the Allotrope Simple Model
+    authors: [Benchling Open Source contributors]
+    year: 2026
+    venue: GitHub / Benchling-Open-Source
+    location: https://github.com/Benchling-Open-Source/allotropy
+    accessed: 2026-08-14
+    stability: url
+    url_only_because: >-
+      The claim is about which instrument families this library parses, and the
+      parser directory is the reference for that. Counted from the GitHub API on
+      the accessed date: ~60 parser packages, none for a bioreactor or fermentor.
+    type: software
+  # -- Register gaps found by the scheduled Tier A review (D23 / #127). Four Tier A
+  # documents had zero claim rows, so the review workflow's step 1 had nothing to
+  # re-read for them -- which is how a claim goes six months without being looked at.
+
+  - id: 2023-scientific-python-spec-9
+    title: "SPEC 9 - Governance"
+    authors: [Scientific Python community]
+    year: 2023
+    venue: Scientific Python SPECs
+    location: https://scientific-python.org/specs/spec-0009/
+    accessed: 2026-08-15
+    stability: url
+    url_only_because: >-
+      A living community specification with no DOI and no versioned archive. The
+      claim is about the structure this project's governance document follows, and
+      the SPEC page is the only statement of it. Re-read on the quarterly liveness
+      sweep rather than trusted to stay put.
+    type: standard
 
 claims:
   - doc: DECISIONS.md
@@ -1056,6 +1148,162 @@ claims:
       rather than `adopt` or `reject`, and why reporting the relationship
       upstream is the action this supports.
 
+  - doc: packages/engin-core/src/engin_core/loaders.py
+    tier: A
+    source_id: 2026-jubiotech-detl
+    claim: >-
+      "Vendor profiles land when someone has the actual files" — published as
+      the reason no vendor parser exists, while six real DASGIP/DASware exports
+      had been public in detl's test fixtures since 2022.
+    strength: contradicts
+    reviewed: 2026-08-14
+    note: >-
+      **Not a coding error and not a wrong measurement — a premise asserted from
+      plausible reasoning where the field had files.** The same class as the
+      other nine the D23 reviews turned up. The first half of the sentence is
+      right and the measurement proves it: delimiters, encodings and header
+      spellings genuinely cannot be reasoned out. The second half was never
+      checked.
+
+      Corrected in the module docstring, docs/guides/data-formats.md and
+      docs/limitations.md — grepped by phrasing rather than by issue number,
+      per D13's propagation lesson, which is how the guide copy was found.
+
+  - doc: docs/methods/vendor-export-ingest.md
+    tier: A
+    source_id: 2026-jubiotech-detl
+    claim: >-
+      Run against a real DASGIP export, the ingest layer maps 1 of 40 columns
+      and that one is a false positive — after failing three times to read the
+      file at all.
+    strength: supports
+    reviewed: 2026-08-14
+    note: >-
+      Measured, reproducible via benchmarks/dasware_ingest.py, which fetches the
+      fixture at run time and commits nothing. The false positive is
+      `XCO2 1.Out` -> `offgas_co2`: a controller output matched to the
+      convention's *measured exhaust* channel on a substring hit for "co2".
+
+      The load-bearing part is not the ratio. It is that `register_alias`, which
+      the module advertises as making vendor profiles cheap, does not reach this
+      file: the obvious spellings never fire, the full dotted spelling works on
+      vessel 1 and not vessel 2, and covering one four-vessel file takes 156
+      aliases. A vendor profile is a header grammar, not an alias row.
+
+      **What this does not do is calibrate the confidence score.** One vendor,
+      one file. docs/limitations.md still says ordinal heuristic and should.
+
+  - doc: docs/design/data-convention.md
+    tier: A
+    source_id: 2026-benchling-allotropy
+    claim: >-
+      allotropy implements the vendor-export-to-controlled-vocabulary
+      architecture across ~60 instrument parsers, and has none for a bioreactor
+      or fermentor.
+    strength: supports
+    reviewed: 2026-08-14
+    note: >-
+      Recorded as an architectural precedent rejected on scope, not as prior art
+      or competition — it parses none of this project's instruments. The reason
+      it earns a row is that together with detl and bletl it is what narrows
+      D11's absence claim to its defensible form: detl and bletl are bioreactor
+      parsers with no vocabulary layer and one vendor each; allotropy has the
+      vocabulary layer and no bioreactor parsers. Neither conjunct is met by any
+      candidate, so the claim survives — and the table that omitted all three
+      did not.
+  - doc: README.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      Downstream processing is 45-92% of production cost for biopharmaceuticals
+      against a typical 20-40% for bulk fermentation products, and purity moves
+      it independently: crude penicillin G near 25%, purified and formulated
+      nearer 50-55%.
+    strength: supports
+    reviewed: 2026-08-15
+    note: >-
+      **Deliberately duplicating the DECISIONS.md rows rather than pointing at
+      them.** D23's unit is the (document, source, claim) triple, and both
+      propagation failures found this week were a claim living in three documents
+      and tracked in one. The Straathof rows' own notes say "corrected in
+      DECISIONS.md, README.md and docs/guides/cost.md" while no row named either
+      of the other two -- so a re-read of this source would not have surfaced
+      them.
+
+  - doc: docs/guides/cost.md
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      Downstream processing is 45-92% of production cost for biopharmaceuticals
+      against a typical 20-40% for bulk fermentation products; the relative DSP
+      contribution rises with selling price, and purity moves it independently of
+      product class.
+    strength: supports
+    reviewed: 2026-08-15
+    note: >-
+      Same duplication, same reason. This page is where the cost model's product
+      -class reasoning is explained to a reader, so it is the document most likely
+      to be read for the figures and was the least likely to be re-checked.
+
+  - doc: docs/benchmarks.md
+    tier: A
+    source_id: 2026-zenodo-cho-k1-cultivations
+    claim: >-
+      24 CHO-K1 cultivations, batch and fed-batch, 38 inline and 10 offline
+      variables, licensed CC-BY-4.0.
+    strength: supports
+    reviewed: 2026-08-15
+    note: >-
+      The source was in Table A referenced by nothing -- no claim row, no
+      component evidence list -- while the page published a factual description of
+      the dataset uncited. Exactly parallel to the erythromycin row that already
+      existed. Figures are the registry entry's own, which were read off the
+      published record at registration.
+
+  - doc: GOVERNANCE.md
+    tier: A
+    source_id: 2023-scientific-python-spec-9
+    claim: >-
+      This document follows the structure recommended by Scientific Python
+      SPEC 9.
+    strength: supports
+    reviewed: 2026-08-15
+    note: >-
+      Low stakes and recorded anyway, because the gap was that the document had
+      *no* rows rather than that this one was doubtful. A claim about conforming
+      to someone else's published structure is checkable, and nothing was
+      checking it.
+  - doc: packages/engin-pathway/README.md
+    tier: A
+    source_id: 2021-jiang-gnn-vs-descriptors
+    claim: >-
+      "Beats step-count" (Spearman 0.85 vs 0.51, ~9x lower regret) — offered as
+      a property of the ranking method.
+    strength: contradicts
+    reviewed: 2026-08-15
+    note: >-
+      **The second instance of #88's failure mode, found by looking for it.**
+      `make_dataset` produces both the routes and their labels, and
+      `simulate.py:37` builds the label as
+      `(0.6*worst_step + 0.4*mean_step) * 0.96**(length-2)`. Step-count sees only
+      `length`, so its score is a fixed property of the generator rather than a
+      result: over 2000 routes the worst-step term carries r2 0.81 of the label
+      and the length term 0.12, capping any length-only heuristic at rho ~0.41.
+
+      Decisive rather than suggestive: relabel the *same* routes with the length
+      base at 0.70 instead of 0.96 and step-count rises to rho 0.95 while the
+      worst-step signal falls to 0.31. The ranking flips with nothing about
+      either method changed, so the margin measures the constants.
+      `packages/engin-pathway/benchmarks/generator_audit.py` reproduces it.
+
+      What survives is narrow and real: the graph model does recover a worst-step
+      signal a length heuristic is blind to. Jiang et al. is the same caution #88
+      cites -- across 11 datasets and 8 algorithms, descriptor-based models
+      generally outperform graph-based ones, so a graph model earning its keep is
+      the exception rather than the default. Whether real routes are worst-step
+      dominated is untested; it is a stated design assumption of the generator,
+      and M1's KEGG/MetaCyc/BiGG routes are what would test it.
+
 # One row per major code component. `stance: unaudited` is the honest default
 # and is what the D23 programme exists to reduce — see issues #84 to #90.
 components:
@@ -1080,7 +1328,7 @@ components:
     standard_impl: MAPIE (cross-check) + sd-normalized multiplier
     evidence: [2022-taquet-mapie]
     adr: null
-    reviewed: 2026-08-13
+    reviewed: 2026-08-15
     note: >-
       MAPIE is the widely-used Python conformal library and is kept here as an
       independent cross-check, not as the default -- it is deliberately a
@@ -1088,6 +1336,18 @@ components:
       Recorded absence: MAPIE has a preprint and no peer-reviewed publication.
       The underlying method's grounding is #86, a separate question from the
       library's.
+
+      **Version recorded 2026-08-15 (#127), which it should have carried from the
+      start.** Evaluated against **mapie 1.5.0**; engin-core declares
+      `mapie>=1.0`. That matters more here than the row admitted: MAPIE 1.x
+      renamed the regressor API, so this row was evidencing a cross-check against
+      a 2022 preprint describing a surface that has since changed. The pymcdm and
+      scikit-criteria rows set the right standard -- "evaluated at 1.4.0; the
+      version is recorded because the answer can change" -- and this row did not
+      meet it.
+
+      Re-checked and holding: the peer-review absence is still true, and arXiv
+      2207.12274 is still the reference.
 
   - component: Data convention over xarray/pandas
     package: engin-core
@@ -1128,9 +1388,14 @@ components:
     package: engin-core
     stance: bespoke-justified
     standard_impl: none exists for the inference step; MIFE/MIFD is the target vocabulary
-    evidence: [2026-frictionless-detector, 2026-georgakilas-mife-mifd]
+    evidence:
+    - 2026-frictionless-detector
+    - 2026-georgakilas-mife-mifd
+    - 2026-jubiotech-detl
+    - 2022-osthege-bletl
+    - 2026-benchling-allotropy
     adr: null
-    reviewed: 2026-08-13
+    reviewed: 2026-08-14
     note: >-
       The absence survives here, but narrower than it was stated. Nothing
       published maps arbitrary vendor bioreactor exports onto a domain vocabulary
@@ -1139,6 +1404,26 @@ components:
       no longer ours to invent.** MIFE/MIFD supplies it, so the honest description
       of this component is a mapper into a published standard rather than a
       standard-shaped gap.
+
+      **Searched on the parser side 2026-08-14 (#116); it had never been.** Every
+      prior row was schema-side, on the component D11 calls "the real
+      contribution". Three candidates now recorded: detl (DASGIP/DASware, no
+      vocabulary layer, AGPL-3.0), bletl (BioLector, same shape, AGPL-3.0,
+      peer-reviewed) and allotropy (the architecture, MIT, ~60 parsers, zero for
+      bioreactors). None meets both conjuncts, so the claim holds -- but the
+      finding is not the absence. **The niche is abandoned in place rather than
+      empty**: two single-vendor parsers, 8 stars each, both in maintenance mode.
+      Nobody funds the cross-vendor mapper. D9 does not require composing with
+      detl or bletl, since AGPL-3.0 against Apache-2.0 (D3) rules it out on any
+      terms; saying so beats leaving it ambiguous.
+
+      **The stance stays `bespoke-justified`, and it costs more to hold than it
+      did.** detl's fixtures are the files loaders.py said nobody had, so the
+      layer was measured against a real export for the first time: 1 of 40
+      columns mapped, that one a false positive, and register_alias -- the
+      documented escape hatch -- does not reach the file. See
+      docs/methods/vendor-export-ingest.md. The absence is still real; the
+      implementation is further from filling it than the register implied.
 
   - component: Techno-economic coupling
     package: engin-core

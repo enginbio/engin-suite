@@ -60,7 +60,9 @@ What we guarantee instead:
 
 - **Coverage stays honest.** Conformal interval coverage is tested in CI. If a change would push empirical coverage outside tolerance, it fails the build.
 - **Changes that move results are documented.** Any release that materially shifts predictions says so in the release notes, with the reason.
-- **Reproducibility is available on request.** Seeds are settable, and benchmark results are published with the dataset versions and seeds that produced them.
+- **Reproducibility is published, not available on request.** Every results table in [Benchmarks](benchmarks.md) carries a provenance line — package version, commit, seed span, dataset version, numpy version, run date — and the benchmark scripts *emit* that line, so it cannot drift from the code.
+
+  **This bullet promised that in the present tense before it was true.** Until 2026-08-15 it read *"benchmark results are published with the dataset versions and seeds that produced them"*, while roughly 45 published numbers carried no seed, no version, no commit and no date. Corrected under [#125](https://github.com/enginbio/engin-suite/issues/125) — which also turned up that `python benchmarks/benchmark.py` ran 8 seeds while the page reported 20, so the documented command did not reproduce the documented numbers. It does now.
 
 If you need bit-identical results across time — for a regulatory submission, say — pin the exact version and record it. That is the correct approach with any modelling library, and we would rather say so than imply a stability we cannot deliver.
 

@@ -251,9 +251,27 @@ general impression of what such a file looks like would be inventing a format
 and calling it support — delimiters, encodings and header spellings are exactly
 what cannot be reasoned out. The alias table is seeded with generic spellings,
 and `register_alias` lets a real file teach the loader without a code change.
-Vendor profiles land when someone has the actual files.
+
+```{warning}
+**Corrected 2026-08-14.** This section used to end *"vendor profiles land when
+someone has the actual files"*, and that was not true: real DASGIP/DASware
+exports have been public in [`detl`](https://github.com/JuBiotech/detl)'s test
+fixtures since 2022.
+
+The loader has now been run against one, and it did badly — **1 of 40 columns
+mapped, and that one was a false positive**, after failing three times to read
+the file at all. The measurement is in
+[The ingest layer against a real vendor export](../methods/vendor-export-ingest.md).
+
+The practical consequence for this page: **`register_alias` will not get you
+through a vendor instrument export.** It is the right tool for a spreadsheet
+that spells a channel unusually. A DASGIP header encodes vessel, channel and
+role in one dotted string, and covering a single four-vessel file that way takes
+156 aliases. What that needs is a header grammar, which does not exist yet.
+```
 
 ## Related
 
+- [The ingest layer against a real vendor export](../methods/vendor-export-ingest.md) — the first measurement against a real instrument file
 - [Limitations](../limitations.md) — what has and has not been validated
 - [Decisions](../decisions.md) — `D11` for the convention, `D12` for data policy
