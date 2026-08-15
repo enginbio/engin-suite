@@ -11,6 +11,13 @@ one-round benchmark collects the cost while cancelling the repayment.
 This module removes that excuse by making the baseline adaptive too. It is the
 follow-up ``baselines.py`` said was "worth doing and is not this".
 
+**It did not rescue us.** Over 20 seeds on an identical 120-run budget, RSM leads
+the mean at every one of ten rounds and wins 20 of 20 seeds at every round; the
+gap narrows from 7.7 percentage points to 3.5 and stops there. So the repayment
+mechanism the caveat named is visibly real and the conclusion it was offered to
+support is not. That is published in ``docs/benchmarks.md`` rather than tuned
+away, which is the same trade the single-round result already made.
+
 ## The method, and where it comes from
 
 The method is Box & Wilson (1951). What is followed here is the treatment in the
