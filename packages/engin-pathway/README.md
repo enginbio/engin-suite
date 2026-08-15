@@ -29,6 +29,40 @@ thermodynamically-uphill step tanks a route, and step-count is blind to it.
 - Best-of-6-route selection: regret-vs-oracle **0.008** (model) vs **0.074**
   (step-count) — roughly **9× lower** regret. <!-- not-a-claim: measured against this package's own synthetic generator, so it is a fact about this repository; whether it transfers to real routes is #124 -->
 
+### How much of that is a finding, and how much is the generator
+
+**Audited 2026-08-15 for issue #124, and the "beats step-count" line above says
+less than it first appears.** Same shape as #88 in `engin-materials`, and the
+numbers are kept with the caveat rather than deleted, for the same reason.
+
+`make_dataset` produces both the routes and their labels, and `simulate.py:37`
+builds the label as
+
+```
+manuf = (0.6 * worst_step + 0.4 * mean_step) * 0.96 ** (length - 2)
+```
+
+**Step-count sees only `length`.** So its score is not a result — it is a fixed
+property of the generator, and no length-only heuristic can beat it. Over 2000
+routes: the worst-step term carries r² 0.81 of the label, the length term 0.12,
+and step-count's ceiling is ρ ≈ 0.41.
+
+The decisive check is that the margin moves with the constants. Relabel the
+**same routes** with the length base at 0.70 instead of 0.96 and **step-count
+rises to ρ 0.95 while the worst-step signal falls to 0.31** — the ranking flips
+with nothing about either method changed. Reproduce with
+`python benchmarks/generator_audit.py`.
+
+So the claim this package makes is the narrow one: **the graph model does recover
+a worst-step signal that a length heuristic is blind to.** That is a correct check
+that the implementation recovers a signal it ought to recover. **It is not a
+discovery about metabolic routes.**
+
+Whether real routes are worst-step dominated is an empirical question this package
+has not touched. It is a design assumption of the generator — stated plainly in
+its docstring, and defensible, since a toxic intermediate or a thermodynamic wall
+does plausibly tank a route — but assumed, not measured. M1's real routes from
+KEGG/MetaCyc/BiGG are what would test it.
 
 ## Quickstart
 

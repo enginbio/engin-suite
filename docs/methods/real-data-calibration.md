@@ -13,6 +13,7 @@ is a documentation build that breaks for reasons unrelated to the docs.
 
 They come from a committed script instead, and you can run it yourself:
 
+    cd packages/engin-core
     python benchmarks/real_data_coverage.py
 
 It fetches the data through `engin_core.datasets`, which verifies the checksum

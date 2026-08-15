@@ -10,6 +10,23 @@ Real-data validation has landed, so the numbers that matter lead:
 | split-conformal coverage | 0.96 | **0.886** |
 | what it establishes | the loop runs | the calibration transfers |
 
+**This table takes two provenance lines, because it combines two runs** — the
+synthetic column from `benchmarks/benchmark.py`, the real column from
+`benchmarks/benchmark.py --data real`. One line under it would describe neither.
+
+```text
+synthetic: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+real:      engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-4 (n=5)  |  erythromycin-efp EFP_long.csv (doi:10.5281/zenodo.14619074)  |  numpy 2.5.2  |  run 2026-08-15
+```
+
+The real figures above are the **72h process-only** row of that run — coverage
+0.886 at R² 0.123. [Calibration on real production
+data](methods/real-data-calibration.md) has the other five rows, including the
+two that use early potency as a feature.
+
+The real run takes roughly forty minutes on a laptop, which is worth knowing
+before starting it.
+
 ```bash
 cd packages/engin-core
 python benchmarks/benchmark.py               # synthetic
@@ -45,8 +62,22 @@ had not, and the distinction is now in the table itself:
 | Multi-round optimization campaign | sequential RSM (Box–Wilson: steepest ascent, central composite, re-centre) | **implemented** — synthetic only |
 | Optimizer | an off-the-shelf Bayesian optimization library (BayBE, Ax) | not built |
 | Techno-economics | BioSTEAM | not built |
-| Pathway ranking | step-count heuristic | not built |
+| Pathway ranking | step-count heuristic | **implemented** — synthetic routes, random-weight M0, and the margin is a property of the generator ([#124](https://github.com/enginbio/engin-suite/issues/124)) |
 | Host selection | "use *E. coli*" | not built |
+
+**The pathway row was wrong in the safer-looking direction**, and that is worth
+naming. It read `not built` until 2026-08-15 while `engin-pathway` had been
+publishing ρ 0.85 against step-count's 0.51 since M0. Understating is still
+misreporting — and it meant the comparison went unaudited, because a baseline
+nobody thinks exists is a baseline nobody checks.
+
+When it was checked, the number turned out to measure the generator rather than
+the method: `make_dataset` builds its label so that the term step-count can see
+carries r² 0.12 and the term it cannot see carries 0.81. Change one generator
+constant and step-count wins instead. The package README carries the full caveat,
+and `packages/engin-pathway/benchmarks/generator_audit.py` reproduces it. Counted
+here as implemented because the comparison runs and is reported — not because it
+tells you anything about metabolic routes.
 
 ## Engin loses to response surface methodology
 
@@ -64,6 +95,10 @@ than Engin's GP with expected improvement.
 | Engin (GP + EI) | +15.9% | 0.962 |
 | random batch | −24.5% | — |
 
+```text
+provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+```
+
 **RSM wins on 18 of 20 seeds**, mean gap +5.4 percentage points with a standard
 error of 0.75 — about seven standard errors, so this is not seed noise. The two
 tie on forecast accuracy. Both beat random on 20 of 20.
@@ -77,6 +112,10 @@ uncertainty*. Measured, that defence does not hold on this problem either.
 |---|---|---|
 | Engin, split-conformal | 0.960 | 16.2 g/L |
 | **RSM, OLS prediction interval** | **0.887** | **13.8 g/L** |
+
+```text
+provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+```
 
 RSM's textbook interval — `ŷ ± t·s·√(1 + leverage)`, carrying observation noise
 so the comparison is like for like — lands closer to nominal than ours and is
@@ -177,6 +216,10 @@ baseline upward is the only direction it is safe to tune in.
 | 9 | 112 | +31.2 ± 3.4 | +34.5 ± 3.5 | +34.1 ± 3.5 | +3.4 ± 0.2 | 20/20 |
 | 10 | 120 | +31.2 ± 3.4 | +34.5 ± 3.5 | +34.1 ± 3.5 | +3.5 ± 0.1 | 20/20 |
 
+```text
+provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+```
+
 Best-true-titer lift over the best run of the shared initial DoE, mean ± standard
 error over 20 seeds. Round 0 is the shared initial DoE and is identical for all
 three by construction. The gap and the win count are against whichever RSM arm is
@@ -263,10 +306,22 @@ five baselines. The roadmap knew; this page did not say so.
 **Cases where a baseline wins are published in the same table as the wins.** A
 benchmark suite that always favours its author is not evidence.
 
-Each result records the dataset version and random seed that produced it, so a
-third party can reproduce it exactly. Coverage of calibrated intervals is tested
-in continuous integration; a change pushing empirical coverage outside tolerance
-fails the build.
+Each results table carries a **provenance line** — package version, commit, seed
+span, dataset version, numpy version and run date — emitted by the benchmark
+script rather than typed here, so it cannot drift from the code. Coverage of
+calibrated intervals is tested in continuous integration; a change pushing
+empirical coverage outside tolerance fails the build.
+
+**That sentence used to promise this before it was true**, which is the same
+failure as the baselines table above. Until 2026-08-15 it read *"each result
+records the dataset version and random seed that produced it"*, and no published
+result recorded any of them. Attaching provenance for
+[#125](https://github.com/enginbio/engin-suite/issues/125) surfaced a second half
+of the problem too: `python benchmarks/benchmark.py` ran **8** seeds while this
+page reported **20**, so the command printed above did not reproduce the numbers
+printed below it — it returned +18.3% EI against a published +15.9%. <!-- not-a-claim: both are our own simulator, at 8 and 20 seeds -->
+The default
+is now 20 and the two agree.
 
 ## Datasets: fetched, never shipped
 
