@@ -85,6 +85,12 @@ def one_seed(seed: int, d: int = 5):
     rsm = fit_rsm(U[tr], y_obs[tr])
     resid_rsm = rsm.predict(U[te]) - y_obs[te]
     r2_rsm = float(1 - np.sum(resid_rsm**2) / np.sum((y_obs[te] - y_obs[te].mean()) ** 2))
+    # RSM's own textbook prediction interval, at the same nominal level. This is
+    # the head-to-head the project's central claim predicts it should lose: an
+    # OLS interval assumes its model class is right, and split conformal does not.
+    lo_rsm, hi_rsm = rsm.predict_interval(U[te], level=0.90)
+    cover_rsm = float(np.mean((y_obs[te] >= lo_rsm) & (y_obs[te] <= hi_rsm)))
+    width_rsm = float(np.mean(hi_rsm - lo_rsm))
 
     # active learning: EI batch vs random batch, scored on *true* titer against
     # the best *true* titer in the initial DoE (apples to apples, noise-free).
@@ -102,6 +108,9 @@ def one_seed(seed: int, d: int = 5):
         r2=r2,
         r2_rsm=r2_rsm,
         lift_rsm=lift_rsm,
+        cover_rsm=cover_rsm,
+        width_rsm=width_rsm,
+        width_conf=float(np.mean(2 * q90 * sd_tot)),
         cover_epi=cover_epi,
         cover_tot=cover_tot,
         cover_conf=cover_conf,
@@ -131,7 +140,13 @@ def synthetic(seeds=None) -> None:
     print(f"  epistemic-only Gaussian  {avg('cover_epi'):5.2f}   <- naive, overconfident")
     print(f"  total Gaussian           {avg('cover_tot'):5.2f}   <- assumes normality")
     print(f"  split-conformal          {avg('cover_conf'):5.2f}   <- honest")
-    print(f"  conformal q90            {avg('q90'):5.2f}   (vs Gaussian {GAUSS_90})\n")
+    print(
+        f"  RSM prediction interval  {avg('cover_rsm'):5.2f}   <- OLS, assumes its model is right"
+    )
+    print(f"  conformal q90            {avg('q90'):5.2f}   (vs Gaussian {GAUSS_90})")
+    print(
+        f"  mean width: conformal {avg('width_conf'):5.1f} g/L   RSM {avg('width_rsm'):5.1f} g/L\n"
+    )
     print("Active-learning lift over best true prior titer:")
     print(f"  EI batch      {avg('lift_ei'):+6.1f}%")
     print(f"  RSM optima    {avg('lift_rsm'):+6.1f}%   <- the baseline a process engineer uses")

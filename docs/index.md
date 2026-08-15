@@ -130,7 +130,7 @@ The commitment is that every claim is benchmarked against the simpler thing it s
 
 **Two of those are implemented today**, and that sentence used to be written as though all of them were. [Benchmarks](benchmarks) marks which is which, because a page promising honest baselines is the last place to overstate what has been run.
 
-**The first real baseline beat us.** A textbook response surface — a fitted quadratic — proposes better designs than Engin's GP with expected improvement on 18 of 20 seeds, while the two tie on forecast accuracy. That is published at the top of the benchmarks page rather than in a footnote, with the two caveats that cut against reading it as decisive and the reasons neither rescues it.
+**The first real baseline beat us, twice.** A textbook response surface proposes better designs than Engin's GP with expected improvement on 18 of 20 seeds — and its OLS prediction interval lands closer to nominal coverage than our conformal one, 17% narrower. <!-- not-a-claim: measured on our own simulator; see the benchmarks page --> Both results are at the top of the [benchmarks](benchmarks) page rather than in a footnote, with what they do and don't settle.
 
 Cases where a simpler baseline wins are published in the same table as the wins. A benchmark suite that always favours its author is worthless, and we would rather you trusted the ones we do win.
 

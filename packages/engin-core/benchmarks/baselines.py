@@ -39,6 +39,7 @@ import itertools
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import minimize
+from scipy.stats import t as student_t
 
 
 def quadratic_features(U: ArrayLike) -> NDArray[np.float64]:
@@ -53,14 +54,51 @@ def quadratic_features(U: ArrayLike) -> NDArray[np.float64]:
 
 
 class RSM:
-    """A fitted second-order response surface."""
+    """A fitted second-order response surface, with its textbook interval."""
 
-    def __init__(self, coef: NDArray[np.float64], d: int) -> None:
+    def __init__(
+        self,
+        coef: NDArray[np.float64],
+        d: int,
+        s2: float = float("nan"),
+        xtx_inv: NDArray[np.float64] | None = None,
+        dof: int = 0,
+    ) -> None:
         self.coef = coef
         self.d = d
+        self.s2 = s2  # residual variance, RSS / dof
+        self.xtx_inv = xtx_inv
+        self.dof = dof
 
     def predict(self, U: ArrayLike) -> NDArray[np.float64]:
         return quadratic_features(U) @ self.coef
+
+    def predict_interval(
+        self, U: ArrayLike, level: float = 0.90
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        """The OLS **prediction** interval -- the fair comparison for a forecast.
+
+        ``yhat +/- t * s * sqrt(1 + x' (X'X)^-1 x)``. The ``1 +`` is what makes
+        this a prediction interval rather than a confidence interval on the mean:
+        it carries observation noise, which is what a forecast has to cover. Using
+        the narrower confidence interval here would hand RSM a coverage failure it
+        does not deserve, and the point of a baseline is that it gets its best
+        shot.
+
+        **This interval is model-based.** It assumes the second-order model is
+        correct and reports what the residual variance implies given that. Where
+        the quadratic is wrong, the residuals absorb the bias into ``s2`` rather
+        than widening for the right reason -- which is precisely the assumption
+        split conformal declines to make, and precisely what this measurement is
+        for.
+        """
+        if self.xtx_inv is None or self.dof <= 0:
+            raise ValueError("interval needs a fit with residual degrees of freedom")
+        X = quadratic_features(U)
+        leverage = np.einsum("ij,jk,ik->i", X, self.xtx_inv, X)
+        half = student_t.ppf(0.5 + level / 2, self.dof) * np.sqrt(self.s2 * (1.0 + leverage))
+        mean = X @ self.coef
+        return mean - half, mean + half
 
 
 def fit_rsm(U: ArrayLike, y: ArrayLike) -> RSM:
@@ -71,8 +109,15 @@ def fit_rsm(U: ArrayLike, y: ArrayLike) -> RSM:
     normally carry would make the comparison flattering rather than fair.
     """
     U = np.atleast_2d(np.asarray(U, float))
-    coef, *_ = np.linalg.lstsq(quadratic_features(U), np.asarray(y, float), rcond=None)
-    return RSM(coef, U.shape[1])
+    y = np.asarray(y, float)
+    X = quadratic_features(U)
+    coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+    n, p = X.shape
+    dof = n - p
+    resid = y - X @ coef
+    s2 = float(resid @ resid / dof) if dof > 0 else float("nan")
+    xtx_inv = np.linalg.pinv(X.T @ X)  # pinv: the design can be rank-deficient
+    return RSM(coef, U.shape[1], s2=s2, xtx_inv=xtx_inv, dof=dof)
 
 
 def rsm_recommend(

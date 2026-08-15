@@ -67,7 +67,40 @@ than Engin's GP with expected improvement.
 error of 0.75 — about seven standard errors, so this is not seed noise. The two
 tie on forecast accuracy. Both beat random on 20 of 20.
 
-### Two things that cut against reading this as decisive — and neither rescues it
+### Its intervals are also better than ours here
+
+The obvious defence would be that Engin trades optimization for *honest
+uncertainty*. Measured, that defence does not hold on this problem either.
+
+| over 20 seeds, nominal 0.90 | coverage | mean interval width |
+|---|---|---|
+| Engin, split-conformal | 0.960 | 16.2 g/L |
+| **RSM, OLS prediction interval** | **0.887** | **13.8 g/L** |
+
+RSM's textbook interval — `ŷ ± t·s·√(1 + leverage)`, carrying observation noise
+so the comparison is like for like — lands closer to nominal than ours and is
+**17% narrower**. Engin over-covers by six points and charges width for it. <!-- not-a-claim: both measured on our own simulator, same 20 seeds -->
+
+**This was predicted to go the other way, and it is recorded because it didn't.**
+The expectation was that an OLS interval, assuming its model class is correct,
+would under-cover. On a smooth five-dimensional mechanistic surface the quadratic
+*is* close to the right model class, so the assumption holds and the model-based
+interval is efficient precisely when it should be.
+
+Which is the same thing [the conformal page](methods/conformal-calibration.md)
+already says about the Gaussian interval: it *happens* to work here, for reasons
+it cannot check. The argument for conformal was never that the alternative fails
+always — it is that the alternative fails **without warning** when its assumption
+breaks, and reports the same nominal level either way.
+
+**So the test that would actually settle this has not been run.** Fit both inside
+the training region, then query outside it, and see which interval notices. The
+[out-of-distribution page](methods/out-of-distribution.md) does exactly that for
+the GP alone; extending it to RSM is the missing measurement, and until it exists
+this project cannot claim its calibration is better than a response surface's —
+only that it is differently derived.
+
+### Two things that cut against reading the optimization result as decisive — and neither rescues it
 
 **This simulator is RSM's home ground.** Five continuous knobs, a smooth
 mechanistic surface, no discrete choices and no plateaus. A quadratic is close to
