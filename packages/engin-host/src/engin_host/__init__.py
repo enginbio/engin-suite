@@ -8,6 +8,7 @@ uncertainty vocabulary.
 
 from __future__ import annotations
 
+from .handoff import decision_confidence, to_decision
 from .kb import CAPABILITIES, default_kb
 from .memo import render_memo
 from .schema import Host, HostQuery, HostScore, KnowledgeBase
@@ -25,5 +26,7 @@ __all__ = [
     "score",
     "prob_meets",
     "render_memo",
+    "to_decision",
+    "decision_confidence",
     "__version__",
 ]
