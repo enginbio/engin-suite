@@ -10,6 +10,18 @@ Real-data validation has landed, so the numbers that matter lead:
 | split-conformal coverage | 0.96 | **0.886** |
 | what it establishes | the loop runs | the calibration transfers |
 
+```{note}
+**This is the one table without a provenance line, and that is deliberate.** It
+combines two runs — the synthetic column from `benchmarks/benchmark.py`, the real
+column from `benchmarks/benchmark.py --data real` — so a single line under it
+would describe neither. Each column's provenance is on the page that owns it:
+the tables below for synthetic, [Calibration on real production
+data](methods/real-data-calibration.md) for real.
+
+The real run takes roughly forty minutes on a laptop, which is worth knowing
+before you start it.
+```
+
 ```bash
 cd packages/engin-core
 python benchmarks/benchmark.py               # synthetic
@@ -65,7 +77,7 @@ than Engin's GP with expected improvement.
 | random batch | −24.5% | — |
 
 ```text
-provenance: engin-core 0.1.0  |  @ db5fb12  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
 ```
 
 **RSM wins on 18 of 20 seeds**, mean gap +5.4 percentage points with a standard
@@ -83,7 +95,7 @@ uncertainty*. Measured, that defence does not hold on this problem either.
 | **RSM, OLS prediction interval** | **0.887** | **13.8 g/L** |
 
 ```text
-provenance: engin-core 0.1.0  |  @ db5fb12  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
 ```
 
 RSM's textbook interval — `ŷ ± t·s·√(1 + leverage)`, carrying observation noise
@@ -184,6 +196,10 @@ baseline upward is the only direction it is safe to tune in.
 | 8 | 104 | +31.2 ± 3.4 | +34.4 ± 3.5 | +34.1 ± 3.5 | +3.4 ± 0.2 | 20/20 |
 | 9 | 112 | +31.2 ± 3.4 | +34.5 ± 3.5 | +34.1 ± 3.5 | +3.4 ± 0.2 | 20/20 |
 | 10 | 120 | +31.2 ± 3.4 | +34.5 ± 3.5 | +34.1 ± 3.5 | +3.5 ± 0.1 | 20/20 |
+
+```text
+provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+```
 
 Best-true-titer lift over the best run of the shared initial DoE, mean ± standard
 error over 20 seeds. Round 0 is the shared initial DoE and is identical for all
