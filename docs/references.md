@@ -40,6 +40,7 @@ register rather than a bibliography.
 | `2025-chan-broad-host-range` | [Broad-Host-Range Synthetic Biology: Rethinking Microbial Chassis as a Design Variable](https://doi.org/10.1021/acssynbio.5c00308)<br/>Chan, Dennis Tin Chat, Bjerg, Johan, Bernstein, Hans C. — *ACS Synthetic Biology 14(10):3815-3821* | 2025 | paper | doi |
 | `2025-sun-master-efp` | [Multi-scale trend decomposition mixture of experts and time series retrieval-augmented modeling for erythromycin fermentation process](https://doi.org/10.1016/j.neucom.2025.131701)<br/>Sun, Yifei, Yan, Xuefeng — *Neurocomputing 657* | 2025 | paper | doi |
 | `2025-zenodo-erythromycin-efp` | [Erythromycin fermentation process dataset](https://doi.org/10.5281/zenodo.14619074)<br/>Yan, Xuefeng, Sun, Yifei — *Zenodo* | 2025 | dataset | doi |
+| `2026-amigo-prefer` | [PREFER: An Ontology for the PREcision FERmentation Community](https://doi.org/10.48550/arXiv.2602.16755)<br/>Amigó, Txell, Tan, Shawn Zheng Kai, Nielsen, Lars K., Förster, Jochen, Palsson, Bernhard Ø., Sudarsan, Suresh, Santos, Alberto, et al. — *arXiv 2602.16755* | 2026 | preprint | doi |
 | `2026-cf-xarray-units` | [Units — cf_xarray documentation](https://cf-xarray.readthedocs.io/en/latest/units.html)<br/>cf_xarray contributors — *cf-xarray.readthedocs.io* | 2026 | software | url |
 | `2026-frictionless-detector` | [Detector — Frictionless Framework documentation](https://framework.frictionlessdata.io/docs/framework/detector.html)<br/>Frictionless Data — *framework.frictionlessdata.io* | 2026 | software | url |
 | `2026-georgakilas-mife-mifd` | [MIFE and MIFD: Minimum information for fermentation experiments and devices](https://doi.org/10.1093/gigascience/giag038)<br/>Georgakilas, Georgios K., Metcalfe, Brett, Bize, Ariane, Owen, Stuart, Koehorst, Jasper J., et al. — *GigaScience 15, giag038* | 2026 | paper | doi |
@@ -70,6 +71,8 @@ register rather than a bibliography.
 | `docs/benchmarks.md` | Face-centred central composite designs place the star points at alpha = 1, which is the variant for factors that cannot be run outside their stated range — the case here, since every knob is bounded. | `2002-nist-sematech-handbook` | supports |
 | `docs/benchmarks.md` | IndPenSim is a simulation validated against industrial data, not measurements from a real plant — placing it at D12 tier 2, not tier 3. | `2019-goldrick-indpensim` | supports |
 | `docs/benchmarks.md` | 406 industrial fed-batch production batches, hourly, with a product-potency target, licensed CC-BY-4.0. | `2025-zenodo-erythromycin-efp` | supports |
+| `docs/design/data-convention.md` | "The lack of community standards limits data accessibility and interoperability, preventing integration across platforms" — third-party corroboration of the premise behind D11, from authors with no stake in this project. | `2026-amigo-prefer` | supports |
+| `docs/design/data-convention.md` | PREFER does not cite MIFE or MIFD, the standard D11 resolved to adopt — so the vocabulary layer is fragmenting rather than consolidating. | `2026-amigo-prefer` | supports |
 | `docs/index.md` | "Recovery cost is determined upstream but paid downstream, so maximizing titer can move the real objective backwards." | `2011-straathof-downstream-costs` | **contradicts** |
 | `docs/methods/conformal-calibration.md` | Split conformal has a finite-sample, distribution-free coverage guarantee. | `2018-lei-distribution-free` | supports |
 | `docs/methods/conformal-calibration.md` | Covariate shift violates exchangeability, and the literature has a weighted conformal treatment for it that Engin does not implement. | `2019-tibshirani-covariate-shift` | supports |
@@ -101,7 +104,7 @@ to serve.
 |---|---|---|---|---|
 | Gaussian-process titer forecast | `engin-core` | standard | scikit-learn GaussianProcessRegressor | `2011-pedregosa-scikit-learn` |
 | Split-conformal calibration | `engin-core` | wrapped | MAPIE (cross-check) + sd-normalized multiplier | `2022-taquet-mapie` |
-| Data convention over xarray/pandas | `engin-core` | bespoke-justified | MIFE / MIFD (metadata layer) | `2026-cf-xarray-units`, `2026-georgakilas-mife-mifd` |
+| Data convention over xarray/pandas | `engin-core` | bespoke-justified | MIFE / MIFD (metadata layer) | `2026-cf-xarray-units`, `2026-georgakilas-mife-mifd`, `2026-amigo-prefer` |
 | Ingest layer / schema inference | `engin-core` | bespoke-justified | none exists for the inference step; MIFE/MIFD is the target vocabulary | `2026-frictionless-detector`, `2026-georgakilas-mife-mifd` |
 | Techno-economic coupling | `engin-core` | standard | BioSTEAM (behind the [tea] extra) | `2020-cortespena-biosteam` |
 | Mechanistic fed-batch simulator | `engin-core` | bespoke-justified | SBML + COPASI / libRoadRunner (representation and simulation) | `2003-hucka-sbml` |

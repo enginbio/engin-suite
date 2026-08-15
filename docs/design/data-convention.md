@@ -1,7 +1,7 @@
 # Design note: the bioprocess data convention
 
 **Status:** the absence claim behind this component **did not survive review.**
-**Last searched:** 2026-08-13 · **Re-check:** 2027-08 · Implements `D11`, `D23`.
+**Last searched:** 2026-08-14 · **Re-check:** 2027-02 · Implements `D11`, `D23`.
 
 This note exists because `D23` holds absence claims to the highest bar in the scheme. A
 package saying *"no community standard exists"* is making a claim about the field, not
@@ -38,10 +38,55 @@ weight, `purification_method`).
 | Candidate | Verdict |
 |---|---|
 | **MIFE / MIFD** | **Not a near-miss. The standard.** Adopt. |
+| **PREFER** | **Monitor, do not adopt yet** — and report the MIFE relationship upstream. See below. |
 | `cf_xarray` | Rejected on evaluation: its vocabulary is geoscience-specific and reports `n/a` across bioprocess channels. Cited in the register. |
 | `frictionless` | Rejected on evaluation: `field_confidence` is a type-casting tolerance, not semantic confidence, and it maps nothing to a domain vocabulary. Cited in the register. |
 | SBML | Wrong layer — kinetic model representation, not experimental data layout. Relevant to the simulator instead. |
 | AnnData | Wrong domain, right shape. The pattern worth imitating, not the schema. |
+
+### PREFER, and what the re-check date missed
+
+**PREFER** — *An Ontology for the PREcision FERmentation Community*
+([arXiv 2602.16755](https://doi.org/10.48550/arXiv.2602.16755), Amigó et al., DTU Biosustain
+and UCSD, submitted 2026-02-18) — is a BFO-aligned ontology covering the whole precision
+fermentation process, reusing ChEBI, PATO, IAO, BAO and RO. Its author list includes Lars K.
+Nielsen and Bernhard Ø. Palsson.
+
+It was six months old when the search above ran, and the search missed it. That is the finding
+worth recording first, ahead of any verdict about the ontology itself.
+
+**The verdict is monitor, on two grounds and one caution.**
+
+It is a *different layer*, not a competitor. MIFE/MIFD is a minimum-information checklist with
+a LinkML schema — what fields must accompany an experiment. PREFER is a semantic ontology —
+what the terms mean and how they relate. A project can hold both, and they are more plausibly
+complementary than rival. Nothing here displaces the decision to adopt MIFE.
+
+And there is no adoption evidence yet: a preprint, a repository with 4 stars and 34 open
+issues. The base rate for "prestigious authors publish a vocabulary" → "field adopts the
+vocabulary" is poor, and adopting on the strength of an author list would be the same class of
+reasoning error this note exists to record.
+
+The caution runs the other way. `D11` chose MIFE over inventing a format precisely to avoid
+*"two half-adopted standards and an unmaintained converter"* — and **PREFER does not cite MIFE
+or MIFD.** That was checked rather than assumed: the full text of the v1 PDF returns zero hits
+for MIFE, MIFD, "Minimum Information", MIAPPE and MIBBI, in body and references alike. So the
+fragmentation `D11` named is visible in the field right now, one layer up.
+
+**What follows is an upstream report, not an adoption.** This note already commits to the
+posture — *being the reference implementation means contributing findings back* — and now has a
+second occasion to act on it, alongside the MIFE channel gaps below. Engin checked all 17 of
+its channels against the MIFE slot index on 2026-08-13, which makes it one of the few parties
+holding information both efforts would want.
+
+```{note}
+**Open question for the founder, deliberately not resolved here.** `D23` sets the re-check
+cadence for absence claims at annual, and `DECISIONS.md` is canonical, so this note does not
+change it. But annual looks like the wrong clock for a *standards* claim specifically: a
+vocabulary layer consolidates once, and eighteen months of latency is enough to arrive after
+someone else is its reference implementation. This note's own re-check is pulled in to
+**2027-02** on that reasoning. Whether the rule generalises is `D23`'s to decide.
+```
 
 ## The uncomfortable part
 
