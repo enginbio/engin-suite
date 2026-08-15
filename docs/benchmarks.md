@@ -41,19 +41,62 @@ had not, and the distinction is now in the table itself:
 | Engin component | Baseline | Status |
 |---|---|---|
 | Next-experiment recommendation | random batch of the same size | **implemented** — synthetic only |
-| Process optimization | plain design-of-experiments / response surface methodology | not built |
+| Process optimization | response surface methodology (fitted quadratic) | **implemented** — synthetic only |
 | Optimizer | an off-the-shelf Bayesian optimization library (BayBE, Ax) | not built |
 | Techno-economics | BioSTEAM | not built |
 | Pathway ranking | step-count heuristic | not built |
 | Host selection | "use *E. coli*" | not built |
 
-So the one head-to-head that exists is expected-improvement against random, on
-the simulator, and it is reported in the run above. Nothing here has been
-compared to DoE/RSM, to BayBE, or to BioSTEAM on any data — synthetic or real.
+## Engin loses to response surface methodology
+
+This is the result the page exists to be able to report, so it goes above the
+wins rather than below them.
+
+Given the same 70-run training split and the same noisy observations, a textbook
+second-order response surface — intercept, linear, quadratic and two-factor
+interaction terms, fitted by ordinary least squares — proposes **better designs**
+than Engin's GP with expected improvement.
+
+| over 20 seeds | best-true-titer lift | forecast R² |
+|---|---|---|
+| RSM optima | **+21.3%** | 0.955 |
+| Engin (GP + EI) | +15.9% | 0.962 |
+| random batch | −24.5% | — |
+
+**RSM wins on 18 of 20 seeds**, mean gap +5.4 percentage points with a standard
+error of 0.75 — about seven standard errors, so this is not seed noise. The two
+tie on forecast accuracy. Both beat random on 20 of 20.
+
+### Two things that cut against reading this as decisive — and neither rescues it
+
+**This simulator is RSM's home ground.** Five continuous knobs, a smooth
+mechanistic surface, no discrete choices and no plateaus. A quadratic is close to
+the right model class here, which is exactly the condition under which decades of
+practice say to use one. The comparison would look different on a rugged or
+higher-dimensional surface, and that is a claim this project cannot currently
+test.
+
+**One round favours pure exploitation.** RSM goes straight to its predicted
+optimum. Expected improvement deliberately spends part of its batch on
+uncertainty it expects to pay back *in later rounds* — and this benchmark scores
+one round, so EI pays the cost and never collects. Sequential RSM (steepest
+ascent, refit, re-centre) versus multi-round EI is the fair fight, and it is
+[not built](https://github.com/enginbio/engin-suite/issues/20).
+
+Neither caveat changes what is published today. The claim on the front page is
+**fewer DoE rounds**; measured over one round against the method practitioners
+actually use, Engin is behind. Anyone evaluating this project should know that
+before they read the calibration results, which is why it is here and not in a
+footnote.
+
+Nothing here has been compared to BayBE or to BioSTEAM on any data, and none of
+these comparisons has been run on real data.
 
 **Correcting this cost the page its best-sounding paragraph, which is the right
 trade.** A benchmarks page that overstates its own coverage is worse than one
-with gaps, because the gaps are recoverable and the credibility is not.
+with gaps, because the gaps are recoverable and the credibility is not. Building
+the first of those baselines then cost the page a win, which is the same trade a
+second time.
 
 The work has been tracked the whole time, as
 [#20](https://github.com/enginbio/engin-suite/issues/20), which names these same
