@@ -41,13 +41,28 @@ Current status is recorded in [Benchmarks](benchmarks.md).
 The schema-inference score reported by `engin_core.loaders` is an **ordinal
 heuristic, not a calibrated probability.** A 0.9 means "matched a known alias
 and the units agree"; it does not mean the mapping is right nine times in ten.
-Nothing has been measured against a corpus of labelled exports, because no such
-corpus exists here yet — the same data problem as tier 3–4 above.
+It has not been measured against a corpus of labelled exports, and no such
+corpus exists here — the same data problem as tier 3–4 above.
 
 This is called out rather than left implicit because on a project whose argument
 is calibrated uncertainty, a number named "confidence" that has not been
 calibrated is the easiest thing to over-read. Use it to rank what to review
 first, not to decide what needs no review.
+
+**Updated 2026-08-14: one real export has now been measured, and it went badly.**
+This section used to add that nothing had been measured *because no corpus
+exists*, which quietly implied nothing could be. Real DASGIP/DASware exports were
+public in [`detl`](https://github.com/JuBiotech/detl)'s test fixtures the whole
+time. Run against one, the loader mapped **1 of 40 columns and that one was
+wrong**, having first failed three times to read the file at all —
+[the full report](methods/vendor-export-ingest.md).
+
+One file from one vendor calibrates nothing, so the paragraph above stands
+unchanged: the score is still an ordinal heuristic and should still be read as
+one. What has changed is that the gap is now measured rather than asserted, and
+the first measurement says the honest description of the ingest layer is
+narrower than "handles messy exports" — it handles *tabular* exports whose
+headers name their channels.
 
 ## Techno-economic constraints
 
