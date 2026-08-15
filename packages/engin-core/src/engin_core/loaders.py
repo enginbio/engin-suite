@@ -37,7 +37,44 @@ and calling it support -- and the header spellings, delimiters and encodings are
 exactly the details that cannot be reasoned out. :data:`ALIASES` is therefore
 seeded with spellings that are *generic* (``OD600``, ``DO(%)``, ``Feed Rate``),
 and :func:`register_alias` exists so a real file can teach the loader without a
-code change. Vendor profiles land when someone has the actual files.
+code change.
+
+**Corrected 2026-08-14.** This paragraph used to end "vendor profiles land when
+someone has the actual files", and that was false when it was written.
+`JuBiotech/detl` has committed six real DASGIP/DASware exports -- Eppendorf's
+line, one of the four vendors above -- as test fixtures since 2022. Nobody
+looked. The reasoning was sound and the premise was not checked, which is this
+project's recurring failure rather than a new one.
+
+So the loader has now been run against one, and ``benchmarks/dasware_ingest.py``
+reproduces it. It mapped **1 of 40 columns, and that one is a false positive**:
+`XCO2 1.Out` is a controller output and was matched to ``offgas_co2``, the
+convention's *measured exhaust* channel, on a substring hit for "co2". Before
+that it failed three times over -- the file is latin-1, semicolon-delimited, and
+not a table at all but 47 INI-style sections whose four ``[TrackData*]`` blocks
+are the runs.
+
+**Two consequences for anyone extending this module.**
+
+*The scores cannot see role.* A DASGIP header states whether a column is a
+measurement (``.PV``), a setpoint (``.SP``) or a controller output (``.Out``),
+and nothing here reads it. Mapping an actuator command onto a measured channel
+is a worse error than failing to map it, and the evidence string a reviewer
+reads gives no sign that it happened.
+
+*And* :func:`register_alias` *does not reach a file like this.* Measured, not
+assumed: the obvious spellings (``pH1``, ``RQ1``) never fire, because matching is
+against the whole folded header and those are below
+:data:`MIN_CONTAINED_ALIAS`; the full dotted spelling ``pH1.PV`` works on vessel
+1 and does not carry to vessel 2, which spells it ``Unit 2.pH2.PV``. Covering
+that one four-vessel file takes **156** aliases. A vendor profile is not a row in
+:data:`ALIASES` -- it is a header grammar, and this module has no place to put
+one yet.
+
+``docs/methods/vendor-export-ingest.md`` has the full report and the AGPL
+boundary: detl is AGPL-3.0, this project is Apache-2.0, and observed header
+spellings are facts rather than expression -- but **do not vendor the fixtures or
+the parser.**
 """
 
 from __future__ import annotations

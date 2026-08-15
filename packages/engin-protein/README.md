@@ -7,8 +7,8 @@ conformal-interval loop pointed at a fitness landscape instead of fermentation k
 ## The wedge
 
 Protein campaigns share the shape the rest of the [engin suite](https://github.com/enginbio/engin-suite)
-serves: **few measurements, expensive assays, irreversible commitments.** A model that is 5% more
-accurate doesn't change what you order next. A model that says *"82% chance this variant clears your
+serves: **few measurements, expensive assays, irreversible commitments.** A model that is 5% more <!-- not-a-claim: illustrative figure in an argument, not a measurement -->
+accurate doesn't change what you order next. A model that says *"82% chance this variant clears your <!-- not-a-claim: illustrative figure in an argument, not a measurement -->
 threshold, here's the batch that most reduces your uncertainty, and here's what's driving it"* does.
 
 | Face | Plan | Question it answers |
