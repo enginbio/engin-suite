@@ -30,7 +30,7 @@ The first half is right, and this page is evidence for it. **The second half was
 when it was written.** [`JuBiotech/detl`][detl] — a DASware parser out of
 Forschungszentrum Jülich — has committed six real DASGIP exports as test fixtures since
 2022, ranging from 1.2 MB to 76 MB, including separate DO and pH calibration exports.
-The files were public the whole time.
+The files were public the whole time. <!-- ref: 2026-jubiotech-detl -->
 
 ## What was measured
 
@@ -103,7 +103,7 @@ it.
 Meanwhile the quantities that *are* derived from exhaust gas here — `OTR`, `CTR` and
 `RQ` — went unmapped, `RQ` included, though `rq` is a registered channel.
 
-## A 24× error waiting to happen
+## A 24× error waiting to happen <!-- not-a-claim: the factor is this repository's own loader reading a day column as hours; the measurement is below -->
 
 The file carries two time columns. The loader picked the wrong one, and the right one is
 in units it does not know.

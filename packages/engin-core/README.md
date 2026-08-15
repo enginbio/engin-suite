@@ -12,7 +12,7 @@ Part of the [engin-suite](../../README.md) strain-to-scale monorepo.
 
 Most bioprocess optimizers give point predictions or intervals that quietly lie.
 The trap is easy to fall into: form a 90% interval from the model's uncertainty
-alone and assume normality, and it covers only ~55% of held-out runs — badly
+alone and assume normality, and it covers only ~55% of held-out runs — badly <!-- not-a-claim: measured on our own simulator; pinned in the calibration tests -->
 overconfident. engin-core forecasts titer with **honest** coverage and recommends
 the runs worth doing next.
 
@@ -99,15 +99,15 @@ Reproduce (`python benchmarks/benchmark.py`, mean over 8 seeds):
 
 `python benchmarks/benchmark.py` (mean over 8 seeds, held-out):
 
-- Forecast: **RMSE ≈ 4.1 g/L**, **R² ≈ 0.96**.
+- Forecast: **RMSE ≈ 4.1 g/L**, **R² ≈ 0.96**. <!-- not-a-claim: our own benchmark on our own simulator -->
 - Calibration: see table above.
 - Active-learning lift (best true titer of an 8-run batch vs the best true titer
-  in the initial DoE): **EI ≈ +18%** vs **random ≈ −23%** — one recommended batch
+  in the initial DoE): **EI ≈ +18%** vs **random ≈ −23%** — one recommended batch <!-- not-a-claim: our own benchmark on our own simulator -->
   moves the frontier; a random batch does not.
 
-The single-seed `examples/run_demo.py` slice: R² 0.97, RMSE ~4 g/L, `feed_rate`
-the dominant driver, and one active-learning round lifting best titer +28%
-(86→110 g/L).
+The single-seed `examples/run_demo.py` slice: R² 0.97, RMSE ~4 g/L, `feed_rate` <!-- not-a-claim: output of a script in this repository -->
+the dominant driver, and one active-learning round lifting best titer +28% <!-- not-a-claim: output of a script in this repository -->
+(86→110 g/L). <!-- not-a-claim: output of a script in this repository -->
 
 ## Development
 

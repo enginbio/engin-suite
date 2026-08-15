@@ -31,15 +31,21 @@ thin domain layers over one shared engine, `engin-core`.
 |---|---|---|---|
 | [`engin-core`](packages/engin-core) | — | Shared engine: fed-batch simulator (scipy), scikit-learn GP with conformal calibration (split-conformal + MAPIE), Expected-Improvement recommender, ARD sensitivity. | ✅ working |
 | [`engin-host`](packages/engin-host) | [4] | Host/chassis selection: multi-criteria scoring over a capability KB, with uncertainty and hard-constraint flags. Depends on `engin-core`. | ✅ working |
-| [`engin-pathway`](packages/engin-pathway) | [3] | Graph-ML manufacturability ranking of metabolic routes (beats step-count; calibrated). Depends on `engin-core`. | ✅ working (M0) |
+| [`engin-pathway`](packages/engin-pathway) | [3] | Graph-ML manufacturability ranking of metabolic routes, with a calibrated interval. M0 ships a random-weight stand-in, scored against its own synthetic generator. Depends on `engin-core`. | ✅ working (M0) |
 
 ## Design principles (suite-wide)
 
 - **Calibrated uncertainty is first-class** everywhere — no naked point estimates;
   conformal coverage stays honest.
-- **Honest baselines** — every model is reported against the dumb heuristic it
-  claims to beat (naive Gaussian intervals, random batches, step-count ranking,
-  "just use E. coli").
+- **Honest baselines** — every model should be reported against the dumb heuristic
+  it claims to beat. **Four of the seven committed baselines are implemented**
+  (random batches, response-surface methodology, sequential RSM, step-count
+  ranking); BayBE/Ax, BioSTEAM and "just use *E. coli*" are not built yet.
+  [Benchmarks](https://docs.engin.bio/en/latest/benchmarks.html) has the table,
+  including **the two baselines that beat us** and the one whose margin turned out
+  to be a property of its own generator. This bullet was written in the present
+  tense as though all of them were done; `docs/benchmarks.md` and `docs/index.md`
+  were corrected on that in August 2026 and this one was missed.
 - **Everything methodological is public** — engine, simulators, calibration and
   the economics coupling alike (`D1`, `D8`). There is no held-back core. The only
   thing that could sit outside this repository is partner data under NDA, which

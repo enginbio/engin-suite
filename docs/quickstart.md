@@ -17,6 +17,8 @@ cd packages/engin-core && python examples/quickstart_real_data.py
 
 The first run downloads 8 MB and caches it. Most of the elapsed time is fitting
 the Gaussian process.
+<!-- ref: 2025-zenodo-erythromycin-efp -->
+
 
 ```{note}
 Engin is **not on PyPI** — see [Install](install.md). Clone and install from

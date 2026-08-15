@@ -122,7 +122,12 @@ jobs:
 
       - name: Benchmarks (smoke)
         working-directory: packages/engin-core
-        run: python benchmarks/benchmark.py
+        # `--seeds 4` on purpose. This step checks the benchmark still *runs*; it
+        # asserts nothing about the numbers (that gap is #20). The default is 20
+        # seeds so that the command printed in docs/benchmarks.md reproduces the
+        # table printed under it, and paying ~3 minutes on every PR to re-derive
+        # numbers nothing here compares against is not worth it.
+        run: python benchmarks/benchmark.py --seeds 4
 
   # The packages declare minimum versions rather than pins, which is right for a
   # library -- an application pins, a library states what it needs. But every other
