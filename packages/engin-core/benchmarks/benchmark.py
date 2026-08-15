@@ -453,9 +453,12 @@ def real() -> None:
     print("=== engin-core benchmarks: REAL (406 industrial batches) ===")
     print("Source: erythromycin production data, CC-BY-4.0, fetched and checksum-")
     print("verified at run time. D12 tier 3. Downloads 8 MB the first time.")
+    # The seeds belong to real_data_coverage, not to this module. Reporting [0]
+    # here would publish a provenance line that misdescribes its own run, which is
+    # the defect #125 is about, one level down.
     print(
         provenance(
-            [0],
+            list(real_data_coverage.SEEDS),
             dataset="erythromycin-efp EFP_long.csv (doi:10.5281/zenodo.14619074)",
         )
         + "\n"
