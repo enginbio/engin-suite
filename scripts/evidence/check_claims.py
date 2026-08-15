@@ -44,14 +44,50 @@ ROOT = Path(__file__).resolve().parents[2]
 REGISTER = ROOT / "sources.yaml"
 
 # Tier A: what a stranger reads. The vault is Tier B/C and is checked separately.
+#
+# **Package READMEs are in scope, and were not until 2026-08-15.** The register
+# already held claim rows against `packages/engin-materials/README.md` and
+# `packages/engin-host/README.md`, so the register and this check disagreed about
+# what Tier A contained -- and this check is the half that fails builds. The cost
+# was concrete: two corrections reached the docs site and never reached
+# `README.md`, because `docs/` is globbed as a tree while everything else was a
+# hand-maintained list nobody extended.
+#
+# So the non-docs half is globbed too, from the manifest of published root files
+# plus every package README. Adding a package no longer means remembering this.
+_ROOT_DOCS = (
+    "README.md",
+    "DECISIONS.md",
+    "GOVERNANCE.md",
+    "BIOSECURITY.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+    "AGENTS.md",
+)
+
 TIER_A = sorted(
     [p for p in (ROOT / "docs").rglob("*.md") if "_build" not in p.parts]
-    + [ROOT / n for n in ("README.md", "DECISIONS.md", "GOVERNANCE.md", "BIOSECURITY.md")]
+    + [ROOT / n for n in _ROOT_DOCS]
+    + list((ROOT / "packages").glob("*/README.md"))
 )
 
 FENCE = re.compile(r"^\s*(```|:::)")
 INLINE_CODE = re.compile(r"`[^`]*`")
 LINK_TARGET = re.compile(r"\]\([^)]*\)")
+HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+"""An HTML comment, possibly spanning lines.
+
+A number inside a comment is invisible to a reader, so it cannot be an uncited
+*published* claim -- and a note explaining why a figure was dropped naturally
+quotes the figure. Found immediately: writing such a note made the check flag its
+own explanation of a number it had just caused to be removed.
+
+Applied across the whole file rather than per line, because comments span lines
+exactly as fences do. Two per-line attempts were wrong before this one: a
+`^.*?-->` alternative for closing lines ate the prose in front of an inline
+comment, and neither reached the middle line of a multi-line comment.
+"""
 FOOTNOTE = re.compile(r"\[\^[a-z0-9-]+\]")
 REF_COMMENT = re.compile(r"<!--\s*ref:\s*([a-z0-9-]+)\s*-->")
 NOT_A_CLAIM = re.compile(r"<!--\s*not-a-claim\b[^>]*-->")
@@ -66,7 +102,15 @@ CLAIMISH = re.compile(
     (?:
         -\s*\d[\d,]*(?:\.\d+)?\s*%   # a range like 35-50%
       | %                            # percentage
-      | \s*(?:g/L|mg/L|g/kg|kg|L/h|USD|\$/kg|x|×)\b
+      | \s*(?:g/L|mg/L|g/kg|kg|L/h|USD|\$/kg|x)\b
+      | \s*(?:[KMGT]B)\b                # data sizes: a 2.5 GB dataset is a claim
+      # `×` carries no trailing \b, and that is not a style choice. U+00D7 is
+      # category Sm, not a word character, so `×\b` demands a word character
+      # *after* the sign -- which "9× lower" and "**9×**" do not have. The
+      # alternative was dead from the day it was written, and it hid the
+      # `engin-pathway` README's "roughly 9× lower regret" the whole time.
+      # Found by running the check over a file it had never seen, not by reading it.
+      | \s*×
       | \s*(?:million|billion|thousand|orders\ of\ magnitude)\b
     )
     """,
@@ -93,6 +137,21 @@ def strip_noise(line: str) -> str:
     return LINK_TARGET.sub("]", INLINE_CODE.sub("`code`", line))
 
 
+def blank_comments(lines: list[str]) -> list[str]:
+    """``lines`` with comment bodies blanked and the line count preserved.
+
+    Line numbering has to survive so findings still point at the right line, so
+    each stripped character becomes a space and each newline stays a newline.
+    ``ref:`` and ``not-a-claim`` are read off the *raw* lines before this is
+    consulted, so blanking here does not disarm them.
+    """
+    blanked = HTML_COMMENT.sub(
+        lambda m: "".join("\n" if c == "\n" else " " for c in m.group(0)),
+        "\n".join(lines),
+    )
+    return blanked.split("\n")
+
+
 def scan(path: Path, register: dict) -> list[tuple[int, str, str]]:
     """Return (line number, line, reason) for every uncited candidate claim."""
     known_ids = {s.get("id") for s in register.get("sources") or []}
@@ -104,6 +163,7 @@ def scan(path: Path, register: dict) -> list[tuple[int, str, str]]:
     }
 
     lines = path.read_text().splitlines()
+    prose = blank_comments(lines)
 
     # Citations clear a *paragraph*, not a line. Prose here is hard-wrapped, so a
     # footnote naturally lands a line or two away from the number it supports;
@@ -128,14 +188,27 @@ def scan(path: Path, register: dict) -> list[tuple[int, str, str]]:
             in_fence = not in_fence
             continue
         block = para_text.get(para_of.get(n - 1, -1), "")
-        if in_fence or NOT_A_CLAIM.search(block):
+        # `not-a-claim` clears its own LINE, not the paragraph.
+        #
+        # It used to clear `block`. The docstring justifies the escape hatch on
+        # the grounds that using it is "a visible act in the diff" -- which is
+        # true of a line and false of a paragraph: one marker added for one
+        # number silently covered every number a later edit put in the same
+        # hard-wrapped block. In `docs/limitations.md` two markers were switching
+        # off checking for the whole first techno-economic bullet.
+        #
+        # Footnotes and `ref:` comments stay paragraph-scoped on purpose (see
+        # below) -- those *add* evidence, so landing a line away is a formatting
+        # accident. This one *removes* checking, so its blast radius should be
+        # exactly what the author looked at.
+        if in_fence or NOT_A_CLAIM.search(raw):
             continue
 
         for ref in REF_COMMENT.findall(raw):
             if ref not in known_ids:
                 findings.append((n, raw.strip(), f"cites unknown source id {ref!r}"))
 
-        line = strip_noise(raw)
+        line = strip_noise(prose[n - 1])
         if any(rx.search(line) for rx in EXEMPT):
             continue
         matches = CLAIMISH.findall(line) or CLAIMISH.search(line)
@@ -151,15 +224,34 @@ def scan(path: Path, register: dict) -> list[tuple[int, str, str]]:
     return findings
 
 
+def _quantities(text: str) -> set[str]:
+    """The unit-carrying quantities in a string, normalized for comparison.
+
+    ``"roughly 45-92% of cost"`` -> ``{"45-92%"}``. Whitespace and case are
+    folded so ``45 %`` and ``45%`` compare equal.
+    """
+    return {"".join(m.split()).lower() for m in CLAIMISH.findall(text)}
+
+
 def _overlaps(line: str, claim: str) -> bool:
     """True when a register row plausibly covers this line.
 
-    Deliberately loose: the register records the claim in its own words, so an
-    exact match would never fire. Shared distinctive numbers are the signal.
+    Still loose about *wording* -- the register records each claim in its own
+    words, so an exact match would never fire -- but no longer loose about
+    *which number*.
+
+    It used to clear a line when any digit-string on it appeared anywhere in any
+    claim for that document. That is unsound in the direction that matters:
+    `docs/benchmarks.md` has rows whose text contains 406, 2, 5 and 1, so a newly
+    added and genuinely uncited "2x" or "5%" cleared itself against the NIST
+    row's "2^(5-2)". A guard that passes silently is the failure this check
+    exists to prevent.
+
+    So the match is on the **unit-carrying quantity** -- the thing CLAIMISH
+    flagged -- rather than on any digit inside it. A bare `2` in a claim no
+    longer vouches for `2x` on a line; `45-92%` vouches for `45-92%`.
     """
-    line_nums = set(re.findall(r"\d[\d,]*(?:\.\d+)?", line))
-    claim_nums = set(re.findall(r"\d[\d,]*(?:\.\d+)?", claim))
-    return bool(line_nums & claim_nums)
+    return bool(_quantities(line) & _quantities(claim))
 
 
 # Matches `ref: id` whether it sits in a `#` comment or in a docstring. The `#`
