@@ -43,6 +43,42 @@ weight, `purification_method`).
 | `frictionless` | Rejected on evaluation: `field_confidence` is a type-casting tolerance, not semantic confidence, and it maps nothing to a domain vocabulary. Cited in the register. |
 | SBML | Wrong layer — kinetic model representation, not experimental data layout. Relevant to the simulator instead. |
 | AnnData | Wrong domain, right shape. The pattern worth imitating, not the schema. |
+| `detl` | **Parser-side, and it exists.** DASGIP/DASware only, no vocabulary layer. Not composable: **AGPL-3.0**. See below. |
+| `bletl` | Parser-side. BioLector I/Pro only, no vocabulary layer, peer-reviewed. Also **AGPL-3.0**. |
+| `allotropy` | Closest existing implementation of the *architecture*, MIT, ~60 parsers — and **zero bioreactor parsers**. Rejected on scope, kept as precedent. |
+
+### The near-miss table had no parser rows, on a component whose contribution is a parser
+
+Added 2026-08-14 (#116). `D11` calls the ingest layer *"the real contribution"*, and every row
+above it is schema-side — MIFE, `cf_xarray`, `frictionless`, SBML, AnnData. **The parser half was
+never searched.** That is a defect in the table rather than in the claim, and the distinction
+matters:
+
+**The absence claim survives, narrowed.** `D11`'s claim has two conjuncts — *arbitrary vendor
+bioreactor exports*, mapped onto *a domain vocabulary* — and no candidate found meets both.
+`detl` and `bletl` are bioreactor parsers with no vocabulary layer and one vendor each;
+`allotropy` has the vocabulary layer and no bioreactor parsers. The defensible sentence is
+therefore "no open-source layer maps *arbitrary* bioreactor exports onto a *domain vocabulary*",
+and that is what the register now says.
+
+**What the search actually found is more interesting than an absence.** Two single-vendor
+parsers out of Forschungszentrum Jülich, 8 stars each, one peer-reviewed, both in maintenance
+mode. The niche is not contested — it is **abandoned in place**. People did build exactly this,
+for one vendor each, and then stopped, because nobody funds the cross-vendor mapper. That is a
+better argument for `D11` than "nobody thought of it", and it is true.
+
+**`D9` does not require composing with them.** Both are AGPL-3.0 against this project's
+Apache-2.0 (`D3`), so composition is not available on any terms this project can accept. Saying
+so explicitly is better than leaving `D9` ambiguous here. The full licence boundary — including
+why observing a header spelling is a fact rather than expression, and why the fixtures and the
+parser must not be vendored — is in
+[the ingest measurement](../methods/vendor-export-ingest.md).
+
+**And detl's fixtures cost this project a published claim.** `loaders.py` explained its lack of
+vendor profiles by saying they *"land when someone has the actual files"* — while six real
+DASGIP exports had been sitting in detl's test directory since 2022. Running the loader against
+one is [the first measurement it has had](../methods/vendor-export-ingest.md), and it mapped 1
+of 40 columns with that one wrong.
 
 ### PREFER, and what the re-check date missed
 
