@@ -322,8 +322,16 @@ that is what detects a file being swapped, truncated or quietly revised. A sha25
 computed by whoever added the entry proves only that the bytes have not changed
 since *they* downloaded it: a weaker claim wearing a stronger algorithm. Zenodo
 publishes md5, so md5 is usually the checkable value, and insisting on sha256
-would mean downloading 227 MB — or IndPenSim's 2.5 GB — to produce a digest
-nobody can check you against.
+would mean downloading 227 MB — or IndPenSim's multi-gigabyte archive — to
+produce a digest nobody can check you against.
+<!-- ref: 2026-zenodo-cho-k1-cultivations -->
+
+<!-- 227 MB is the registry's recorded size_bytes (227,627,771) for a file whose
+     digest was checked against the publisher's. IndPenSim's size read "2.5 GB"
+     until 2026-08-15; it is not registered, not fetchable by design (the licence
+     guard refuses it), and the figure had never been checked against anything.
+     Described rather than quantified, which is what we can support. -->
+
 
 Worth being precise about IndPenSim, since it is often described loosely: a
 **simulation validated against industrial data**, not measurements from a real
