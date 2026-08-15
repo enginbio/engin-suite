@@ -30,6 +30,7 @@ api-stability
 methods/conformal-calibration
 methods/out-of-distribution
 methods/real-data-calibration
+methods/vendor-export-ingest
 benchmarks
 limitations
 ecosystem
