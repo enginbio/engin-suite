@@ -430,6 +430,39 @@ sources:
       it. Evaluated at 0.10.
     type: software
 
+  # -- Sequential response surface methodology (#20). The baseline is only worth
+  # reporting if it is the method as practised, so the design came from the
+  # catalogue rather than from what a quadratic-fitting exercise suggests.
+
+  - id: 1951-box-wilson-optimum-conditions
+    title: On the Experimental Attainment of Optimum Conditions
+    authors: [Box, G. E. P., Wilson, K. B.]
+    year: 1951
+    venue: Journal of the Royal Statistical Society Series B (Methodological) 13(1)
+    location: https://doi.org/10.1111/j.2517-6161.1951.tb00067.x
+    accessed: 2026-08-14
+    stability: doi
+    type: paper
+
+  - id: 2002-nist-sematech-handbook
+    title: "Handbook 151: NIST/SEMATECH e-Handbook of Statistical Methods"
+    authors:
+      [
+        Heckert, N. A.,
+        Filliben, J. J.,
+        Croarkin, C. M.,
+        Hembree, B.,
+        Guthrie, W. F.,
+        Tobias, P.,
+        Prinz, J.,
+      ]
+    year: 2002
+    venue: National Institute of Standards and Technology, Gaithersburg MD
+    location: https://doi.org/10.18434/M32189
+    accessed: 2026-08-14
+    stability: doi
+    type: web
+
 claims:
   - doc: DECISIONS.md
     tier: A
@@ -922,6 +955,48 @@ claims:
       Conduct, and an active community of reasonable size (D25).
     strength: supports
     reviewed: 2026-08-11
+
+  - doc: docs/benchmarks.md
+    tier: A
+    source_id: 1951-box-wilson-optimum-conditions
+    claim: >-
+      Sequential response surface methodology — a first-order design, the path
+      of steepest ascent, then a second-order design near the optimum — is Box
+      and Wilson's method, which is why the multi-round baseline is built that
+      way rather than as a quadratic refitted in a loop.
+    strength: supports
+    reviewed: 2026-08-14
+
+  - doc: docs/benchmarks.md
+    tier: A
+    source_id: 2002-nist-sematech-handbook
+    claim: >-
+      The catalogued two-level design for five factors in eight runs is the
+      2^(5-2) resolution III fraction, generators D = AB and E = AC, defining
+      relation I = ABD = ACE = BCDE.
+    strength: supports
+    reviewed: 2026-08-14
+
+  - doc: docs/benchmarks.md
+    tier: A
+    source_id: 2002-nist-sematech-handbook
+    claim: >-
+      Face-centred central composite designs place the star points at alpha =
+      1, which is the variant for factors that cannot be run outside their
+      stated range — the case here, since every knob is bounded.
+    strength: supports
+    reviewed: 2026-08-14
+
+  - doc: packages/engin-core/benchmarks/sequential_rsm.py
+    tier: A
+    source_id: 2002-nist-sematech-handbook
+    claim: >-
+      The path of steepest ascent runs at x_i = rho * b_i / ||b|| for increasing
+      rho, continuing until the response stops improving, after which a new
+      first-order design gives a new direction and detected curvature moves the
+      campaign to the second-order phase.
+    strength: supports
+    reviewed: 2026-08-14
 
 # One row per major code component. `stance: unaudited` is the honest default
 # and is what the D23 programme exists to reduce — see issues #84 to #90.

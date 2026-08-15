@@ -22,14 +22,21 @@ that is 21 coefficients, which a 70-run training split supports comfortably.
 starts and returns the ``k`` best distinct optima. That is the batch analogue of
 what RSM is used for in practice: fit, find the stationary point, run there.
 
-## What is deliberately not implemented
+## What this module deliberately does not implement -- and where it now lives
 
-No sequential RSM (steepest ascent, then refit, then a central-composite design
+~~No sequential RSM (steepest ascent, then refit, then a central-composite design
 around the new centre). That is how RSM is really run and it would be a stronger
 baseline, but it is a *different experiment* -- an adaptive method against an
 adaptive method, over multiple rounds. This module compares single-shot design
 choice from one campaign, which is what ``benchmark.py`` measures. Making the
-comparison multi-round is worth doing and is not this.
+comparison multi-round is worth doing and is not this.~~
+
+Superseded 2026-08-14: that different experiment is built, in
+``sequential_rsm.py``, and reported by ``benchmark.py --multi-round``. The
+reasoning above still describes *this* module correctly -- it remains the
+single-shot baseline, and the single-round numbers it produced stay in
+``docs/benchmarks.md`` unchanged -- but the note is no longer a statement about
+what the repository contains.
 """
 
 from __future__ import annotations
