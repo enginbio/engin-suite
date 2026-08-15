@@ -62,8 +62,22 @@ had not, and the distinction is now in the table itself:
 | Multi-round optimization campaign | sequential RSM (Box–Wilson: steepest ascent, central composite, re-centre) | **implemented** — synthetic only |
 | Optimizer | an off-the-shelf Bayesian optimization library (BayBE, Ax) | not built |
 | Techno-economics | BioSTEAM | not built |
-| Pathway ranking | step-count heuristic | not built |
+| Pathway ranking | step-count heuristic | **implemented** — synthetic routes, random-weight M0, and the margin is a property of the generator ([#124](https://github.com/enginbio/engin-suite/issues/124)) |
 | Host selection | "use *E. coli*" | not built |
+
+**The pathway row was wrong in the safer-looking direction**, and that is worth
+naming. It read `not built` until 2026-08-15 while `engin-pathway` had been
+publishing ρ 0.85 against step-count's 0.51 since M0. Understating is still
+misreporting — and it meant the comparison went unaudited, because a baseline
+nobody thinks exists is a baseline nobody checks.
+
+When it was checked, the number turned out to measure the generator rather than
+the method: `make_dataset` builds its label so that the term step-count can see
+carries r² 0.12 and the term it cannot see carries 0.81. Change one generator
+constant and step-count wins instead. The package README carries the full caveat,
+and `packages/engin-pathway/benchmarks/generator_audit.py` reproduces it. Counted
+here as implemented because the comparison runs and is reported — not because it
+tells you anything about metabolic routes.
 
 ## Engin loses to response surface methodology
 
