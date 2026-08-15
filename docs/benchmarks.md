@@ -64,6 +64,10 @@ than Engin's GP with expected improvement.
 | Engin (GP + EI) | +15.9% | 0.962 |
 | random batch | −24.5% | — |
 
+```text
+provenance: engin-core 0.1.0  |  @ db5fb12  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+```
+
 **RSM wins on 18 of 20 seeds**, mean gap +5.4 percentage points with a standard
 error of 0.75 — about seven standard errors, so this is not seed noise. The two
 tie on forecast accuracy. Both beat random on 20 of 20.
@@ -77,6 +81,10 @@ uncertainty*. Measured, that defence does not hold on this problem either.
 |---|---|---|
 | Engin, split-conformal | 0.960 | 16.2 g/L |
 | **RSM, OLS prediction interval** | **0.887** | **13.8 g/L** |
+
+```text
+provenance: engin-core 0.1.0  |  @ db5fb12  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
+```
 
 RSM's textbook interval — `ŷ ± t·s·√(1 + leverage)`, carrying observation noise
 so the comparison is like for like — lands closer to nominal than ours and is
@@ -263,10 +271,22 @@ five baselines. The roadmap knew; this page did not say so.
 **Cases where a baseline wins are published in the same table as the wins.** A
 benchmark suite that always favours its author is not evidence.
 
-Each result records the dataset version and random seed that produced it, so a
-third party can reproduce it exactly. Coverage of calibrated intervals is tested
-in continuous integration; a change pushing empirical coverage outside tolerance
-fails the build.
+Each results table carries a **provenance line** — package version, commit, seed
+span, dataset version, numpy version and run date — emitted by the benchmark
+script rather than typed here, so it cannot drift from the code. Coverage of
+calibrated intervals is tested in continuous integration; a change pushing
+empirical coverage outside tolerance fails the build.
+
+**That sentence used to promise this before it was true**, which is the same
+failure as the baselines table above. Until 2026-08-15 it read *"each result
+records the dataset version and random seed that produced it"*, and no published
+result recorded any of them. Attaching provenance for
+[#125](https://github.com/enginbio/engin-suite/issues/125) surfaced a second half
+of the problem too: `python benchmarks/benchmark.py` ran **8** seeds while this
+page reported **20**, so the command printed above did not reproduce the numbers
+printed below it — it returned +18.3% EI against a published +15.9%. <!-- not-a-claim: both are our own simulator, at 8 and 20 seeds -->
+The default
+is now 20 and the two agree.
 
 ## Datasets: fetched, never shipped
 

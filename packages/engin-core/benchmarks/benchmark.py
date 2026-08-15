@@ -56,6 +56,7 @@ import subprocess
 import sys
 from collections.abc import Sequence
 from datetime import datetime, timezone
+from functools import cache
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -88,12 +89,20 @@ SEEDS = 20  # matches the seed count of the published single-round comparison
 RADII = (0.10, 0.20, 0.30, 0.40, 0.50)
 
 
+@cache
 def _git_sha() -> str:
     """The commit these numbers were produced at, marked when the tree is dirty.
 
     Returns ``"unknown"`` outside a checkout -- an installed copy, a tarball --
     rather than raising. A benchmark run should not fail because provenance is
     unavailable; it should say that provenance is unavailable.
+
+    **Cached, and sampled before the work starts** (``main`` warms it). The first
+    version read the tree when the line was *printed*, which for ``--multi-round``
+    is twenty minutes after the run began -- so editing any file during the run
+    made it report ``-dirty`` about code that had been clean when it executed.
+    Caught by reading the line a real long run emitted, which is the only way it
+    was ever going to show up.
     """
     here = str(Path(__file__).resolve().parent)
     try:
@@ -222,7 +231,12 @@ def one_seed(seed: int, d: int = 5):
 
 
 def synthetic(seeds=None) -> None:
-    seeds = range(8) if seeds is None else seeds
+    # Defaults to SEEDS, not 8. It was 8 until 2026-08-15 while docs/benchmarks.md
+    # published the 20-seed figures, so `python benchmarks/benchmark.py` -- the
+    # command the page prints -- did not reproduce the page: it returned +18.3% EI
+    # against a published +15.9%, and 16.5 g/L against 16.2. Found while attaching
+    # provenance for #125, which is the argument for attaching it.
+    seeds = list(range(SEEDS)) if seeds is None else list(seeds)
     rows = [one_seed(s) for s in seeds]
 
     def avg(k):
@@ -475,9 +489,10 @@ def main(argv=None) -> None:
         ),
     )
     parser.add_argument(
-        "--seeds", type=int, default=SEEDS, help=f"seeds for --multi-round (default {SEEDS})"
+        "--seeds", type=int, default=SEEDS, help=f"seed count for either mode (default {SEEDS})"
     )
     args = parser.parse_args(argv)
+    _git_sha()  # sample the tree before the work, not after it
     if args.multi_round:
         if args.data == "real":
             parser.error("--multi-round needs a simulator to query; --data real cannot supply one")
@@ -485,7 +500,7 @@ def main(argv=None) -> None:
     elif args.data == "real":
         real()
     else:
-        synthetic()
+        synthetic(range(args.seeds))
 
 
 if __name__ == "__main__":
