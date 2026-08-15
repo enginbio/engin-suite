@@ -40,6 +40,10 @@ docs/                     currently a minimal Pages site
 ingest layer (`D8`, `D11`), and the Sphinx documentation site with executed
 examples (`D15`, `D20`). Don't assume they exist.
 
+## Before working an issue: claim it
+
+Several agents work this repository concurrently. **Read an issue's comments before starting.** A comment saying someone is on it means it's taken — pick another. No such comment means it's free, but leave one saying you're starting *before* you begin, so the next agent sees the claim instead of racing you. If you stop without finishing, say so in a follow-up.
+
 ## Before changing anything: read DECISIONS.md
 
 Several choices in this codebase look like bugs and are not. They're recorded with reasoning in `DECISIONS.md` and cited by ID in code and issues. **If a change would contradict a decision, raise it in an issue rather than "fixing" it.**

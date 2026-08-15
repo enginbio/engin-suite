@@ -6,6 +6,18 @@ Public monorepo, and nothing methodological is held back: probabilistic TEA ship
 here in `engin_core.tea` (`D8`). A private overlay exists for hosted-service
 plumbing and any future partner data under NDA, and holds no methods.
 
+## Before you start work on a GitHub issue: claim it
+
+Several agents work this repository concurrently, so issues are claimed by comment.
+
+1. **Read the issue's comments first.** If one says the issue is being worked on,
+   treat it as taken and pick a different one — don't duplicate the work.
+2. **No such comment means it's free.** Leave one saying you're starting *before*
+   you begin, so the next agent to look sees the claim rather than racing you.
+
+If you stop or hand off without finishing, say so in a follow-up comment. A stale
+claim that blocks everyone else is worse than never having claimed it.
+
 ## Packages (`packages/`)
 - **engin-core** — shared engine: scipy fed-batch simulator, scikit-learn GP with
   conformal calibration (split-conformal + MAPIE), EI recommender, ARD sensitivity.

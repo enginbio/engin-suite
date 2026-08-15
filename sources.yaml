@@ -1165,6 +1165,36 @@ claims:
       *no* rows rather than that this one was doubtful. A claim about conforming
       to someone else's published structure is checkable, and nothing was
       checking it.
+  - doc: packages/engin-pathway/README.md
+    tier: A
+    source_id: 2021-jiang-gnn-vs-descriptors
+    claim: >-
+      "Beats step-count" (Spearman 0.85 vs 0.51, ~9x lower regret) — offered as
+      a property of the ranking method.
+    strength: contradicts
+    reviewed: 2026-08-15
+    note: >-
+      **The second instance of #88's failure mode, found by looking for it.**
+      `make_dataset` produces both the routes and their labels, and
+      `simulate.py:37` builds the label as
+      `(0.6*worst_step + 0.4*mean_step) * 0.96**(length-2)`. Step-count sees only
+      `length`, so its score is a fixed property of the generator rather than a
+      result: over 2000 routes the worst-step term carries r2 0.81 of the label
+      and the length term 0.12, capping any length-only heuristic at rho ~0.41.
+
+      Decisive rather than suggestive: relabel the *same* routes with the length
+      base at 0.70 instead of 0.96 and step-count rises to rho 0.95 while the
+      worst-step signal falls to 0.31. The ranking flips with nothing about
+      either method changed, so the margin measures the constants.
+      `packages/engin-pathway/benchmarks/generator_audit.py` reproduces it.
+
+      What survives is narrow and real: the graph model does recover a worst-step
+      signal a length heuristic is blind to. Jiang et al. is the same caution #88
+      cites -- across 11 datasets and 8 algorithms, descriptor-based models
+      generally outperform graph-based ones, so a graph model earning its keep is
+      the exception rather than the default. Whether real routes are worst-step
+      dominated is untested; it is a stated design assumption of the generator,
+      and M1's KEGG/MetaCyc/BiGG routes are what would test it.
 
 # One row per major code component. `stance: unaudited` is the honest default
 # and is what the D23 programme exists to reduce — see issues #84 to #90.

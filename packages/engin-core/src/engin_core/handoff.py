@@ -74,11 +74,23 @@ class ProcessBrief(BaseModel):
 
     The chosen route, its expected manufacturability, and the uncertainty carried
     down the whole funnel (upstream host + pathway). ``provenance`` records the chain.
+
+    ```{warning}
+    ``uncertainty`` is a **propagated width, not a conformal one.** It is the pathway
+    stage's calibrated half-width multiplied by :func:`inflate_uncertainty`'s
+    ``2 - confidence`` factor, which is a heuristic with no coverage guarantee behind
+    it. The product inherits the weaker of the two: it is wider than a calibrated
+    interval by construction, and nothing here has checked what it covers.
+
+    Use it to plan conservatively, not to state a coverage claim. "Calibrated" is
+    reserved in this project for intervals whose coverage has been measured — the
+    same distinction ``engin_core.tea.cost_summary`` draws for its cost interval.
+    ```
     """
 
     route_id: str
     expected_manufacturability: float
-    uncertainty: float  # interval half-width, incl. upstream inflation
+    uncertainty: float  # propagated half-width (stage interval x upstream inflation)
     host: str | None = None
     provenance: str = ""
 
@@ -96,7 +108,22 @@ def inflate_uncertainty(half_width: float, upstream_confidence: float | None) ->
 
 
 def process_brief(ranking: RouteRanking) -> ProcessBrief:
-    """Distil a :class:`RouteRanking` into the :class:`ProcessBrief` the process stage consumes."""
+    """Distil a :class:`RouteRanking` into the :class:`ProcessBrief` the process stage consumes.
+
+    This is where the funnel's uncertainty compounds, and the only place it does.
+    ``ProcessBrief.uncertainty`` is documented as including upstream inflation, and
+    ``RouteRanking`` carries ``host_confidence`` for no other purpose, so the widening
+    is applied here via :func:`inflate_uncertainty`.
+
+    It is deliberately *not* applied earlier. ``RankedRoute.lo``/``hi`` are split-conformal
+    bounds; widening them at the pathway stage would produce a number that is no longer
+    conformal under a field name claiming it is. Keeping the stage interval calibrated and
+    inflating once at the boundary keeps both quantities honest.
+
+    *(Changed 2026-08-15: this previously passed ``top.half_width`` through uninflated,
+    which left ``inflate_uncertainty`` with no callers anywhere in the suite and the
+    "incl. upstream inflation" contract on ``ProcessBrief.uncertainty`` unmet.)*
+    """
     top = ranking.top
     host = ranking.conditioned_on_host
     prov = "pathway"
@@ -105,7 +132,7 @@ def process_brief(ranking: RouteRanking) -> ProcessBrief:
     return ProcessBrief(
         route_id=top.route_id,
         expected_manufacturability=top.manufacturability,
-        uncertainty=top.half_width,
+        uncertainty=inflate_uncertainty(top.half_width, ranking.host_confidence),
         host=host,
         provenance=f"{prov} -> process",
     )
