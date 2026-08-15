@@ -11,7 +11,8 @@ Reports, averaged over several seeds so the numbers are not cherry-picked:
    - split-conformal (total uncertainty x conformal q90): distribution-free,
      adapts the multiplier to a held-out calibration set.
 3. Active-learning lift: best *true* titer found by an EI-recommended batch vs a
-   random batch of the same size (the "fewer DoE rounds" claim).
+   random batch and vs the optima of a fitted response surface (the "fewer DoE
+   rounds" claim, against the method a process engineer would actually use).
 
 Run, from ``packages/engin-core`` (the script lives in the package, not at the
 repository root -- the docs printed the rootward path until 2026-08-13):
@@ -19,9 +20,13 @@ repository root -- the docs printed the rootward path until 2026-08-13):
       python benchmarks/benchmark.py               # synthetic (D12 tier 1)
       python benchmarks/benchmark.py --data real   # 406 industrial batches (tier 3)
 
-The only baseline implemented here is EI batch vs random batch (item 3). DoE/RSM,
-BayBE, BioSTEAM, step-count and "use E. coli" are #20 and are not built; see
-docs/benchmarks.md, which now says so rather than implying otherwise.
+Baselines implemented here: random batch, and a second-order **response surface**
+(``baselines.py``). BayBE, BioSTEAM, step-count and "use E. coli" are #20 and are
+not built; docs/benchmarks.md marks which is which.
+
+**RSM currently beats Engin on design choice** -- 18 of 20 seeds, mean +5.4
+percentage points of lift -- while the two tie on forecast R^2. That is published
+rather than tuned away; see docs/benchmarks.md for what it does and does not mean.
 
 **Every run states which data it used**, in its first line of output. That is the
 point of the flag: the difference between "our simulator" and "a working plant"
@@ -35,6 +40,7 @@ import argparse
 
 import numpy as np
 
+from baselines import fit_rsm, rsm_recommend
 from engin_core import (
     fit_gp,
     recommend_batch,
@@ -74,18 +80,28 @@ def one_seed(seed: int, d: int = 5):
     cover_tot = float(np.mean(ar <= GAUSS_90 * sd_tot))  # Gaussian, no guarantee
     cover_conf = float(np.mean(ar <= q90 * sd_tot))  # split-conformal, honest
 
+    # The RSM baseline sees exactly what the GP saw -- same training split, same
+    # noisy observations -- so the comparison is of methods, not of information.
+    rsm = fit_rsm(U[tr], y_obs[tr])
+    resid_rsm = rsm.predict(U[te]) - y_obs[te]
+    r2_rsm = float(1 - np.sum(resid_rsm**2) / np.sum((y_obs[te] - y_obs[te].mean()) ** 2))
+
     # active learning: EI batch vs random batch, scored on *true* titer against
     # the best *true* titer in the initial DoE (apples to apples, noise-free).
     best_true_prior = float(y_true.max())
     Xnext, *_ = recommend_batch(gp, float(y_obs.max()), k=8, seed=seed + 100)
     best_ei = float(simulate_unit(Xnext).max())
     best_rand = float(simulate_unit(rng.random((8, d))).max())
+    best_rsm = float(simulate_unit(rsm_recommend(rsm, k=8, seed=seed + 100)).max())
     lift_ei = 100.0 * (best_ei - best_true_prior) / best_true_prior
     lift_rand = 100.0 * (best_rand - best_true_prior) / best_true_prior
+    lift_rsm = 100.0 * (best_rsm - best_true_prior) / best_true_prior
 
     return dict(
         rmse=rmse,
         r2=r2,
+        r2_rsm=r2_rsm,
+        lift_rsm=lift_rsm,
         cover_epi=cover_epi,
         cover_tot=cover_tot,
         cover_conf=cover_conf,
@@ -109,7 +125,8 @@ def synthetic(seeds=None) -> None:
     print("D12 tier 1. For real data, run with --data real.\n")
     print("Forecast (held-out):")
     print(f"  RMSE            {avg('rmse'):6.2f} g/L")
-    print(f"  R^2             {avg('r2'):6.2f}\n")
+    print(f"  R^2  GP         {avg('r2'):6.2f}")
+    print(f"  R^2  RSM        {avg('r2_rsm'):6.2f}   <- second-order response surface\n")
     print("90% interval coverage (target 0.90):")
     print(f"  epistemic-only Gaussian  {avg('cover_epi'):5.2f}   <- naive, overconfident")
     print(f"  total Gaussian           {avg('cover_tot'):5.2f}   <- assumes normality")
@@ -117,7 +134,9 @@ def synthetic(seeds=None) -> None:
     print(f"  conformal q90            {avg('q90'):5.2f}   (vs Gaussian {GAUSS_90})\n")
     print("Active-learning lift over best true prior titer:")
     print(f"  EI batch      {avg('lift_ei'):+6.1f}%")
+    print(f"  RSM optima    {avg('lift_rsm'):+6.1f}%   <- the baseline a process engineer uses")
     print(f"  random batch  {avg('lift_rand'):+6.1f}%")
+    print("\nRSM is a real baseline, not a straw man. Where it wins, that is the result.")
 
 
 def real() -> None:
