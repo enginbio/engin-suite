@@ -13,6 +13,7 @@ Being early is not a reason to be vague about it. What follows is what the guara
 Only these are covered by the guarantee:
 
 - Names exported from a package's top-level `__init__`
+- `engin_core.datasets`, `engin_core.loaders` and `engin_core.convention` — the documented route for getting real data in. [Quickstart](quickstart.md) and the [data formats guide](guides/data-formats.md) teach all three, and none is re-exported at the top level, so the clause above does not reach them
 - Anything documented in the API reference on this site
 - The command-line interface — subcommands, flags, exit codes
 - On-disk formats we read and write, and the documented convention over xarray/pandas (dimension and coordinate names, units attributes)
@@ -65,7 +66,7 @@ If you need bit-identical results across time — for a regulatory submission, s
 
 ## Python and dependency support
 
-- **Python**: the three most recent stable releases. Dropping one is a minor bump pre-1.0 and a major bump after.
+- **Python**: 3.10 and newer. Every package declares `requires-python = ">=3.10"`, and CI runs the full suite on 3.10, 3.11, 3.12 and 3.13. Dropping a version is a minor bump pre-1.0 and a major bump after.
 - **Dependencies**: minimum supported versions are declared in `pyproject.toml`. Raising a minimum is a minor bump.
 - Upper bounds are avoided unless a known incompatibility exists — over-constrained dependencies are a tax on every downstream user.
 
