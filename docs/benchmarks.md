@@ -42,6 +42,7 @@ had not, and the distinction is now in the table itself:
 |---|---|---|
 | Next-experiment recommendation | random batch of the same size | **implemented** — synthetic only |
 | Process optimization | response surface methodology (fitted quadratic) | **implemented** — synthetic only |
+| Multi-round optimization campaign | sequential RSM (Box–Wilson: steepest ascent, central composite, re-centre) | **implemented** — synthetic only |
 | Optimizer | an off-the-shelf Bayesian optimization library (BayBE, Ax) | not built |
 | Techno-economics | BioSTEAM | not built |
 | Pathway ranking | step-count heuristic | not built |
@@ -80,14 +81,135 @@ test.
 optimum. Expected improvement deliberately spends part of its batch on
 uncertainty it expects to pay back *in later rounds* — and this benchmark scores
 one round, so EI pays the cost and never collects. Sequential RSM (steepest
-ascent, refit, re-centre) versus multi-round EI is the fair fight, and it is
-[not built](https://github.com/enginbio/engin-suite/issues/20).
+ascent, refit, re-centre) versus multi-round EI is the fair fight. **It has since
+been built, and it did not rescue us either** — see the next section.
 
 Neither caveat changes what is published today. The claim on the front page is
 **fewer DoE rounds**; measured over one round against the method practitioners
 actually use, Engin is behind. Anyone evaluating this project should know that
 before they read the calibration results, which is why it is here and not in a
 footnote.
+
+## The fair fight: several rounds, one budget — and RSM still wins
+
+The second caveat is a real objection, and the comparison that answers it is the
+one [PR #113](https://github.com/enginbio/engin-suite/pull/113) deliberately did
+not build. It is built now, and it does not go our way either.
+
+Every method starts from the **same 40-run initial DoE** — identical designs,
+identical noisy observations — and then gets **10 rounds of 8 runs**: 120 runs
+each. Equal budget is the entire point of the exercise. Eight bioreactors a
+round, ten rounds, for everybody.
+
+```bash
+cd packages/engin-core
+python benchmarks/benchmark.py --multi-round
+```
+
+Three arms, two of them the baseline:
+
+- **Engin.** Fit the GP on everything observed so far, take eight designs by
+  expected improvement, observe, refit, repeat.
+- **Sequential RSM.** Box–Wilson as it is actually practised: a two-level
+  fractional factorial in a region of interest around the current operating
+  point, a first-order fit for the gradient, runs along the path of steepest
+  ascent, re-centre on the best of them, and — when the ascent stops improving —
+  augment to a central composite design, fit the full second-order model over the
+  region and go to its stationary point. The designs come from the NIST/SEMATECH
+  handbook's catalogue rather than being improvised: for five knobs in eight runs
+  that is the $2^{5-2}_{III}$ fraction, generators $D = AB$ and $E = AC$, and the
+  star points are face-centred because the knobs have hard operating limits.
+- **Single-shot RSM, iterated.** The one-round baseline from the section above,
+  refit on everything and re-run each round. Not Box–Wilson, but it is the
+  obvious way to make the published baseline multi-round, and reporting it
+  removes the objection that the sequential implementation was a weak version of
+  RSM.
+
+The sequential arm is reported at the region half-width that does best, swept
+across the full admissible range and printed in full by the script — tuning the
+baseline upward is the only direction it is safe to tune in.
+
+### The result
+
+| round | runs each | Engin (GP+EI) | sequential RSM | single-shot RSM | best RSM − EI | RSM wins |
+|---|---|---|---|---|---|---|
+| 1 | 48 | +26.6 ± 3.2 | +34.2 ± 3.5 | +33.3 ± 3.5 | +7.7 ± 0.9 | 20/20 |
+| 2 | 56 | +29.7 ± 3.4 | +34.2 ± 3.5 | +33.9 ± 3.5 | +4.8 ± 0.5 | 20/20 |
+| 3 | 64 | +30.4 ± 3.3 | +34.2 ± 3.5 | +33.9 ± 3.5 | +4.0 ± 0.4 | 20/20 |
+| 4 | 72 | +30.9 ± 3.4 | +34.3 ± 3.5 | +34.0 ± 3.5 | +3.6 ± 0.2 | 20/20 |
+| 5 | 80 | +31.1 ± 3.4 | +34.3 ± 3.5 | +34.0 ± 3.5 | +3.4 ± 0.1 | 20/20 |
+| 6 | 88 | +31.1 ± 3.4 | +34.3 ± 3.5 | +34.0 ± 3.5 | +3.4 ± 0.1 | 20/20 |
+| 7 | 96 | +31.2 ± 3.4 | +34.3 ± 3.5 | +34.0 ± 3.5 | +3.3 ± 0.1 | 20/20 |
+| 8 | 104 | +31.2 ± 3.4 | +34.4 ± 3.5 | +34.1 ± 3.5 | +3.4 ± 0.2 | 20/20 |
+| 9 | 112 | +31.2 ± 3.4 | +34.5 ± 3.5 | +34.1 ± 3.5 | +3.4 ± 0.2 | 20/20 |
+| 10 | 120 | +31.2 ± 3.4 | +34.5 ± 3.5 | +34.1 ± 3.5 | +3.5 ± 0.1 | 20/20 |
+
+Best-true-titer lift over the best run of the shared initial DoE, mean ± standard
+error over 20 seeds. Round 0 is the shared initial DoE and is identical for all
+three by construction. The gap and the win count are against whichever RSM arm is
+ahead **on that seed and that round**, which is an oracle over the two baselines
+and generous to them on purpose.
+
+**There is no crossover, on either reading of the word.** RSM leads the mean at
+every one of the ten rounds, and it wins on **20 of 20 seeds at every round** —
+not 18 of 20 as in the single-round comparison, but 20 of 20, ten times over. A
+mean that crossed while a third of the seeds still disagreed would not be a
+crossover, so the benchmark reports both readings separately. Neither crosses.
+
+**EI's exploration does pay back — partially, and not nearly enough.** The gap
+narrows from 7.7 percentage points after one round to 3.5 after ten. That is the
+shape the caveat predicted, and it is the part of the defence that survives. It
+simply never reaches zero: the narrowing stops after round five, and the gap
+settles between 3.3 and 3.5 points for the rest of the campaign, against a
+standard error of 0.1. That is not seed noise.
+
+The tightness of the gap is itself worth reading. The lift varies a great deal
+from seed to seed — the ±3.4 and ±3.5 on the three lift columns — while the
+*paired* gap between the methods on the same seed barely varies at all. Which
+seeds are easy is a property of the draw; who wins is a property of the method.
+
+**The round-1 gap here is not comparable to the 5.4 points in the single-round
+table.** Different experiment: a 40-run initial design rather than a 70-run
+training split, and lift measured against the best of 40 runs rather than 120.
+The two numbers are not two measurements of one quantity, and reading them as a
+trend would be wrong.
+
+### What multi-round evidence settles, and what it does not
+
+**Settled.** The exploration-repayment defence of the single-round result is
+tested and does not hold on this simulator. It was the better of the two caveats
+— it named a specific mechanism and predicted a specific shape — and the
+mechanism is visibly there in the narrowing gap while the conclusion it was
+offered to support is not. That defence should not be made again without new
+evidence.
+
+**Not settled: the other caveat, which is now doing all the work.** This is still
+Engin's own simulator — `D12` **tier 1**, five continuous knobs and a smooth
+mechanistic surface, which is the condition a quadratic is built for. Every
+number on this page above the real-data table is a statement about our own model,
+not about a fermenter. The multi-round comparison cannot be run on the 406
+industrial batches at all: an adaptive campaign has to be able to query a design
+point nobody ran, and a fixed dataset cannot answer. That is a property of the
+comparison, not a gap in the dataset registry, and no dataset available today
+would close it.
+
+**Not settled: whether a local method needed more rounds.** The sequential RSM is
+reported at the region half-width that performs best, swept across the full
+admissible range and printed in full by the script. That best setting turns out
+to be the widest one — a region covering the whole design space, which makes
+Box–Wilson behave much like the global fit. The genuinely *local* settings are
+slower and had not converged when the budget ran out: at half-width 0.10 the
+campaign is still climbing at round ten, having reached +29.1 from +14.0. On a
+longer horizon the local variant might overtake the global one. It would still be
+RSM overtaking RSM.
+
+**Not settled: anything about the tool's own settings.** The sweep tunes the
+baseline. There is no corresponding sweep over EI's exploration parameter, the
+GP's kernel or the batch diversity radius, and there should not be one — tuning
+the opponent upward is the only direction that is safe to tune in.
+
+The single-round numbers above stay exactly as they were. They were not wrong,
+and a result that later gets more context is not a result that gets edited.
 
 Nothing here has been compared to BayBE or to BioSTEAM on any data, and none of
 these comparisons has been run on real data.
@@ -96,7 +218,10 @@ these comparisons has been run on real data.
 trade.** A benchmarks page that overstates its own coverage is worse than one
 with gaps, because the gaps are recoverable and the credibility is not. Building
 the first of those baselines then cost the page a win, which is the same trade a
-second time.
+second time. Building the follow-up that was supposed to explain the loss away
+confirmed the loss instead — the same trade a third time, and the cheapest of the
+three, because the alternative was leaving a defence standing that we had reason
+to doubt and had not tested.
 
 The work has been tracked the whole time, as
 [#20](https://github.com/enginbio/engin-suite/issues/20), which names these same
