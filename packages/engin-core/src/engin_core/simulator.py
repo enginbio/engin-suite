@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from scipy.integrate import solve_ivp
 
 # Fixed biological / strain constants (would be fit per strain in production).
@@ -92,11 +92,67 @@ DEFAULT_KINETICS = Kinetics()
 """The bundled process. Identical to the module constants above."""
 
 
-def unit_to_physical(U: ArrayLike) -> NDArray[np.float64]:
-    """Map points in the unit cube ``[0, 1]^5`` to physical knob values."""
+class ReactorConfig(BaseModel):
+    """The vessel and the schedule, as data rather than module globals.
+
+    Defaults reproduce the bundled 1 L -> 2.5 L, 48 h fed-batch exactly, so every
+    existing caller is unaffected. Passing a modified instance describes a *different
+    vessel* — which is what lets someone with a real reactor use any of this, and,
+    because :func:`engin_core.tea.design_context` reads the same object, get a cost
+    denominated in their own volume and duration rather than in ours.
+
+    **The knob set is fixed by the equations, not by this object.** The five names in
+    ``knob_bounds`` are positional arguments to :func:`simulate`, so a sixth knob is a
+    change to ``_rhs``, not a configuration. What is configurable is each knob's range.
+
+    Sits alongside :class:`Kinetics` on purpose: kinetics is *what the organism does*,
+    this is *what the equipment does*, and a scale-up question usually varies the second
+    while holding the first.
+    """
+
+    v0: float = Field(V0, gt=0, description="initial (batch) volume, L")
+    vmax: float = Field(VMAX, gt=0, description="max working volume; feeding stops here, L")
+    t_end: float = Field(T_END, gt=0, description="run duration, h")
+    dt: float = Field(DT, gt=0, description="output grid spacing, h")
+    x0: float = Field(X0, gt=0, description="inoculum biomass, g/L")
+    knob_bounds: dict[str, tuple[float, float]] = Field(
+        default_factory=lambda: {name: (lo, hi) for name, lo, hi in KNOBS},
+        description="knob -> (low, high) physical range the unit cube maps onto",
+    )
+
+    @model_validator(mode="after")
+    def _check(self) -> ReactorConfig:
+        if self.vmax < self.v0:
+            raise ValueError(f"vmax ({self.vmax}) must be >= v0 ({self.v0})")
+        if self.dt >= self.t_end:
+            raise ValueError(f"dt ({self.dt}) must be < t_end ({self.t_end})")
+        if set(self.knob_bounds) != set(KNOB_NAMES):
+            missing = set(KNOB_NAMES) ^ set(self.knob_bounds)
+            raise ValueError(f"knob_bounds must cover exactly {KNOB_NAMES}; differs by {missing}")
+        for name, (lo, hi) in self.knob_bounds.items():
+            if lo > hi:
+                raise ValueError(f"knob {name!r}: low ({lo}) must be <= high ({hi})")
+        return self
+
+    def bounds(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        """``(lo, hi)`` arrays in :data:`KNOB_NAMES` order — the mapping's own order."""
+        lo = np.array([self.knob_bounds[n][0] for n in KNOB_NAMES], float)
+        hi = np.array([self.knob_bounds[n][1] for n in KNOB_NAMES], float)
+        return lo, hi
+
+
+DEFAULT_REACTOR = ReactorConfig()
+"""The bundled vessel. Identical to the module constants above."""
+
+
+def unit_to_physical(U: ArrayLike, config: ReactorConfig | None = None) -> NDArray[np.float64]:
+    """Map points in the unit cube ``[0, 1]^5`` to physical knob values.
+
+    ``config`` defaults to the bundled vessel, so omitting it reproduces previous
+    behaviour exactly.
+    """
     U = np.atleast_2d(np.asarray(U, float))
-    lo = np.array([k[1] for k in KNOBS])
-    hi = np.array([k[2] for k in KNOBS])
+    lo, hi = (config or DEFAULT_REACTOR).bounds()
     return lo + U * (hi - lo)
 
 
@@ -108,11 +164,12 @@ def _rhs(
     Sf: float,
     induction_time: float,
     kin: Kinetics,
+    vmax: float,
 ) -> list[float]:
     X, S, P, V = y
     S = max(S, 0.0)
     mu = kin.mu_max * S / (kin.ks + S) * (1.0 / (1.0 + P / kin.kp))  # growth w/ product inhibition
-    F = feed_rate if (t >= feed_start and V < VMAX) else 0.0
+    F = feed_rate if (t >= feed_start and V < vmax) else 0.0
     dil = F / V
     dX = mu * X - dil * X
     dS = -(mu / kin.yxs) * X - kin.m * X + dil * (Sf - S)
@@ -129,22 +186,26 @@ def simulate(
     induction_time: float,
     S0: float,
     kinetics: Kinetics | None = None,
+    config: ReactorConfig | None = None,
 ) -> tuple[float, NDArray[np.float64]]:
     """Integrate one run (RK45, piecewise); return ``(final_titer_gL, trace)``.
 
     ``trace`` has shape ``(n_steps + 1, 5)`` with columns ``[t, X, S, P, V]``,
-    sampled on the ``DT`` grid via the solver's dense output.
+    sampled on the ``config.dt`` grid via the solver's dense output.
 
-    ``kinetics`` defaults to the bundled process, so omitting it reproduces
-    previous behaviour exactly.
+    ``kinetics`` and ``config`` default to the bundled process and vessel, so
+    omitting them reproduces previous behaviour exactly.
     """
     kin = kinetics or DEFAULT_KINETICS
-    args = (feed_rate, feed_start, Sf, induction_time, kin)
-    grid = np.arange(0.0, T_END + DT / 2, DT)
+    cfg = config or DEFAULT_REACTOR
+    args = (feed_rate, feed_start, Sf, induction_time, kin, cfg.vmax)
+    grid = np.arange(0.0, cfg.t_end + cfg.dt / 2, cfg.dt)
     # Breakpoints: integrate smooth segments between the RHS switch times.
-    breaks = sorted({0.0, T_END} | {t for t in (feed_start, induction_time) if 0.0 < t < T_END})
+    breaks = sorted(
+        {0.0, cfg.t_end} | {t for t in (feed_start, induction_time) if 0.0 < t < cfg.t_end}
+    )
 
-    y = np.array([X0, S0, 0.0, V0], float)
+    y = np.array([cfg.x0, S0, 0.0, cfg.v0], float)
     times = [np.array([0.0])]
     states = [y[None, :].copy()]
     for a, b in zip(breaks[:-1], breaks[1:], strict=False):
@@ -170,14 +231,20 @@ def simulate(
     return float(y[2]), trace
 
 
-def simulate_unit(U: ArrayLike, kinetics: Kinetics | None = None) -> NDArray[np.float64]:
+def simulate_unit(
+    U: ArrayLike,
+    kinetics: Kinetics | None = None,
+    config: ReactorConfig | None = None,
+) -> NDArray[np.float64]:
     """Titer for a batch of unit-cube design points -> ``(n,)`` array.
 
     ``kinetics`` defaults to the bundled process. Passing a different one is how
-    a *second* process is generated for distribution-shift work.
+    a *second* process is generated for distribution-shift work; passing a different
+    ``config`` is how a different *vessel* is, and the unit cube is interpreted
+    against that config's bounds.
     """
-    phys = unit_to_physical(U)
-    return np.array([simulate(*row, kinetics=kinetics)[0] for row in phys])
+    phys = unit_to_physical(U, config)
+    return np.array([simulate(*row, kinetics=kinetics, config=config)[0] for row in phys])
 
 
 if __name__ == "__main__":
