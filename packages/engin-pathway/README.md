@@ -27,7 +27,7 @@ thermodynamically-uphill step tanks a route, and step-count is blind to it.
 - Manufacturability forecast (held-out): **R² 0.73**, RMSE 0.05, **90% coverage 0.88**.
 - Ranking: **Spearman ρ 0.85** (graph model) vs **0.51** (step-count).
 - Best-of-6-route selection: regret-vs-oracle **0.008** (model) vs **0.074**
-  (step-count) — roughly **9× lower** regret. <!-- not-a-claim: measured against this package's own generator, so it is a fact about this repository -->
+  (step-count) — roughly **9× lower** regret. <!-- not-a-claim: measured against this package's own synthetic generator, so it is a fact about this repository; whether it transfers to real routes is #124 -->
 
 ### How much of that is a finding, and how much is the generator
 
