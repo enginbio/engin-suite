@@ -52,7 +52,12 @@ the method works, and a number quoted without it is close to meaningless.
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
+from collections.abc import Sequence
+from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 import numpy as np
 
@@ -81,6 +86,70 @@ SEEDS = 20  # matches the seed count of the published single-round comparison
 # the whole admissible range -- 0.5 is a box covering every knob's full span --
 # so the reported setting can never be an artifact of a range that stopped short.
 RADII = (0.10, 0.20, 0.30, 0.40, 0.50)
+
+
+def _git_sha() -> str:
+    """The commit these numbers were produced at, marked when the tree is dirty.
+
+    Returns ``"unknown"`` outside a checkout -- an installed copy, a tarball --
+    rather than raising. A benchmark run should not fail because provenance is
+    unavailable; it should say that provenance is unavailable.
+    """
+    here = str(Path(__file__).resolve().parent)
+    try:
+        sha = subprocess.run(  # noqa: S603
+            ["git", "-C", here, "rev-parse", "--short", "HEAD"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        ).stdout.strip()
+        dirty = subprocess.run(  # noqa: S603
+            ["git", "-C", here, "status", "--porcelain"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    return f"{sha}-dirty" if dirty else sha
+
+
+def provenance(seeds: Sequence[int], dataset: str | None = None) -> str:
+    """One line stating exactly what produced the numbers that follow it.
+
+    ``docs/api-stability.md`` promises that "benchmark results are published with
+    the dataset versions and seeds that produced them", and ``docs/benchmarks.md``
+    promises the same. Until 2026-08-15 **no published result carried any of it**
+    (#125): roughly 45 numbers across four tables, with no seed, no version, no
+    commit and no date.
+
+    This is the line that makes both sentences true, and it is **emitted by the
+    run** rather than typed into the page -- so it cannot drift from the code the
+    way the sentences it repairs did.
+
+    A benchmark number without a version and a date has already expired. This
+    project's published rho values were regenerated once and three claims around
+    them turned out wrong, and the single-round RSM comparison was later extended
+    by a multi-round run whose round-1 figure is explicitly *not* comparable to
+    it. Both would have been unambiguous with a commit attached.
+    """
+    try:
+        pkg = version("engin-core")
+    except PackageNotFoundError:  # pragma: no cover - only outside an install
+        pkg = "unknown"
+    span = f"{min(seeds)}-{max(seeds)}" if len(seeds) > 1 else str(seeds[0])
+    return "provenance: " + "  |  ".join(
+        (
+            f"engin-core {pkg}",
+            f"@ {_git_sha()}",
+            f"seeds {span} (n={len(seeds)})",
+            dataset or "simulator defaults",
+            f"numpy {np.__version__}",
+            f"run {datetime.now(timezone.utc).date().isoformat()}",
+        )
+    )
 
 
 def add_noise(y, rng, rel=0.05, abs_=0.4):
@@ -163,7 +232,8 @@ def synthetic(seeds=None) -> None:
     print("Source: engin_core.simulator -- this project's own mechanistic model.")
     print("Establishes that the loop runs end to end. Establishes nothing about real")
     print("bioprocess data: the model is being scored against its own assumptions.")
-    print("D12 tier 1. For real data, run with --data real.\n")
+    print("D12 tier 1. For real data, run with --data real.")
+    print(provenance(list(seeds)) + "\n")
     print("Forecast (held-out):")
     print(f"  RMSE            {avg('rmse'):6.2f} g/L")
     print(f"  R^2  GP         {avg('r2'):6.2f}")
@@ -297,7 +367,8 @@ def multi_round(
     print(f"=== engin-core benchmarks: MULTI-ROUND, SYNTHETIC (mean over {n} seeds) ===")
     print("Source: engin_core.simulator -- this project's own mechanistic model.")
     print("D12 tier 1. It cannot be run on real data: an adaptive campaign has to")
-    print("query new design points, and a fixed dataset cannot answer.\n")
+    print("query new design points, and a fixed dataset cannot answer.")
+    print(provenance(list(seeds)) + "\n")
     print("Budget, identical for every method and fixed before the first run:")
     print(f"  {n_init}-run shared initial DoE, then {rounds} rounds of {k}")
     print(f"  -> {total} runs each. Same initial designs, same noisy observations,")
@@ -367,7 +438,14 @@ def real() -> None:
 
     print("=== engin-core benchmarks: REAL (406 industrial batches) ===")
     print("Source: erythromycin production data, CC-BY-4.0, fetched and checksum-")
-    print("verified at run time. D12 tier 3. Downloads 8 MB the first time.\n")
+    print("verified at run time. D12 tier 3. Downloads 8 MB the first time.")
+    print(
+        provenance(
+            [0],
+            dataset="erythromycin-efp EFP_long.csv (doi:10.5281/zenodo.14619074)",
+        )
+        + "\n"
+    )
     real_data_coverage.main()
 
 
