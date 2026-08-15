@@ -51,3 +51,47 @@ def test_recommend_finds_a_known_optimum():
     model = fit_rsm(U, -np.sum((U - peak) ** 2, axis=1))
     best = rsm_recommend(model, k=1, seed=0)[0]
     assert np.allclose(best, peak, atol=0.05)
+
+
+def test_prediction_interval_covers_when_the_model_class_is_right():
+    """RSM's own interval, given its best shot.
+
+    A baseline whose uncertainty is implemented badly makes any comparison
+    against it worthless. If the truth *is* second-order plus noise, the OLS
+    prediction interval should cover near its nominal level.
+    """
+    rng = np.random.default_rng(3)
+    U = rng.random((120, 3))
+
+    def truth(U):
+        return 2 * U[:, 0] - (U[:, 1] - 0.4) ** 2 + 0.8 * U[:, 0] * U[:, 2]
+
+    y = truth(U) + rng.normal(0, 0.1, len(U))
+    model = fit_rsm(U[:80], y[:80])
+    lo, hi = model.predict_interval(U[80:], level=0.90)
+    covered = float(np.mean((y[80:] >= lo) & (y[80:] <= hi)))
+    assert 0.80 <= covered <= 1.0
+
+
+def test_the_interval_carries_observation_noise():
+    """Prediction interval, not a confidence interval on the mean.
+
+    The `1 +` in `sqrt(1 + leverage)` is the difference. Dropping it would narrow
+    the baseline's interval and hand it a coverage failure it does not deserve.
+    """
+    rng = np.random.default_rng(4)
+    U = rng.random((60, 2))
+    model = fit_rsm(U, U[:, 0] + rng.normal(0, 0.2, 60))
+    lo, hi = model.predict_interval(U[:5], level=0.90)
+    half = (hi - lo) / 2
+    assert np.all(half > np.sqrt(model.s2))  # wider than residual sd alone
+
+
+def test_interval_without_degrees_of_freedom_is_refused():
+    model = fit_rsm(np.random.default_rng(5).random((30, 2)), np.zeros(30))
+    bare = type(model)(model.coef, model.d)
+    try:
+        bare.predict_interval(np.zeros((1, 2)))
+    except ValueError:
+        return
+    raise AssertionError("expected ValueError without dof")
