@@ -67,7 +67,7 @@ from numpy.typing import ArrayLike, NDArray
 from pydantic import BaseModel, Field
 
 from .gp import GP
-from .simulator import T_END, V0, unit_to_physical
+from .simulator import DEFAULT_REACTOR, ReactorConfig, unit_to_physical
 
 __all__ = [
     "CostParameters",
@@ -86,21 +86,40 @@ __all__ = [
 # --------------------------------------------------------------------- context
 
 
-def design_context(U: ArrayLike) -> dict[str, NDArray[np.float64]]:
+def design_context(
+    U: ArrayLike, config: ReactorConfig | None = None
+) -> dict[str, NDArray[np.float64]]:
     """Quantities that follow from the design point alone, with no simulation.
 
     Substrate fed and final volume are fixed by the knobs, which is what lets cost be
     evaluated for a *candidate* design rather than only for one already run — and
     therefore what lets cost sit inside an acquisition function.
+
+    ``config`` defaults to the bundled vessel. Passing the same config used for the
+    simulation is what keeps the cost denominated in the user's own reactor.
+
+    **The fed volume is capped at ``config.vmax``**, because that is what
+    :func:`~engin_core.simulator.simulate` does — feeding stops once the vessel is
+    full. *(Corrected 2026-08-15: this previously integrated the feed over the whole
+    run with no cap, so for aggressive-feed designs it reported a volume the vessel
+    could not hold — 3.700 L against a 2.5 L working volume at the extreme, on 15 of
+    40 sampled designs.* <!-- not-a-claim: measured on our own simulator --> *The
+    effect on cost per kilogram was near zero, because ``final_volume_L`` divides out
+    of both the facility and raw-material terms; the defect was that two parts of one
+    package disagreed about how much liquid was in the vessel, which would bite
+    differently once ``vmax`` became a user setting.)*
     """
-    phys = np.atleast_2d(unit_to_physical(U))
+    cfg = config or DEFAULT_REACTOR
+    phys = np.atleast_2d(unit_to_physical(U, cfg))
     feed_rate, feed_start, Sf, _induction, S0 = (phys[:, i] for i in range(5))
 
-    fed_volume = feed_rate * np.maximum(T_END - feed_start, 0.0)
+    uncapped = feed_rate * np.maximum(cfg.t_end - feed_start, 0.0)
+    fed_volume = np.minimum(uncapped, max(cfg.vmax - cfg.v0, 0.0))
+    final_volume = cfg.v0 + fed_volume
     return {
-        "substrate_fed_g": S0 * V0 + fed_volume * Sf,
-        "final_volume_L": V0 + fed_volume,
-        "reactor_L_h": (V0 + fed_volume) * T_END,
+        "substrate_fed_g": S0 * cfg.v0 + fed_volume * Sf,
+        "final_volume_L": final_volume,
+        "reactor_L_h": final_volume * cfg.t_end,
     }
 
 
@@ -149,13 +168,25 @@ class CostModel(Protocol):
 class ParametricCostModel:
     """Three-term TRY cost model. The light default — no extra dependencies."""
 
-    def __init__(self, params: CostParameters | None = None) -> None:
+    def __init__(
+        self,
+        params: CostParameters | None = None,
+        config: ReactorConfig | None = None,
+    ) -> None:
+        """``config`` is the vessel the design points are interpreted against.
+
+        It is held on the instance rather than added to :class:`CostModel`, because that
+        protocol is the seam a BioSTEAM flowsheet also has to fit, and a flowsheet owns
+        its own geometry. Keeping the signature at ``(titer, U)`` leaves the two models
+        interchangeable everywhere above this line.
+        """
         self.params = params or CostParameters()
+        self.config = config or DEFAULT_REACTOR
 
     def cost_per_kg(self, titer_g_L: ArrayLike, U: ArrayLike) -> NDArray[np.float64]:
         p = self.params
         titer = np.maximum(np.asarray(titer_g_L, float), 1e-6)
-        ctx = design_context(U)
+        ctx = design_context(U, self.config)
 
         product_kg = np.maximum(titer * ctx["final_volume_L"] / 1000.0, 1e-9)
 
@@ -174,7 +205,7 @@ class ParametricCostModel:
         """Per-centre costs, for checking the shares land where the literature says."""
         p = self.params
         titer = np.maximum(np.asarray(titer_g_L, float), 1e-6)
-        ctx = design_context(U)
+        ctx = design_context(U, self.config)
         product_kg = np.maximum(titer * ctx["final_volume_L"] / 1000.0, 1e-9)
         return {
             "raw_material": (ctx["substrate_fed_g"] / 1000.0) * p.substrate_usd_per_kg / product_kg,
