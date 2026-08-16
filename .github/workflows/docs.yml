@@ -16,6 +16,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Weekly, for the cache-freshness job below only. That job rebuilds from an
+  # empty cache, which executes every page -- too slow to put on a pull request,
+  # and pointless there anyway: it detects code drifting away from a cached
+  # output over time, which is a calendar problem, not a per-change one.
+  schedule:
+    - cron: "17 6 * * 1"
 
 concurrency:
   group: docs-${{ github.ref }}
@@ -100,4 +106,51 @@ jobs:
           name: docs-html
           path: docs/_build/html/
           retention-days: 14
+
+  # The `build` job's cache check greps for "Executing notebook" and so detects a
+  # cache *miss*. It cannot detect a hit on *stale* content, which is the worse
+  # case: jupyter-cache keys on a hash of the cell source, so a cell whose text
+  # never changes keeps hitting after the code it imports has moved underneath it.
+  #
+  # That is not hypothetical. docs/guides/data-formats.md published 13 of 17
+  # registered channels for five days with every check green, because the cell
+  # that prints them was unchanged while engin_core.convention was not (#155).
+  #
+  # The only way to tell a stale hit from an accurate one is to run the cells, so
+  # this rebuilds from an empty cache and compares. It is scheduled rather than
+  # per-PR: a cold build executes every page, and the drift it looks for happens
+  # over weeks. It is deliberately NOT a required check -- it reports a fact about
+  # main, and blocking merges on a weekly job would be the wrong trade (#166).
+  cache-freshness:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-docs.txt
+
+      - name: Rebuild from an empty cache and compare
+        run: |
+          set -o pipefail
+          cp -r docs/.jupyter_cache "$RUNNER_TEMP/committed-cache"
+          rm -rf docs/.jupyter_cache
+          sphinx-build -W --keep-going -b html docs docs/_build/cold
+          python scripts/evidence/check_cache_fresh.py \
+            "$RUNNER_TEMP/committed-cache" docs/.jupyter_cache
+
+      - name: Explain a failure
+        if: failure()
+        run: |
+          echo "::error::The committed execution cache no longer matches what the code"
+          echo "::error::produces, so the published docs show stale output. Rebuild and"
+          echo "::error::commit the refreshed cache:"
+          echo "::error::  sphinx-build -b html docs docs/_build/html && git add docs/.jupyter_cache"
 
