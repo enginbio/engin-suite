@@ -1,11 +1,3 @@
----
-file_format: mystnb
-kernelspec:
-  name: python3
-  display_name: Python 3
-  language: python
----
-
 # Where the intervals stop holding
 
 [Conformal calibration](conformal-calibration.md) shows the intervals covering at
@@ -15,14 +7,35 @@ you violate it on purpose.
 
 Publishing a tool's own failure mode is the highest-trust move available to it,
 and it is cheap for us and expensive for a vendor, which is most of why it is
-worth doing. Every number below is computed when these docs are built.
+worth doing.
 
-```{code-cell} python
-import numpy as np
+```{note}
+**The numbers on this page are not computed when the docs build**, unlike most of
+this documentation. They come from a committed script:
 
-from engin_core.gp import fit_gp, split_conformal_multiplier
-from engin_core.simulator import Kinetics, simulate_unit
+    cd packages/engin-core
+    python benchmarks/ood_coverage.py
 
+**This page used to say "every number below is computed when these docs are
+built".** That was true when written and quietly stopped being true. The cells
+take well over five minutes — past `nb_execution_timeout` in `docs/conf.py` — so
+a cold build could not execute them and failed outright. The committed
+jupyter-cache hid it for as long as the cache kept hitting, because **a cached
+cell is never re-run and therefore never re-verified**. Found in
+[#169](https://github.com/enginbio/engin-suite/issues/169).
+
+The consequence, stated rather than buried: **this page is no longer covered by
+`D15`'s guarantee that building the docs verifies them.** The script is what has
+to be run instead. That is the same trade [calibration on real production
+data](real-data-calibration.md) already makes, for the same reason.
+
+The figures below are unchanged by the move — a fresh run reproduces the cached
+output exactly, on every row.
+```
+
+The setup both sweeps share:
+
+```python
 NOMINAL, D, TRAIN_HI = 0.90, 5, 0.6
 SEEDS = range(5)
 
@@ -49,7 +62,7 @@ Two things can shift, and they fail differently.
 The model is trained on the lower 60% of every knob, then asked about designs <!-- not-a-claim: our own experimental design -->
 progressively further outside it.
 
-```{code-cell} python
+```python
 REGIONS = [
     ("in-distribution", 0.0, 0.6),
     ("just outside",    0.6, 0.7),
@@ -65,11 +78,13 @@ for seed in SEEDS:
         m, sd = gp.predict(U, include_noise=True)
         err = np.abs(m - y)
         results[name].append((np.mean(err <= q * sd), np.mean(2 * q * sd), np.mean(err)))
+```
 
-print(f"  {'region':<17}{'coverage':>9}{'width':>9}{'error':>9}")
-for name, vals in results.items():
-    cov, width, mae = np.array(vals).mean(axis=0)
-    print(f"  {name:<17}{cov:>9.3f}{width:>9.1f}{mae:>9.1f}")
+```text
+  region            coverage    width    error
+  in-distribution      0.930      9.3      1.7
+  just outside         0.870     18.9      3.7
+  far outside          0.965     76.2     13.0
 ```
 
 **Read the coverage column and you would reach the wrong conclusion.** It dips
@@ -116,7 +131,7 @@ another. The design distribution is unchanged; only the underlying kinetics
 differ, so the model is being asked about designs it has seen, on a process it
 has not.
 
-```{code-cell} python
+```python
 VARIANTS = {
     "same process":                  Kinetics(),
     "stronger inhibition kp 18->6":  Kinetics(kp=6.0),
@@ -124,7 +139,6 @@ VARIANTS = {
     "several at once":               Kinetics(kp=8.0, alpha=0.05, mu_max=0.26),
 }
 
-print(f"  {'test process':<32}{'coverage':>9}")
 for label, kin in VARIANTS.items():
     covs = []
     for seed in SEEDS:
@@ -133,7 +147,14 @@ for label, kin in VARIANTS.items():
         y = observed(U, rng, kinetics=kin)
         m, sd = gp.predict(U, include_noise=True)
         covs.append(np.mean(np.abs(m - y) <= q * sd))
-    print(f"  {label:<32}{np.mean(covs):>9.3f}")
+```
+
+```text
+  test process                     coverage
+  same process                        0.930
+  stronger inhibition kp 18->6        0.935
+  slower growth mu_max .35->.22       0.705
+  several at once                     0.700
 ```
 
 Here there is no recovery to hide behind. The designs are in-distribution, so
