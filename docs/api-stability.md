@@ -15,7 +15,8 @@ Only these are covered by the guarantee:
 - Names exported from a package's top-level `__init__`
 - `engin_core.datasets`, `engin_core.loaders` and `engin_core.convention` — the documented route for getting real data in. [Quickstart](quickstart.md) and the [data formats guide](guides/data-formats.md) teach all three, and none is re-exported at the top level, so the clause above does not reach them
 - Anything documented in the API reference on this site
-- The command-line interface — subcommands, flags, exit codes
+- The three per-stage command-line entry points — `engin-process`, `engin-host` and `engin-pathway` — with their flags and their exit codes. There is deliberately no `engin <stage>` dispatcher, so there are no subcommands to guarantee; the reasons are recorded in each package's `pyproject.toml` and in [#141](https://github.com/enginbio/engin-suite/issues/141). This bullet used to read "the command-line interface", singular, and predated any CLI existing at all
+- The `project.yaml` schema those entry points read, and that `--init` writes. It is a file you commit and diff, so it is a stability surface in its own right rather than a detail of the flags above
 - On-disk formats we read and write, and the documented convention over xarray/pandas (dimension and coordinate names, units attributes)
 
 Everything else is internal and may change without notice, including:
