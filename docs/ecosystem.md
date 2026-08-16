@@ -83,26 +83,62 @@ layer over it.
 
 Reference: Balandat et al., NeurIPS 2020, [arXiv:1910.06403](https://arxiv.org/abs/1910.06403).
 
+### BoFire — [experimental-design/bofire](https://github.com/experimental-design/bofire)
+
+BSD-3-Clause. A BoTorch-backed framework that treats constrained DoE and Bayesian
+optimization as one problem, written by industrial chemical and pharmaceutical
+practitioners.
+
+- **Pro** — the only entry in this slot with first-class *constrained* experimental
+  design: it generates designs that satisfy linear, non-linear and black-box output
+  constraints, and it ships sampling for constrained mixed continuous/discrete/
+  categorical spaces. That is the mixture-constraint gap this section flags below,
+  addressed directly rather than worked around.
+- **Pro** — objectives are separated from the outputs they operate on, including
+  close-to-target objectives, so "hit this impurity spec while maximizing titer" is
+  expressible without encoding it into a scalarization by hand. Single and
+  multi-objective are both supported.
+- **Pro** — every domain object is JSON-serializable, which is what makes a campaign
+  definition storable and replayable across weeks-long rounds rather than living in a
+  notebook.
+- **Con** — torch and BoTorch, same as BayBE, so it does not relieve the dependency
+  objection that sends readers to ProcessOptimizer.
+- **Con** — the maintainer base is concentrated in a small number of industrial
+  sponsors, and the feature surface is wide enough that parts of it are thinly
+  exercised outside the authors' own use cases.
+
+Reference: Dürholt et al., *Journal of Machine Learning Research* 26(204) (2025),
+[jmlr.org/papers/v26/24-1540.html](https://jmlr.org/papers/v26/24-1540.html).
+
 ### ProcessOptimizer — [novonordisk-research/ProcessOptimizer](https://github.com/novonordisk-research/ProcessOptimizer)
 
-BSD-family (the LICENSE file does not match an SPDX identifier cleanly — read it
-before depending on it). A scikit-optimize fork retuned for noisy physical processes.
+BSD-3-Clause. `LICENSE.md` opens with the words "New BSD License" and carries the
+standard three-clause text; GitHub's classifier reports `NOASSERTION`, which is a
+detection artefact of the `.md` extension and the `a./b./c.` enumeration rather than
+a licensing question. A scikit-optimize fork retuned for noisy physical processes.
 
 - **Pro** — no torch. scipy and numpy only, installs in seconds, plausible inside a
   regulated or air-gapped environment where the alternatives are not.
 - **Pro** — ships D-optimal classical designs alongside the optimizer, so screening
   design and sequential optimization live in one dependency.
 - **Con** — inherits scikit-optimize's ageing internals and its scikit-learn version
-  fragility; acquisition menu is the EI/LCB/PI era, with no multi-objective or
-  fully-Bayesian option. Cite-able only as a Zenodo software DOI.
+  fragility, and there is still no fully-Bayesian option.
+- **Con** — the GitHub releases tab lags PyPI, so judge this one from PyPI and from
+  commits rather than from the releases page.
+
+Reference: Bertelsen et al., *Journal of Chemical Information and Modeling* 65(4)
+(2025), [10.1021/acs.jcim.4c02240](https://doi.org/10.1021/acs.jcim.4c02240).
 
 **Classical DoE.** [pydoe](https://github.com/pydoe/pydoe) (BSD-3) is the maintained
 home of the classical designs — factorial, Plackett-Burman, Box-Behnken, central
 composite, mixture designs, definitive screening. Mixture designs matter more here
 than anything else, because media components are a constrained mixture and most BO
-libraries have no first-class notion of that. It generates designs and does not fit
-them; the response-surface fit is statsmodels. **There is no maintained dedicated
-Python RSM package, and Engin should stop implying otherwise.**
+libraries have no first-class notion of that — BoFire above is the exception, and is
+the reason that sentence now says *most* rather than *all*. pydoe generates designs
+and does not fit them; the response-surface fit is statsmodels. **There is no
+maintained dedicated Python RSM package, and Engin should stop implying otherwise.**
+That remains true: BoFire builds designs under constraints, it does not give you the
+fitted quadratic and its prediction interval.
 
 **Dead ends.** `pyDOE3` was archived in May 2026 and points back at `pydoe`.
 [scikit-optimize](https://github.com/holgern/scikit-optimize) has been dormant since
@@ -114,7 +150,10 @@ has a good paper and a Python ceiling below 3.11.
 method, don't depend on the package.
 
 **If you pick one:** BayBE, unless the torch dependency is disqualifying, in which
-case ProcessOptimizer.
+case ProcessOptimizer. Pick BoFire instead of BayBE when the binding difficulty is
+*constraints on the design itself* — a media mixture that must sum, a component that
+can only appear with another — because that is the case it is built for and the one
+where BayBE's constraint support runs out first.
 
 ---
 
@@ -140,12 +179,22 @@ BSD-3. The scikit-learn-contrib conformal library.
 - **Con** — the v1 API is a rewrite; most tutorials on the internet target the dead
   v0 classes. The newer conditional-conformal features require torch, so
   "lightweight" holds only on the classical path.
-- **Con, worth saying plainly** — MAPIE has a preprint and no peer-reviewed software
-  publication. Engin's own register records this as an absence rather than papering
-  over it.
+- **Con** — the guarantee it implements is the marginal one, and the library will not
+  stop you reading a per-stratum number off it. That is a property of split conformal
+  rather than of MAPIE, but it is where users of it go wrong.
 
-Reference: Taquet et al., [arXiv:2207.12274](https://arxiv.org/abs/2207.12274) — a
-2022 workshop submission, not a journal paper.
+Reference: Cordier et al., *Proceedings of COPA* (PMLR 204:549-581, 2023).
+
+```{note}
+**Corrected 2026-08-16.** This entry previously said MAPIE "has a preprint and no
+peer-reviewed software publication", and congratulated this register for recording
+the absence rather than papering over it. The absence was not real. MAPIE's own
+`CITATION.cff` sets its preferred citation to the COPA 2023 conference paper above
+and demotes the arXiv item this page used to print to a field named `old-citation`.
+So the entry cited the superseded reference *and* drew a conclusion from an absence
+that the project had itself already filled — the failure mode `D23` exists to catch,
+committed by the page that implements `D23` from the reader's side.
+```
 
 ### crepes — [henrikbostrom/crepes](https://github.com/henrikbostrom/crepes)
 
@@ -170,17 +219,24 @@ Reference: Boström, *Proceedings of COPA* (PMLR 230:236-249, 2024).
 this slot.** For an Apache-2.0 project with commercial users this needs legal review,
 not a shrug.
 
-- **Pro** — the only option here with a peer-reviewed JMLR software paper, and by
-  far the widest catalogue of published classification score functions.
+- **Pro** — a peer-reviewed JMLR software paper, and by far the widest catalogue of
+  published classification score functions.
 - **Con** — torch is a hard requirement. If your forecaster is a GP, a
   gradient-boosted tree, or a mechanistic ODE — the common case in this field — you
   are installing a deep-learning stack to compute quantiles.
-- **Con** — the published PyPI release lags the repository substantially, so
-  `pip install` does not get you what the README describes.
+- **Con** — the project has **never cut a GitHub release**, and PyPI has not been
+  refreshed in roughly ten months while commits continue to land. There is no tagged
+  point you can pin to and reason about; you are pinning to a PyPI upload or to a
+  commit hash.
 
 **Also worth knowing.** [puncc](https://github.com/deel-ai/puncc) is MIT with a
-genuinely optional torch dependency and a certification-oriented framing, but low
-feature velocity. [venn-abers](https://github.com/ip200/venn-abers) solves a
+genuinely optional torch dependency and a certification-oriented framing. This page
+called its feature velocity low; after a long quiet stretch it has shipped several
+releases through 2026, so treat that as withdrawn rather than merely softened. One
+thing to know before depending on it: the MIT licence is declared in packaging
+metadata and per-file headers, and there is no top-level LICENSE file — which this
+page treats as disqualifying elsewhere, so it is named here too.
+[venn-abers](https://github.com/ip200/venn-abers) solves a
 different problem — validity of predicted *probabilities* for go/no-go decisions —
 and is a complement, not a substitute.
 
@@ -380,8 +436,11 @@ MIT code over the [RetroRules](https://retrorules.org/) rule set, with
   a reviewer will recognize; the rules are reusable independently of the workflow, and
   diameter-parameterised rules let you dial promiscuity explicitly.
 - **Con** — **requires a KNIME installation.** The Python package wraps a Java GUI
-  workflow; it is heavy, brittle in containers, and awkward in CI. Distribution is
-  conda-only.
+  workflow; it is heavy, brittle in containers, and awkward in CI.
+- **Con** — **`pip install retropath2-wrapper` gets you a package from 2020.** PyPI
+  is not empty, which is what makes this a trap rather than an inconvenience: it is
+  frozen many minor versions behind a repository that is still moving. Install from
+  conda or from source, and check what you actually got.
 - **Con** — the code is MIT but the RetroRules *dataset* states no licence anywhere we
   could find. Ask before redistributing rules.
 
@@ -545,7 +604,8 @@ Apache-2.0. Antimony's readable model language over a JIT-compiled SBML simulato
   abstraction. Parameter estimation is weaker, so you bolt on your own optimizer — the
   exact reimplementation trap.
 - **Con** — LLVM-backed binary wheels are a recurring install problem on new interpreters
-  and on ARM.
+  and on ARM. The GitHub releases tab also lags PyPI here, so judge it the way this page
+  judges BioSTEAM: from commits and PyPI, not from the releases page.
 
 **Downstream.** [CADET-Core](https://github.com/cadet/CADET-Core) and
 [CADET-Process](https://github.com/fau-advanced-separations/CADET-Process) are
@@ -602,8 +662,10 @@ metadata schemas for the experiment and the device.
 - **Con** — metadata only. It does not tell you how to serialize a high-frequency sensor
   trace; you still need a structure underneath.
 
-Reference: Koehorst et al., *GigaScience* (2026),
+Reference: Georgakilas et al., *GigaScience* (2026),
 [10.1093/gigascience/giag038](https://doi.org/10.1093/gigascience/giag038).
+*(Corrected 2026-08-16: this read "Koehorst et al." Koehorst is the paper's last
+author, not its first.)*
 
 ### xarray and CF conventions — [pydata/xarray](https://github.com/pydata/xarray)
 
@@ -684,6 +746,7 @@ MIT. The dominant GNN library.
   exactly the don't-reimplement case.
 - **Con** — the optional compiled accelerator packages remain the most common install
   failure in this ecosystem, and the quality gradient across contributed layers is steep.
+  Commits continue to land but no release has been cut since late 2025.
 - **Con, and Engin should say it out loud** — for ranking a few thousand candidates, a
   gradient-boosted model over descriptors is frequently the stronger baseline. Reach for a
   GNN after the simpler thing has been shown to lose, not before.
