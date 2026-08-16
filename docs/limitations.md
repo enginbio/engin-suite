@@ -38,7 +38,29 @@ Current status is recorded in [Benchmarks](benchmarks.md).
 
 ## Known constraints
 
-- **No public corpus of in-domain microbial *design-of-experiments* data with absolute titers exists**, which limits tier 4 and is a constraint on the field rather than on this project alone. **Corrected 2026-08-10:** this sentence used to do more work than it could carry. Real, industrial, in-domain microbial process data *does* exist publicly and permissively — the [erythromycin fermentation dataset](https://doi.org/10.5281/zenodo.14619074) is 406 production batches sampled hourly, CC-BY-4.0, with a product-potency target. What it is not is *designed* variation: process conditions were recorded, not varied to explore a design space. So tier 4 remains open and tier 3 does not, and the earlier phrasing implied a scarcity that was broader than the facts.
+- **No public corpus of *process-condition* design-of-experiments data with absolute titers exists**, which limits tier 4. **Corrected 2026-08-10:** this sentence used to do more work than it could carry. Real, industrial, in-domain microbial process data *does* exist publicly and permissively — the [erythromycin fermentation dataset](https://doi.org/10.5281/zenodo.14619074) is 406 production batches sampled hourly, CC-BY-4.0, with a product-potency target. What it is not is *designed* variation: process conditions were recorded, not varied to explore a design space. So tier 4 remains open and tier 3 does not, and the earlier phrasing implied a scarcity that was broader than the facts.
+
+  **Narrowed again 2026-08-16, and the claim is weaker than it looked.** It used
+  to say *in-domain*, which reads as any microbial DoE and is false on that
+  reading. "In-domain" here means Engin's actual design space, which is process
+  conditions — `feed_rate`, `feed_start`, `Sf`, `induction_time`, `S0`. A
+  design-of-experiments over gene targets is not an input this model can consume.
+  Two public multi-cycle campaigns were searched and each falsifies a *different*
+  half of the sentence, which is the only reason it survives:
+
+  | Campaign | Designed variation | Response | Why it does not falsify |
+  |---|---|---|---|
+  | [JBEI isoprenol CRISPRi](https://doi.org/10.1038/s41467-025-66304-8) — 6 DBTL cycles, ART-guided | sgRNA combinations over gene targets, ~800,000-combination space | **absolute titer, mg/L** | designed variation is genetic, not process conditions |
+  | [JBEI flaviolin media optimization](https://doi.org/10.1038/s42003-025-08039-2) — 3 campaigns, LHS then ART | **media components** — genuinely process inputs | Abs340, which the paper itself calls a *titer proxy* | the response is not an absolute titer |
+
+  Read the table honestly: the flaviolin campaigns are designed variation over
+  process inputs across multiple cycles, and they fail this claim on the assay
+  alone. **The absence is one measurement away from not existing**, so it is not
+  the field-wide scarcity the earlier wording implied — it is a narrow and
+  possibly temporary gap. Searched 2026-08-16; if you know of a counterexample,
+  [open an issue](https://github.com/enginbio/engin-suite/issues) — that is the
+  contribution this page most wants. Tracked in
+  [#174](https://github.com/enginbio/engin-suite/issues/174).
 - **Cost coupling is demonstrated on mechanistic grounds.** No public dataset found supports validating cost-per-kilogram predictions end to end.
 - **Calibrated intervals degrade out of distribution.** Coverage is reported for out-of-distribution cases rather than omitted.
 

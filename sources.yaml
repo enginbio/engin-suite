@@ -41,6 +41,35 @@
 # ---------------------------------------------------------------------------
 
 sources:
+  # -- Tier 4 near-misses (D23 / #174). The tier-4 absence claim had no search
+  # trail and no claim row of its own. These are the two campaigns that came
+  # closest to falsifying it; each fails on a different half, which is the only
+  # reason the narrowed sentence survives.
+
+  - id: 2025-jbei-isoprenol-crispri
+    title: >-
+      Automation and machine learning drive rapid optimization of isoprenol
+      production in Pseudomonas putida
+    authors: [Joint BioEnergy Institute contributors]
+    year: 2025
+    venue: Nature Communications 16
+    location: https://doi.org/10.1038/s41467-025-66304-8
+    accessed: 2026-08-16
+    stability: doi
+    type: paper
+
+  - id: 2025-jbei-flaviolin-media
+    title: >-
+      Machine learning-led semi-automated medium optimization reveals salt as key
+      for flaviolin production in Pseudomonas putida
+    authors: [Joint BioEnergy Institute contributors]
+    year: 2025
+    venue: Communications Biology 8
+    location: https://doi.org/10.1038/s42003-025-08039-2
+    accessed: 2026-08-16
+    stability: doi
+    type: paper
+
   - id: 2019-goldrick-indpensim
     title: >-
       Modern day monitoring and control challenges outlined on an
@@ -572,6 +601,44 @@ sources:
     type: standard
 
 claims:
+  # -- The tier-4 absence claim, which had no rows at all until #174. D23 puts the
+  # heaviest evidence burden on exactly this shape of sentence, and the document
+  # making it was absent from this register as a `doc:` key.
+
+  - doc: docs/limitations.md
+    tier: A
+    source_id: 2025-jbei-isoprenol-crispri
+    claim: >-
+      "No public corpus of process-condition DoE data with absolute titers
+      exists" — this campaign is public, multi-cycle, ART-guided and reports
+      absolute isoprenol titer in mg/L, so it falsifies the absolute-titer half.
+      It does not falsify the claim, because its designed variation is sgRNA
+      combinations over gene targets rather than the process knobs Engin takes
+      (feed_rate, feed_start, Sf, induction_time, S0).
+    strength: contradicts
+    reviewed: 2026-08-16
+    note: >-
+      Recorded as `contradicts` rather than `supports` deliberately. It does not
+      overturn the narrowed sentence, but it does overturn the *older* wording
+      ("in-domain microbial DoE"), and a near-miss filed as supporting evidence is
+      how an absence claim quietly stops being checked.
+
+  - doc: docs/limitations.md
+    tier: A
+    source_id: 2025-jbei-flaviolin-media
+    claim: >-
+      The same absence claim, approached from the other side: three multi-cycle
+      campaigns of genuinely designed variation over media components, which are
+      process inputs. It fails the claim only on the response variable — Abs340,
+      which the source itself describes as a titer proxy rather than an absolute
+      titer.
+    strength: contradicts
+    reviewed: 2026-08-16
+    note: >-
+      This is the closer of the two near-misses and the reason the page now says
+      the gap is "one measurement away from not existing" rather than a field-wide
+      scarcity. If a comparable campaign reported g/L, the claim would be false.
+
   - doc: DECISIONS.md
     tier: A
     source_id: 2024-konzock-try-costs
