@@ -155,9 +155,15 @@ This is `D12` **tier 3** — real data, industrial, and in-domain, though not
 designed. It is one of the three things `D24` gates a visibility push on, and it
 is now published, including the unflattering half.
 
-What remains is tier 4: in-domain *design-of-experiments* data with absolute
-titers, which is a genuine scarcity rather than an oversight. See
-[Limitations](../limitations.md).
+What remains is tier 4: *process-condition* design-of-experiments data with
+absolute titers. This page used to call that "a genuine scarcity rather than an
+oversight", which claimed more than the search supports. Public multi-cycle DoE
+campaigns with absolute titers do exist — JBEI's isoprenol work is six ART-guided
+cycles reporting mg/L — but they design over *gene targets*, not the process
+knobs this model takes. The campaign that does design over process inputs,
+JBEI's flaviolin media optimization, reports an absorbance proxy rather than a
+titer. The gap is narrow and possibly temporary, not field-wide. See
+[Limitations](../limitations.md) for the search trail.
 
 ## Related
 
