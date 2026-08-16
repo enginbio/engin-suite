@@ -269,6 +269,108 @@ REGISTRY: dict[str, Dataset] = {
             "closest in structure to Engin's simulator."
         ),
     ),
+    "jbei-isoprenol-dbtl6": Dataset(
+        name="jbei-isoprenol-dbtl6",
+        description=(
+            "Final cycle (DBTL-6) of a six-round machine-learning-guided campaign raising "
+            "isoprenol titer in Pseudomonas putida via multiplexed CRISPRi. Each row is one "
+            "assay of one strain: the sgRNA combination is encoded in the line name, and the "
+            "response is absolute isoprenol titer in mg/L by GC-FID at 48 h."
+        ),
+        homepage="https://github.com/JBEI/Isoprenol_CRISPRi",
+        citation=(
+            "Carruthers, D.N. et al. Automation and machine learning drive rapid optimization "
+            "of isoprenol production in Pseudomonas putida. Nature Communications 16 (2025). "
+            "doi:10.1038/s41467-025-66304-8. Archived at doi:10.5281/zenodo.17178684."
+        ),
+        license=License(
+            spdx="BSD-3-Clause-LBNL",
+            url="https://raw.githubusercontent.com/JBEI/Isoprenol_CRISPRi/main/license.txt",
+            commercial_use=True,
+            derivatives_allowed=True,
+            redistributable=True,
+        ),
+        tier=3,
+        files=[
+            DatasetFile(
+                url=(
+                    "https://raw.githubusercontent.com/JBEI/Isoprenol_CRISPRi/"
+                    "6437736ec0eab3eeb00a70ef474f34ea828ad116/"
+                    "DBTL%20ART/isoprenol_data/dbtl6_isoprenol.csv"
+                ),
+                filename="dbtl6_isoprenol.csv",
+                sha256="1353e8651c2fbb4728d9ae7bd5f3178cfc6aba685fb0578ddd4917c5fd4f6c45",
+                size_bytes=46876,
+                description=(
+                    "Pinned to commit 6437736 rather than a branch, so the URL cannot move "
+                    "under the digest. The publisher does not publish a per-file checksum -- "
+                    "the DOI archive is a 660 MB repository zip -- so this sha256 was computed "
+                    "locally and proves only that the bytes have not changed since download."
+                ),
+            )
+        ],
+        notes=(
+            "**Not tier 4, and the reason is the whole point of the distinction.** The designed "
+            "variation here is genetic -- sgRNA combinations over gene targets, an ~800,000 "
+            "combination space -- not the process conditions Engin takes (feed_rate, "
+            "feed_start, Sf, induction_time, S0). It is real, designed, multi-cycle and "
+            "reports absolute titers, which is why it is registered; it is not evidence about "
+            "the design space this project forecasts over. See #174, where it is the near-miss "
+            "that falsifies the absolute-titer half of the tier-4 absence claim.\n\n"
+            "**Licence discrepancy worth knowing about**: the Zenodo record states CC-BY-4.0 "
+            "while the repository ships a 3-clause BSD (LBNL variant). Both permit commercial "
+            "use and derivatives, so the practical answer is the same, but they are not the "
+            "same licence and the repository's is the one recorded here."
+        ),
+    ),
+    "jbei-flaviolin-media": Dataset(
+        name="jbei-flaviolin-media",
+        description=(
+            "Five DBTL cycles of medium optimization for flaviolin production in Pseudomonas "
+            "putida KT2440: Latin hypercube sampling for the first two cycles, then ART "
+            "recommendations. Sixteen media components varied in mM -- including the NaCl term "
+            "the study identifies as dominant -- against an OD340 response."
+        ),
+        homepage="https://github.com/JBEI/Flaviolin_media_opt_C3",
+        citation=(
+            "Machine learning-led semi-automated medium optimization reveals salt as key for "
+            "flaviolin production in Pseudomonas putida. Communications Biology 8 (2025). "
+            "doi:10.1038/s42003-025-08039-2."
+        ),
+        license=License(
+            spdx="BSD-3-Clause-LBNL",
+            url="https://raw.githubusercontent.com/JBEI/Flaviolin_media_opt_C3/main/license.txt",
+            commercial_use=True,
+            derivatives_allowed=True,
+            redistributable=True,
+        ),
+        tier=3,
+        files=[
+            DatasetFile(
+                url=(
+                    "https://raw.githubusercontent.com/JBEI/Flaviolin_media_opt_C3/"
+                    "82f23ffa3dd0dfbe09b7bea1fab8087310fba2b5/"
+                    "flaviolin%20yield%20data/DBTL1-5_data.csv"
+                ),
+                filename="DBTL1-5_data.csv",
+                sha256="794a2e4d516c67648ea23ed85576e2e4479e4212fc3bd42d5a9336afbccdb256",
+                size_bytes=41936,
+                description=(
+                    "Pinned to commit 82f23ff. No publisher checksum exists for this file, so "
+                    "the sha256 is locally computed and carries the weaker guarantee."
+                ),
+            )
+        ],
+        notes=(
+            "**The closest thing to tier 4 currently registered, and it misses on one axis.** "
+            "The designed variation is media composition, which *is* a process input, across "
+            "genuinely multi-cycle campaigns. What it lacks is the response: OD340 is an "
+            "absorbance proxy the source itself describes as such, not an absolute titer. So "
+            "the tier-4 absence claim in docs/limitations.md survives on the assay alone -- if "
+            "a comparable campaign reported g/L, that claim would be false. Registered so the "
+            "near-miss is fetchable rather than only described (#174)."
+        ),
+    ),
 }
 """Curated real datasets.
 
