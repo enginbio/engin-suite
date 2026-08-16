@@ -6,9 +6,9 @@ Real-data validation has landed, so the numbers that matter lead:
 
 | | synthetic (tier 1) | **real, 406 industrial batches (tier 3)** |
 |---|---|---|
-| R² | 0.96 | **0.12** |
-| split-conformal coverage | 0.96 | **0.886** |
-| what it establishes | the loop runs | the calibration transfers |
+| R² | 0.96 | **0.10** |
+| split-conformal coverage | 0.96 | **0.877** |
+| what it establishes | the loop runs | the calibration holds on held-out batches |
 
 **This table takes two provenance lines, because it combines two runs** — the
 synthetic column from `benchmarks/benchmark.py`, the real column from
@@ -16,13 +16,27 @@ synthetic column from `benchmarks/benchmark.py`, the real column from
 
 ```text
 synthetic: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15
-real:      engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-4 (n=5)  |  erythromycin-efp EFP_long.csv (doi:10.5281/zenodo.14619074)  |  numpy 2.5.2  |  run 2026-08-15
+real:      engin-core 0.1.0  |  @ 12241c8  |  seeds 0-4 (n=5)  |  erythromycin-efp EFP_long.csv (doi:10.5281/zenodo.14619074)  |  numpy 2.5.2  |  run 2026-08-16
 ```
 
 The real figures above are the **72h process-only** row of that run — coverage
-0.886 at R² 0.123. [Calibration on real production
+0.877 at R² 0.104. [Calibration on real production
 data](methods/real-data-calibration.md) has the other five rows, including the
 two that use early potency as a feature.
+
+**Regenerated 2026-08-16.** These were 0.886 at R² 0.123, measured by a
+benchmark that scaled features using the whole dataset's min/max before
+splitting — leaking the test range into the fit. Coverage moved *away* from
+nominal once that was fixed, which is the direction a leakage fix should move
+it. The methods page has the full before/after and the one number that moved the
+other way. Found in
+[#173](https://github.com/enginbio/engin-suite/issues/173).
+
+**"The calibration holds on held-out batches" is deliberately narrower than
+"the calibration transfers"**, which is what this row used to say. The split is
+uniformly random over time-ordered production history, and the held-out batches
+come from the same plant, so neither temporal drift nor cross-plant transfer is
+tested here.
 
 The real run takes roughly forty minutes on a laptop, which is worth knowing
 before starting it.

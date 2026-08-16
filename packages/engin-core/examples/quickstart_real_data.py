@@ -136,14 +136,16 @@ def main() -> None:
     # One split of one seed, so this is noisy: with ~80 test batches the binomial
     # standard error on a coverage estimate is around 0.03. Quoting a single-split
     # number as *the* coverage would be the kind of overstatement this library is
-    # supposed to argue against. The five-seed average is 0.886.
+    # supposed to argue against. The five-seed average is 0.877.
     print(
         f"\n  That coverage is one split of one seed on {len(test)} test batches, so it carries\n"
         "  roughly +/- 0.03 of binomial noise -- do not read the third decimal. Averaged\n"
-        "  over five seeds it is 0.886 against a nominal 0.90; see\n"
+        "  over five seeds it is 0.877 against a nominal 0.90; see\n"
         "  docs/methods/real-data-calibration.md for the full table.\n"
-        "\n  What is solid: the intervals cover at close to their stated rate on data from a\n"
-        "  plant this model has never seen. The calibration transfers.\n"
+        "\n  What is solid: the intervals cover at close to their stated rate on batches\n"
+        "  this model was not fitted on. The calibration transfers -- to held-out batches\n"
+        "  from THIS plant. The split is random rather than chronological, so it does not\n"
+        "  establish that they hold on next month's batches (#173).\n"
         "\n  What is not: the R^2 says the forecast inside those intervals is close to\n"
         "  uninformative. It is nearly predicting the mean, and the intervals are wide\n"
         "  enough to cover it anyway.\n"

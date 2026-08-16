@@ -124,16 +124,23 @@ mean, sd = gp.predict(U[test], include_noise=True)
 ### 5. Read it honestly — the part that matters
 
 ```text
-empirical coverage : 0.852   (nominal 0.9)
-R^2                : -0.119
-mean interval width: 1301
+empirical coverage : 0.802   (nominal 0.9)
+R^2                : -0.151
+mean interval width: 1269
 ```
 
-**The calibration transfers.** Averaged over five seeds, coverage is 0.886
-against a nominal 0.90 on data from a plant this model has never seen. The single
-split above carries roughly ±0.03 of binomial noise, so do not read its third
-decimal — [the methods page](methods/real-data-calibration.md) has the full
-table.
+**The calibration transfers — to held-out batches from this plant.** Averaged
+over five seeds, coverage is 0.877 against a nominal 0.90 on batches the model
+was not fitted on. The single split above carries roughly ±0.03 of binomial
+noise, so do not read its third decimal — [the methods
+page](methods/real-data-calibration.md) has the full table.
+
+Two limits on what that sentence claims. The held-out batches come from the
+**same plant** the model trained on, so this is not cross-plant transfer, which
+is tested at no tier. And the split is random rather than chronological, over a
+dataset that is time-ordered production history, so it does not establish that
+the intervals hold on *next month's* batches — see
+[#173](https://github.com/enginbio/engin-suite/issues/173) and the methods page.
 
 **The forecast does not.** R² near zero means the model is close to predicting
 the mean, and the intervals are wide enough to cover it anyway.
