@@ -1,9 +1,14 @@
 # Install
 
 ```{warning}
-**Engin is not on PyPI yet.** No distribution name is registered to this project,
-so `pip install engin-core` does not work today and will fetch nothing. Install
-from source until this page says otherwise.
+**Engin has not been released to PyPI, and `pip install engin-core` is worse than
+a clean failure.** Four names — `engin-core`, `engin-graph`, `engin-host` and
+`engin-materials` — are registered as **placeholder reservations**, so that
+command *succeeds* and installs a `0.0.1.dev0` stub containing nothing.
+`engin-pathway` and `engin-protein` are not registered at all and will fail
+outright.
+
+Install from source until this page says otherwise.
 ```
 
 ## From source

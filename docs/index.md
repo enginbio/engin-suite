@@ -123,8 +123,9 @@ What has actually been measured — on 406 industrial batches and on the simulat
 
 ## Install
 
-**Not on PyPI yet** — no distribution name is registered to this project, so
-`pip install engin-core` fetches nothing today. From source:
+**Not released on PyPI** — and `pip install engin-core` will *appear* to work.
+Four names are registered as empty placeholder reservations, so that command
+installs a stub containing nothing. See [Install](install). From source:
 
 ```bash
 git clone https://github.com/enginbio/engin-suite
