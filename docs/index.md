@@ -57,13 +57,20 @@ adr/index
 Turn a handful of fermentation runs into a titer forecast with honest uncertainty, a recommendation for what to run next, and a probabilistic cost-per-kilogram read that accounts for recovery.
 
 ```{warning}
-**Pre-1.0, and validated on synthetic data so far.**
+**Pre-1.0. The calibration is measured on real production data. Nearly
+everything else is not.**
 
-Results below come from a mechanistic simulator, not from real fermentation
-campaigns. That is a genuine limitation, not a formality — see
-[Limitations](limitations) and [Benchmarks](benchmarks) for exactly what has
-and has not been demonstrated. Real-data validation is the project's current
-priority.
+The conformal intervals have been tested against 406 erythromycin batches from a
+working pharmaceutical plant, and they cover at close to their nominal rate. The
+forecasts they wrap are close to uninformative on that data. Both halves are
+published, because the first without the second would be the more flattering and
+the less true account.
+
+Everything else below — the next-batch recommender, the optimization
+comparisons, pathway ranking — comes from a mechanistic simulator, not from real
+fermentation campaigns. That is a genuine limitation, not a formality: see
+[Limitations](limitations) for the five-tier validation status and
+[Benchmarks](benchmarks) for exactly what has and has not been run.
 ```
 
 ## Why this exists
@@ -130,7 +137,7 @@ Requires Python 3.10+. See [Install](install) for extras and the reasoning.
 
 The commitment is that every claim is benchmarked against the simpler thing it says it beats — plain DoE/RSM for optimization, BioSTEAM for techno-economics, step-count heuristics for pathway ranking, "just use *E. coli*" for host selection.
 
-**Three of those are implemented today**, and that sentence used to be written as though all of them were. [Benchmarks](benchmarks) marks which is which, because a page promising honest baselines is the last place to overstate what has been run.
+**Two of those are implemented today** — RSM for optimization, and step-count for pathway ranking. BioSTEAM and "just use *E. coli*" are not built. That sentence used to be written as though all four were, and then as though three were; naming them rather than counting them is so the next drift shows up in the diff instead of hiding inside a number. [Benchmarks](benchmarks) marks which is which, because a page promising honest baselines is the last place to overstate what has been run.
 
 **The first real baseline beat us, twice.** A textbook response surface proposes better designs than Engin's GP with expected improvement on 18 of 20 seeds — and its OLS prediction interval lands closer to nominal coverage than our conformal one, 17% narrower. <!-- not-a-claim: measured on our own simulator; see the benchmarks page --> Both results are at the top of the [benchmarks](benchmarks) page rather than in a footnote, with what they do and don't settle.
 
