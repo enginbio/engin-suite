@@ -114,7 +114,13 @@ The realistic failure mode for a one-maintainer project is not conflict. It is s
 
 **5.3 Planned handover.** A maintainer intending to stop will announce it in a public issue with at least 30 days' notice, and will transfer commit rights, PyPI publishing rights and documentation access to willing contributors where transferable.
 
-**5.4 Names and infrastructure.** The `engin.bio` domain is held by EnginBio. **No PyPI distribution name is currently registered to this project** — not `engin-core`, nor any of its siblings, nor `enginbio`. Nothing has been published to PyPI yet, and the bare name `engin` belongs to an unrelated project. An earlier version of this section stated that the PyPI names were held; that was never true, and it is corrected here rather than quietly amended.
+**5.4 Names and infrastructure.** The `engin.bio` domain is held by EnginBio.
+
+**Four of the six PyPI distribution names are now registered to this project**, as placeholder reservations rather than releases — `engin-core`, `engin-graph`, `engin-host` and `engin-materials`, each a `0.0.1.dev0` stub uploaded 2026-08-14 whose description points back at this repository. **`engin-pathway` and `engin-protein` are not registered**, and neither is `enginbio`. The bare name `engin` belongs to an unrelated dependency-injection framework and is not obtainable.
+
+**Nothing has been *released*.** A reservation stub is not a distribution: `pip install engin-core` succeeds and gives you an empty placeholder, which is a more confusing outcome than failing outright. Install from the repository.
+
+This section has now been wrong in both directions. An early version claimed the names were held when none were; it was corrected on 2026-08-13 to say none were registered, and that in turn went stale when four were taken on 2026-08-14. Corrected again 2026-08-16 rather than quietly amended — checked against PyPI on that date, name by name.
 
 The practical consequence for anyone depending on this: **install from the repository, and do not assume a PyPI name is ours until this section says it is.** On handover, whatever is held transfers with the project where transferable. Where not, a fork is free to rename, and this project will link to it.
 
