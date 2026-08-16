@@ -1,0 +1,150 @@
+# Signed, provenance-attested release artifacts (D-issue #34).
+#
+# Triggered by a version tag. Builds every package, proves the wheels are
+# reproducible by building them twice and comparing digests, signs the results
+# with Sigstore through GitHub's attestation action, and attaches everything to a
+# GitHub Release.
+#
+# **This workflow does not publish to PyPI, on purpose.** Four of the six names
+# are placeholder reservations and two are unregistered (#72), and publishing
+# needs a trusted-publishing configuration that only the maintainer's account can
+# create. Adding an upload step before that exists would either fail or, worse,
+# publish under credentials nobody meant to use. Releases here are GitHub
+# releases; PyPI is a separate decision.
+#
+# ## What "reproducible where practical" turned out to mean
+#
+# Measured, not assumed, on 2026-08-16:
+#
+#   * **Wheels reproduce byte-for-byte** once SOURCE_DATE_EPOCH is set. Without
+#     it they do not.
+#   * **Sdists do not reproduce**, even with it. setuptools regenerates PKG-INFO
+#     and the egg-info directory at build time and stamps them with wall-clock
+#     mtimes that SOURCE_DATE_EPOCH does not reach. In a two-build comparison the
+#     11 members read from disk matched and the 12 generated ones did not.
+#
+# So the reproducibility check below covers wheels and deliberately does not
+# claim sdists. Both are still built, signed and attested -- an attestation says
+# who built an artifact and from what source, which is useful whether or not the
+# bytes are reproducible.
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Tag or ref to build (dry run; no release is created)"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # create the release
+      id-token: write # Sigstore OIDC
+      attestations: write # record the provenance
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The tagged commit's own timestamp, so the value is a property of the
+      # source rather than of when the runner happened to start. Rebuilding the
+      # same tag a year later yields the same wheels.
+      - name: Pin SOURCE_DATE_EPOCH to the commit date
+        run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build twine
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            python -m build --outdir dist "$pkg"
+          done
+          ls -l dist
+          twine check dist/*
+
+      # Build a second time into a scratch directory and compare. A wheel that
+      # does not reproduce means something time- or path-dependent leaked into
+      # it, and the release should stop rather than ship an artifact nobody can
+      # independently rebuild.
+      - name: Verify the wheels reproduce
+        run: |
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            python -m build --wheel --outdir rebuild "$pkg"
+          done
+          # Count first. An unmatched glob would otherwise leave both digests
+          # empty, compare equal, and report a clean pass over zero wheels --
+          # which is how this check would fail open. Found by writing the same
+          # loop wrong while testing it locally.
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if [ ${#wheels[@]} -eq 0 ]; then
+            echo "::error::no wheels in dist/, nothing to verify"
+            exit 1
+          fi
+          echo "comparing ${#wheels[@]} wheel(s)"
+
+          failed=0
+          for whl in "${wheels[@]}"; do
+            name=$(basename "$whl")
+            if [ ! -f "rebuild/$name" ]; then
+              echo "::error::$name was not produced by the second build"
+              failed=1
+              continue
+            fi
+            a=$(sha256sum "$whl" | cut -d' ' -f1)
+            b=$(sha256sum "rebuild/$name" | cut -d' ' -f1)
+            if [ "$a" = "$b" ]; then
+              echo "reproducible: $name"
+            else
+              echo "::error::$name is not reproducible ($a vs $b)"
+              failed=1
+            fi
+          done
+          exit $failed
+
+      # Sigstore-backed provenance: what built this, from which commit, with
+      # which workflow. Verifiable with `gh attestation verify <file> --repo
+      # enginbio/engin-suite` and no key material for anyone to lose.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: "dist/*"
+
+      - name: Record the digests in the job summary
+        run: |
+          {
+            echo "### Release artifacts"
+            echo
+            echo '| file | sha256 |'
+            echo '|---|---|'
+            for f in dist/*; do
+              echo "| \`$(basename "$f")\` | \`$(sha256sum "$f" | cut -d' ' -f1)\` |"
+            done
+            echo
+            echo "Verify: \`gh attestation verify <file> --repo ${{ github.repository }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --title "${GITHUB_REF_NAME}" \
+            --notes "Signed build artifacts. Wheels are reproducible from this tag; sdists are not (setuptools stamps generated metadata with build-time mtimes). Verify provenance with: gh attestation verify <file> --repo ${{ github.repository }}. Not published to PyPI -- see #72."
