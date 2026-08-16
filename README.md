@@ -30,8 +30,15 @@ thin domain layers over one shared engine, `engin-core`.
 | Package | Stage | What it is | Status |
 |---|---|---|---|
 | [`engin-core`](packages/engin-core) | — | Shared engine: fed-batch simulator (scipy), scikit-learn GP with conformal calibration (split-conformal + MAPIE), Expected-Improvement recommender, ARD sensitivity. | ✅ working |
+| [`engin-graph`](packages/engin-graph) | — | Shared graph engine: embedding + calibrated ranking over structured objects. Extracted from `engin-pathway` so any graph-shaped domain can rank candidates with an honest interval. Depends on `engin-core`. | ✅ working |
 | [`engin-host`](packages/engin-host) | [4] | Host/chassis selection: multi-criteria scoring over a capability KB, with uncertainty and hard-constraint flags. Depends on `engin-core`. | ✅ working |
-| [`engin-pathway`](packages/engin-pathway) | [3] | Graph-ML manufacturability ranking of metabolic routes, with a calibrated interval. M0 ships a random-weight stand-in, scored against its own synthetic generator. Depends on `engin-core`. | ✅ working (M0) |
+| [`engin-pathway`](packages/engin-pathway) | [3] | Graph-ML manufacturability ranking of metabolic routes, with a calibrated interval. M0 ships a random-weight stand-in, scored against its own synthetic generator. Depends on `engin-core`, `engin-graph`. | ✅ working (M0) |
+| [`engin-protein`](packages/engin-protein) | — | Protein design cycle over the same GP + Expected-Improvement + conformal loop: evaluation, low-N campaigns, batch planning. Depends on `engin-core`. | ✅ working |
+| [`engin-materials`](packages/engin-materials) | — | Structure-property ranking for biomaterial formulations, with calibrated intervals. Depends on `engin-graph`. | ✅ working |
+
+Not every package is a funnel stage: `engin-core` and `engin-graph` are the shared
+engines, and `engin-protein` and `engin-materials` point the same machinery at
+adjacent domains.
 
 ## Design principles (suite-wide)
 
@@ -76,9 +83,18 @@ thin domain layers over one shared engine, `engin-core`.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e "packages/engin-core[dev]" -e "packages/engin-host[dev]" -e "packages/engin-pathway[dev]"
-pytest packages/                 # all packages
-ruff check .
+pip install -r requirements-dev.txt              # all six, editable, with dev extras
+
+# Tests run per package, the way CI runs them -- not `pytest packages/`, which
+# fails at collection: six test basenames repeat across packages and no tests/
+# has an __init__.py, so pytest cannot tell them apart. Each package also sets
+# its own pytest `pythonpath` (ADR 0004), resolved against its own rootdir.
+for p in packages/*/; do
+  [ -f "$p/pyproject.toml" ] || continue
+  ( cd "$p" && python -m pytest -q ) || exit 1
+done
+
+ruff check .                                     # from the repo root
 ```
 
 ## License
