@@ -17,6 +17,12 @@ and the forecasts they wrap are close to uninformative. Both halves are publishe
 because the first without the second would be the more flattering and less true
 account.
 
+**Measured under a random split, which bounds what it establishes.** The batches
+are time-ordered production history and the benchmark permutes them, so the result
+is marginal coverage under exchangeability — real noise, real missingness, real
+feature distributions, but no test of temporal drift. That page states the
+protocol and why it matters.
+
 Validation is structured in five tiers, each reported with what it does and does
 not establish:
 
@@ -24,7 +30,7 @@ not establish:
 |---|---|---|---|
 | 1 | Engin's own simulator | the loop works end to end | anything about real data — the model is validated against its own assumptions |
 | 2 | An independent simulator | not overfitted to our own model's quirks | real-world behaviour |
-| 3 | Real industrial data | survives real noise, missingness, scale change | in-domain performance; cost coupling, where data is normalised |
+| 3 | Real industrial data | survives real noise, missingness, scale change | in-domain performance; cost coupling, where data is normalised; **behaviour under temporal drift** — the split is random, not chronological |
 | 4 | In-domain literature DoE | the actual product claim | generalisation beyond small, heterogeneous samples |
 | 5 | Partner campaign data | end-to-end value | — not yet available |
 

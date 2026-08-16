@@ -97,14 +97,20 @@ def main() -> None:
     X, y = np.asarray(rows, float), np.asarray(finals, float)
     keep = np.isfinite(X).all(axis=1) & np.isfinite(y)
     X, y = X[keep], y[keep]
-    lo, hi = X.min(0), X.max(0)
-    U = (X - lo) / np.where(hi - lo > 0, hi - lo, 1.0)
-    print(f"  {len(U)} batches, {U.shape[1]} process features each")
+    print(f"  {len(X)} batches, {X.shape[1]} process features each")
 
+    # A uniformly random split of what is time-ordered production history. It
+    # measures marginal coverage under exchangeability -- the thing split
+    # conformal guarantees -- and cannot see temporal drift (#173).
     rng = np.random.default_rng(0)
-    idx = rng.permutation(len(U))
+    idx = rng.permutation(len(X))
     n = len(idx)
     train, calib, test = idx[: int(0.6 * n)], idx[int(0.6 * n) : int(0.8 * n)], idx[int(0.8 * n) :]
+
+    # Scale from the TRAINING split only. Taking min/max over the whole dataset
+    # first leaks the test range into the fit.
+    lo, hi = X[train].min(0), X[train].max(0)
+    U = (X - lo) / np.where(hi - lo > 0, hi - lo, 1.0)
 
     print("  fitting a GP (this is the slow part) ...")
     gp = fit_gp(U[train], y[train], seed=0)
@@ -130,14 +136,16 @@ def main() -> None:
     # One split of one seed, so this is noisy: with ~80 test batches the binomial
     # standard error on a coverage estimate is around 0.03. Quoting a single-split
     # number as *the* coverage would be the kind of overstatement this library is
-    # supposed to argue against. The five-seed average is 0.886.
+    # supposed to argue against. The five-seed average is 0.877.
     print(
         f"\n  That coverage is one split of one seed on {len(test)} test batches, so it carries\n"
         "  roughly +/- 0.03 of binomial noise -- do not read the third decimal. Averaged\n"
-        "  over five seeds it is 0.886 against a nominal 0.90; see\n"
+        "  over five seeds it is 0.877 against a nominal 0.90; see\n"
         "  docs/methods/real-data-calibration.md for the full table.\n"
-        "\n  What is solid: the intervals cover at close to their stated rate on data from a\n"
-        "  plant this model has never seen. The calibration transfers.\n"
+        "\n  What is solid: the intervals cover at close to their stated rate on batches\n"
+        "  this model was not fitted on. The calibration transfers -- to held-out batches\n"
+        "  from THIS plant. The split is random rather than chronological, so it does not\n"
+        "  establish that they hold on next month's batches (#173).\n"
         "\n  What is not: the R^2 says the forecast inside those intervals is close to\n"
         "  uninformative. It is nearly predicting the mean, and the intervals are wide\n"
         "  enough to cover it anyway.\n"

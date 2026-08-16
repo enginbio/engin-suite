@@ -96,19 +96,29 @@ def evaluate(X, y):
     """Split-conformal coverage, interval width and R^2, averaged over seeds."""
     finite = np.isfinite(X).all(axis=1) & np.isfinite(y)
     X, y = X[finite], y[finite]
-    lo, hi = X.min(0), X.max(0)
-    U = (X - lo) / np.where(hi - lo > 0, hi - lo, 1.0)  # fit_gp's kernel assumes a unit cube
 
     coverage, width, r2 = [], [], []
     for seed in SEEDS:
         rng = np.random.default_rng(seed)
-        idx = rng.permutation(len(U))
+        # A uniformly random split of a time-ordered production record. This
+        # measures MARGINAL coverage under exchangeability -- which is what
+        # split conformal guarantees -- and cannot detect temporal drift,
+        # because permuting is exactly how Barber et al. build the exchangeable
+        # control group they compare against.  ref: 2023-barber-beyond-exchangeability
+        idx = rng.permutation(len(X))
         n = len(idx)
         train, calib, test = (
             idx[: int(0.6 * n)],
             idx[int(0.6 * n) : int(0.8 * n)],
             idx[int(0.8 * n) :],
         )
+
+        # Scale from the TRAINING split only. This used to be X.min(0)/X.max(0)
+        # over the whole dataset, which leaks the calibration and test range
+        # into the fit. Test points may now fall outside the unit cube, which is
+        # correct -- that is what happens on a batch you have not seen.
+        lo, hi = X[train].min(0), X[train].max(0)
+        U = (X - lo) / np.where(hi - lo > 0, hi - lo, 1.0)  # fit_gp's kernel assumes a unit cube
 
         gp = fit_gp(U[train], y[train], seed=seed)
         mc, sdc = gp.predict(U[calib], include_noise=True)
@@ -119,7 +129,7 @@ def evaluate(X, y):
         coverage.append(np.mean(residual <= q * sd))
         width.append(np.mean(2 * q * sd))
         r2.append(1 - np.sum((mean - y[test]) ** 2) / np.sum((y[test] - y[test].mean()) ** 2))
-    return len(U), float(np.mean(coverage)), float(np.mean(width)), float(np.mean(r2))
+    return len(X), float(np.mean(coverage)), float(np.mean(width)), float(np.mean(r2))
 
 
 def main() -> None:

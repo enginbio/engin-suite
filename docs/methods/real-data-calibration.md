@@ -36,21 +36,75 @@ test: features to a scalar, with a calibrated interval.
 
 | features | cutoff | n | coverage | width | R² |
 |---|---|---|---|---|---|
-| process only | 24 h | 406 | 0.890 | 1487 | **−0.030** |
-| process only | 48 h | 406 | 0.893 | 1582 | 0.015 |
-| process only | 72 h | 405 | 0.886 | 1317 | 0.123 |
-| process + early potency | 24 h | 406 | 0.907 | 1505 | 0.054 |
-| process + early potency | 48 h | 406 | 0.905 | 1496 | 0.096 |
-| process + early potency | 72 h | 405 | 0.909 | 1344 | **0.232** |
+| process only | 24 h | 406 | 0.917 | 1569 | 0.023 |
+| process only | 48 h | 406 | 0.893 | 1480 | 0.025 |
+| process only | 72 h | 405 | 0.877 | 1337 | 0.104 |
+| process + early potency | 24 h | 406 | 0.910 | 1505 | 0.059 |
+| process + early potency | 48 h | 406 | 0.912 | 1521 | 0.113 |
+| process + early potency | 72 h | 405 | 0.899 | 1299 | **0.223** |
 
 Nominal coverage is 0.90, averaged over five seeds.
 
+```{note}
+**Regenerated 2026-08-16 after fixing a leak, and the fix cut both ways.** The
+benchmark used to scale features by `X.min(0)`/`X.max(0)` taken over the *whole*
+dataset before splitting, which leaks the calibration and test range into the
+fit. It now scales from the training split only.
+
+Coverage got **worse**, which is the direction a leakage fix should move it:
+the worst deviation from nominal was 1.4 points and is now 2.3.
+
+R² got **better**, and one value changed sign — process-only at 24 h was
+**−0.030** and is now **+0.023**. That is the more suspicious direction, so it
+is stated rather than absorbed: a self-critical number disappearing because of
+our own change deserves more scrutiny, not less. The likely mechanism is that
+global min/max scaling let a few extreme batches compress everything else toward
+the middle of the unit cube, and `fit_gp`'s ARD kernel is initialised for
+unit-cube inputs — training-split scaling gives the training data the full cube.
+**That is a hypothesis, not a measurement**; nobody has run the ablation that
+would settle it.
+
+What does not change is the finding this page exists for. Process-only R² stays
+near zero, the best figure is 0.223, and the intervals are still wide enough to
+cover a near-mean predictor.
+```
+
+### How the split is made, because it decides what the number means
+
+Each seed draws a **uniformly random 60/20/20 split** into train, calibration and
+test. The dataset it draws from is time-ordered production history, and the
+permutation discards that order.
+
+That measures **marginal coverage under exchangeability** — which is exactly what
+split conformal guarantees, so the number is what it says it is. What it cannot
+see is temporal drift, because a uniformly random permutation is precisely how
+[the standard reference on non-exchangeable
+conformal](https://doi.org/10.1214/23-aos2276) constructs the *exchangeable
+control group* it compares a time-ordered split against.
+<!-- ref: 2023-barber-beyond-exchangeability -->
+
+So read the table as *these intervals are honest across this dataset*, and not as
+*these intervals will hold on your plant's next batch*. The second is the
+deployment question, and a random split is the one design that cannot answer it.
+Tracked in
+[#173](https://github.com/enginbio/engin-suite/issues/173), which also works out
+that a single chronological re-split would be underpowered to settle it.
+
 ## Calibration transferred. Prediction did not.
 
-**Coverage lands within about a point of nominal on real industrial data.** That
-is the claim this project most needed to check and had not: the conformal
+**Coverage lands within about two points of nominal on real industrial data.**
+That is the claim this project most needed to check and had not: the conformal
 machinery, calibrated on a held-out split, produces intervals that cover at
-roughly their stated rate on data from a plant it has never seen.
+roughly their stated rate on batches it was not fitted on.
+
+That used to read *within about a point*, and the leakage fix above is what
+widened it. The weaker sentence is the true one.
+
+**Not on a plant it has never seen** — this sentence used to say that, and it was
+wrong in a way worth naming rather than quietly deleting. The model trains on
+roughly 243 batches from *this same plant*; the held-out batches are held out of
+training, not drawn from anywhere else. Cross-plant transfer is not tested at any
+tier, and the earlier phrasing invited exactly that reading.
 
 **R² is near zero.** With window-mean features, the model has almost no ability
 to tell one batch's final potency from another's. It is close to predicting the
