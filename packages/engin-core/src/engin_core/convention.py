@@ -63,10 +63,16 @@ if TYPE_CHECKING:  # pragma: no cover - import-time typing only
     import pandas as pd
     import xarray as xr
 
-CONVENTION_VERSION = "0.1"
+CONVENTION_VERSION = "0.2"
 """Version of the convention itself. Written into ``Dataset.attrs`` so a reader
 can tell which rules a file was produced under. Bumped when the rules change,
-independently of the package version."""
+independently of the package version.
+
+**0.2 added roles** (:data:`ROLES`, ADR 0009): a data variable may declare
+``attrs["role"]``, and a registered channel name at a non-measured role is now an
+error. The change is additive -- absent ``role`` means ``measured``, which is what
+every 0.1 dataset already was -- so **0.1 data is valid 0.2 data** and needs no
+migration. What 0.2 rejects is a claim 0.1 had no way to make."""
 
 CONVENTION_ATTR = "engin_convention"
 """Dataset-level attribute carrying :data:`CONVENTION_VERSION`."""
@@ -126,6 +132,54 @@ CHANNELS: dict[str, Channel] = {
 }
 """Known channels. Extend by registering rather than editing: unknown names are
 carried, not rejected."""
+
+# ------------------------------------------------------------------------ roles
+
+Role = Literal["measured", "setpoint", "output"]
+
+ROLES: dict[str, str] = {
+    "measured": "a sensor reading or a value derived from one -- the process value (PV)",
+    "setpoint": "the value the controller was asked to hold (SP)",
+    "output": "what the controller did about it -- an actuator command (OP/Out)",
+}
+"""What a column *is*, as distinct from what it measures.
+
+**This is standard process-control vocabulary, not a vendor's invention.** Process
+value, setpoint and controller output are the three roles every distributed control
+system and historian distinguishes, across ISA-88/ISA-95 and OPC-UA. A DASGIP header
+spells them ``.PV``, ``.SP`` and ``.Out``; the concept is the same everywhere.
+
+Recorded here because the convention had no word for it, and the omission was not
+cosmetic. Run against a real DASGIP export, the loader mapped ``XCO2 1.Out`` -- a
+controller output -- onto :data:`CHANNELS`' *measured exhaust* ``offgas_co2``. With
+no role concept that mapping is one the types permit and no evidence string can
+describe. See ADR 0009 and #19.
+
+:data:`CHANNELS` describes **measured** quantities. A variable carrying a
+registered channel name at any other role is a category error, and
+:func:`validate_timeseries` says so.
+"""
+
+ROLE_ATTR = "role"
+DEFAULT_ROLE: Role = "measured"
+"""Absent ``attrs["role"]`` means ``measured``.
+
+Defaulting rather than requiring is deliberate and is the reason this change is
+additive: every dataset written before roles existed *was* measured data, so the
+default is both backward-compatible and true. The unsafe direction is the other
+one -- an unlabelled actuator column silently counting as a measurement -- and that
+is what the category-error check below exists to catch.
+"""
+
+
+def role_of(var: Any) -> str:
+    """Role of one data variable, defaulting to ``measured``.
+
+    Takes anything with ``.attrs``; returns the raw string so an unknown value can
+    be reported rather than swallowed.
+    """
+    return str(getattr(var, "attrs", {}).get(ROLE_ATTR, DEFAULT_ROLE))
+
 
 Level = Literal["error", "warning", "info"]
 
@@ -388,6 +442,38 @@ def validate_timeseries(ds: xr.Dataset) -> ConventionReport:
         target = str(name)
         units = var.attrs.get("units")
         known = CHANNELS.get(target)
+
+        role = role_of(var)
+        if role not in ROLES:
+            add(
+                Finding(
+                    level="error",
+                    code="unknown-role",
+                    target=target,
+                    message=f"role {role!r} is not one of {', '.join(sorted(ROLES))}",
+                    suggestion=f'set ds["{target}"].attrs["{ROLE_ATTR}"] to one of them, or '
+                    f"drop the attribute -- absent means {DEFAULT_ROLE!r}",
+                )
+            )
+        elif known is not None and role != DEFAULT_ROLE:
+            # The XCO2 1.Out case, made checkable. CHANNELS defines measured
+            # quantities, so a registered name at another role is claiming the
+            # channel's meaning for something that is not a measurement -- a
+            # setpoint or an actuator command carrying a sensor's name.
+            add(
+                Finding(
+                    level="error",
+                    code="channel-name-at-non-measured-role",
+                    target=target,
+                    message=f"{target!r} is a registered channel, which the convention defines "
+                    f"as a measured quantity, but this variable is role {role!r} "
+                    f"({ROLES[role]})",
+                    suggestion=f"rename it so the channel name is not claimed -- e.g. "
+                    f'"{target}_{role}" -- and keep attrs["{ROLE_ATTR}"] = "{role}". '
+                    "Mapping a controller signal onto a measured channel is a worse "
+                    "error than leaving it unmapped",
+                )
+            )
 
         if units is None and known is None:
             # The common case on real data: a column nobody has glossed yet. Worth

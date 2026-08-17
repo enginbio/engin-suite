@@ -22,9 +22,13 @@ outside reader cannot resolve is worse than no citation:
 
 0002-light-default-dependency-path
 0004-hermetic-test-pythonpath
+0009-vendor-profiles-are-a-convention-gap
 ```
 
 The unported numbers — 0001, 0003, 0005 through 0008 — covered repository layout and process
 decisions that either no longer apply or are now stated directly in `DECISIONS.md`, `CONTRIBUTING.md`
 and `GOVERNANCE.md`. They are not cited from code. If one turns out to be load-bearing later, port it
 then and keep its original number.
+
+New records start at **0009**, leaving that range free so a ported record can keep the number it was
+written under.
