@@ -153,6 +153,36 @@ Two consequences worth stating rather than leaving implicit:
 
 [^2021-humbird-scaleup-economics]: Humbird, *Scale-up economics for cultured meat*, Biotechnology and Bioengineering 118(8) (2021). [doi:10.1002/bit.27848](https://doi.org/10.1002/bit.27848). CC BY 4.0.
 
+### Downstream cost does not see what is in the broth
+
+Recovery cost is a function of titer, and since
+[#17](https://github.com/enginbio/engin-suite/issues/17) of product
+specification. It is **not** a function of broth composition — biomass load,
+whether the product is secreted or intracellular, or an impurity burden. None of
+those enters the cost path, and
+[#15](https://github.com/enginbio/engin-suite/issues/15) tracks the gap.
+
+This is a limitation of the **evidence**, not an oversight. A literature pass on
+2026-08-17 looked for something citable and did not find it:
+
+- **Biomass load.** The closest candidate varies biomass density (4.2–50 g/L),
+  expression level and production scale together across its
+  scenarios,[^2025-fdh-fermentation-tea] so its cost differences cannot be
+  attributed to biomass load.
+- **Secreted versus intracellular.** The literature is consistent and
+  qualitative — secretion "avoids the costly lysis step" — with no costed
+  comparison found for a comparable product.
+- **An impurity proxy.** Nothing was found to calibrate one against, and the
+  bundled simulator surfaces nothing about broth contents to attach it to.
+
+The honest reading is that secreted-versus-intracellular is not a coefficient at
+all: it adds or removes a unit operation, so it changes the shape of the model
+rather than one of its numbers. A plausible continuous correlation invented here
+would be exactly the unevidenced number `CONTRIBUTING` rule 1 rejects, so the
+term stays absent and the issue stays open.
+
+[^2025-fdh-fermentation-tea]: *Techno-economic analysis of industrial-scale fermentation for formate dehydrogenase (FDH) production*, Bioresources and Bioprocessing 12 (2025). [doi:10.1186/s40643-025-00985-3](https://doi.org/10.1186/s40643-025-00985-3). CC BY 4.0.
+
 ## Reporting a limitation we have missed
 
 <https://github.com/enginbio/engin-suite/issues/new>

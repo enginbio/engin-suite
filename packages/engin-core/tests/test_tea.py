@@ -12,6 +12,7 @@ from engin_core.tea import (
     CostParameters,
     ParametricCostModel,
     ProductionScale,
+    PurityGrade,
     annual_capital_charge_usd,
     bioreactor_direct_cost_usd,
     capital_charge_factor,
@@ -20,6 +21,7 @@ from engin_core.tea import (
     cost_summary,
     design_context,
     expected_cost_reduction,
+    purity_dsp_multiplier,
     recommend_batch_by_cost,
 )
 
@@ -310,3 +312,71 @@ def test_capital_chain_follows_the_published_sequence():
     assert annual_capital_charge_usd(scale) == pytest.approx(expected)
     # A 20 m3 vessel is $1.4M direct by Equation 9; sanity-check the magnitude.
     assert 1.3e6 < bioreactor_direct_cost_usd(20.0) < 1.5e6
+
+
+# --- Purity as a cost axis (#17). ---
+
+
+def test_purity_multiplier_derives_the_published_range():
+    # Straathof: crude ~25% DSP share, purified/formulated 50-55%. Converting
+    # shares to a multiplier on the DSP term, holding upstream cost fixed.
+    assert purity_dsp_multiplier(PurityGrade.CRUDE) == 1.0
+    assert purity_dsp_multiplier(PurityGrade.PURIFIED) == pytest.approx(3.316, abs=1e-3)
+    # The published range endpoints bracket it.
+    lo = purity_dsp_multiplier(PurityGrade.PURIFIED, purified_share=0.50)
+    hi = purity_dsp_multiplier(PurityGrade.PURIFIED, purified_share=0.55)
+    assert lo == pytest.approx(3.0, abs=1e-6)
+    assert hi == pytest.approx(3.667, abs=1e-3)
+    assert lo < purity_dsp_multiplier(PurityGrade.PURIFIED) < hi
+
+
+def test_purity_multiplier_is_not_the_total_cost_ratio():
+    # Guards the modelling choice, not the arithmetic. Holding *total* cost fixed
+    # would give 0.525/0.25 = 2.1x, which assumes purification is free in
+    # aggregate. If someone "simplifies" to that ratio, this fails.
+    assert purity_dsp_multiplier(PurityGrade.PURIFIED) != pytest.approx(2.1, abs=0.05)
+
+
+def test_purity_accepts_strings_and_rejects_nonsense():
+    assert purity_dsp_multiplier("crude") == 1.0
+    assert purity_dsp_multiplier("purified") > 1.0
+    with pytest.raises(ValueError):
+        purity_dsp_multiplier("pharmaceutical")  # not a grade the evidence supports
+    with pytest.raises(ValueError):
+        purity_dsp_multiplier(PurityGrade.PURIFIED, crude_share=0.0)
+    with pytest.raises(ValueError):
+        purity_dsp_multiplier(PurityGrade.PURIFIED, purified_share=1.0)
+
+
+def test_purity_defaults_to_crude_and_changes_nothing():
+    U = np.array([[0.5, 0.5, 0.5, 0.5, 0.5]])
+    titer = simulate_unit(U)
+    assert CostParameters().purity_grade is PurityGrade.CRUDE
+    assert CostParameters().purity_multiplier == 1.0
+    crude = ParametricCostModel(CostParameters())
+    purified = ParametricCostModel(CostParameters(purity_grade=PurityGrade.PURIFIED))
+    assert purified.cost_per_kg(titer, U) > crude.cost_per_kg(titer, U)
+
+
+def test_purity_scales_only_the_downstream_term():
+    # The whole claim is that specification moves DSP, not fermentation.
+    U = np.array([[0.4, 0.3, 0.6, 0.5, 0.5]])
+    titer = simulate_unit(U)
+    crude = ParametricCostModel(CostParameters()).cost_breakdown(titer, U)
+    pure = ParametricCostModel(CostParameters(purity_grade=PurityGrade.PURIFIED)).cost_breakdown(
+        titer, U
+    )
+    assert pure["raw_material"] == pytest.approx(crude["raw_material"])
+    assert pure["facility"] == pytest.approx(crude["facility"])
+    assert pure["downstream"] == pytest.approx(
+        crude["downstream"] * purity_dsp_multiplier(PurityGrade.PURIFIED)
+    )
+
+
+def test_override_covers_the_product_class_the_default_does_not():
+    # Affinity-purified proteins sit an order of magnitude above the default;
+    # the override exists so that case is expressible rather than mis-modelled.
+    params = CostParameters(purity_grade=PurityGrade.PURIFIED, purity_multiplier_override=30.0)
+    assert params.purity_multiplier == 30.0
+    with pytest.raises(ValueError):
+        CostParameters(purity_multiplier_override=0.0)
