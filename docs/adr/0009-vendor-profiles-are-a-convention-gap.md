@@ -1,6 +1,6 @@
 # 0009 — A vendor profile is a convention gap, not a parser abstraction
 
-**Status:** Proposed (2026-08-16) — one sub-decision deliberately left open, see *The open question*
+**Status:** Accepted (2026-08-16)
 
 ## Context
 
@@ -102,24 +102,39 @@ string cannot describe.
    decoding and semicolon delimiter are that reader's business and are not abstracted. This is
    the shape the field converged on independently three times.
 
-**Not decided here:** how `role` is encoded. See below.
+### The encoding, and the two alternatives rejected
 
-## The open question
+`role` is a **per-variable attribute** — `ds["x"].attrs["role"]` — defaulting to `measured`,
+validated exactly the way `units` already is. Convention version **0.2**.
 
-`role` could be a coordinate on the xarray Dataset, a suffix convention on channel names, or a
-separate data variable per role. The choice has consequences for every loader, every consumer,
-and the `(run, time)` shape that `D11` settled after two revisions, so it is left to a follow-up
-rather than made as a side effect of this record.
+**Rejected: a `role` coordinate or dimension.** It reads as the tidy answer and it is not.
+Most channels have no setpoint and no controller output — `titer`, `biomass`, `our` never do —
+so a role dimension is mostly empty, and every existing variable's shape changes to carry it.
+That breaks consumers to represent absence.
 
-This ADR is **Proposed** until that is answered.
+**Rejected: a suffix convention on the variable name** (`ph`, `ph.sp`, `ph.out`). It matches how
+vendors spell it, which is its only real advantage. It makes meaning depend on parsing a string,
+and the convention already had a place for per-variable metadata that does not.
+
+The attribute wins on three counts that the others cannot match: it is **sparse by construction**
+(a role exists only where it was recorded), it **changes no array shape**, and it makes
+0.1 data valid 0.2 data — absent `role` means `measured`, which is what every dataset written
+before roles existed already was. **Variable names stay free**; when two roles of one channel
+coexist they must differ, but the name is a label and `role` is the meaning.
+
+The unsafe direction is the other one — an unlabelled actuator column counting as a measurement —
+and that is what the category-error rule below is for.
 
 ## Consequences
 
-- The false-positive class that `#19` surfaced becomes structurally impossible rather than
-  caught by review, which is the whole reason to prefer a convention change over a profile
-  format.
-- The convention gains a versioned change, with whatever compatibility handling that implies for
-  existing readers and the published channel listing.
+- The false-positive class that `#19` surfaced is now **checkable rather than reviewable**. A
+  registered channel name at a non-measured role is an error with its own code
+  (`channel-name-at-non-measured-role`), so the `XCO2 1.Out` mapping fails validation instead of
+  passing silently.
+- **No migration.** 0.1 data is valid 0.2 data; what 0.2 rejects is a claim 0.1 had no way to
+  make.
+- An unregistered name may hold any role, which is the point: a column that genuinely *is* an
+  actuator signal becomes representable. Only claiming a *channel's* name for one is refused.
 - Vendor coverage stays expensive — the field's own estimate is tens of hours per instrument, and
   nothing here changes that. What changes is that the cost buys a reader rather than 156 alias
   rows.

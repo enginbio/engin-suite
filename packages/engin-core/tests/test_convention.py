@@ -268,3 +268,66 @@ def test_the_gaps_are_the_derived_rates():
 def test_an_unregistered_channel_is_an_error_not_a_gap():
     with pytest.raises(KeyError):
         convention.mife_slot("not_a_channel")
+
+
+# ------------------------------------------------------------------------ roles
+#
+# Added with convention 0.2 (ADR 0009). The concrete failure these exist for: run
+# against a real DASGIP export, the loader mapped `XCO2 1.Out` -- a controller
+# output -- onto the measured `offgas_co2` channel. With no role concept that is a
+# mapping the types permit and no evidence string can describe.
+
+
+def test_role_defaults_to_measured():
+    """Absent role means measured, which is what every 0.1 dataset already was."""
+    assert convention.role_of(xr.DataArray([1.0])) == convention.DEFAULT_ROLE
+    assert convention.DEFAULT_ROLE == "measured"
+
+
+def test_a_dataset_written_before_roles_existed_still_conforms():
+    """0.2 is additive: 0.1 data needs no migration."""
+    report = validate_timeseries(conforming_ds())
+    assert report.ok, report.summary()
+    assert report.findings == []
+
+
+def test_registered_channel_name_at_a_non_measured_role_is_an_error():
+    """The XCO2 1.Out case. CHANNELS defines measured quantities, so a registered
+    name at another role claims a meaning that does not apply."""
+    ds = conforming_ds()
+    ds["titer"].attrs["role"] = "output"
+    report = validate_timeseries(ds)
+    assert "channel-name-at-non-measured-role" in _codes(report)
+    assert not report.ok
+
+
+def test_the_same_variable_at_measured_role_is_clean():
+    """The check must be about the role, not about the attribute being present."""
+    ds = conforming_ds()
+    ds["titer"].attrs["role"] = "measured"
+    report = validate_timeseries(ds)
+    assert "channel-name-at-non-measured-role" not in _codes(report)
+    assert report.ok, report.summary()
+
+
+def test_an_unregistered_name_may_hold_any_role():
+    """A vendor column that is genuinely an actuator signal is representable --
+    that is the point. It is only claiming a *channel* name that is refused."""
+    ds = conforming_ds()
+    ds["xco2_1_out"] = (("run", "time"), np.zeros_like(ds["titer"].values), {"units": "%"})
+    ds["xco2_1_out"].attrs["role"] = "output"
+    report = validate_timeseries(ds)
+    assert "channel-name-at-non-measured-role" not in _codes(report)
+
+
+def test_an_unknown_role_is_reported_not_swallowed():
+    ds = conforming_ds()
+    ds["titer"].attrs["role"] = "controller_output"  # plausible, not the vocabulary
+    report = validate_timeseries(ds)
+    assert "unknown-role" in _codes(report)
+
+
+def test_every_role_carries_a_description():
+    """The vocabulary is small enough that an undocumented member is an oversight."""
+    assert set(convention.ROLES) == {"measured", "setpoint", "output"}
+    assert all(v.strip() for v in convention.ROLES.values())

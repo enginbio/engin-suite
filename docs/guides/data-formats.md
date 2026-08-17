@@ -155,6 +155,39 @@ for channel in CHANNELS.values():
 This is a recommendation, not a closed vocabulary. Channels outside it are
 carried as-is.
 
+## Roles: measured, setpoint, or controller output
+
+**Added in convention 0.2.** A registered channel is a *measured* quantity. Real
+bioreactor exports also carry the setpoint the controller was asked to hold and
+the actuator command it issued — a DASGIP header spells these `.PV`, `.SP` and
+`.Out`, and the distinction is standard process-control vocabulary rather than one
+vendor's habit.
+
+Declare it per variable, the same place units live:
+
+```{code-cell} python
+from engin_core.convention import ROLES, DEFAULT_ROLE
+
+for name, description in ROLES.items():
+    print(f"  {name:10s} {description}")
+print(f"\n  absent means {DEFAULT_ROLE!r}")
+```
+
+Because absent means `measured`, **data written before 0.2 is valid 0.2 data** and
+needs no migration.
+
+The rule with teeth: a *registered channel name* at any role other than `measured`
+is an error. `CHANNELS` defines what a measurement means, so attaching that name to
+a controller signal claims something untrue. Name it something else and keep the
+role — `xco2_1_out` with `role="output"` is fine; `offgas_co2` with `role="output"`
+is not.
+
+That is not hypothetical. Run against a real DASGIP export, the loader mapped
+`XCO2 1.Out` — a controller output — onto `offgas_co2`, the measured exhaust
+channel, and nothing in the convention could say why that was wrong.
+<!-- not-a-claim: measured against this repository's own loader; see methods/vendor-export-ingest.md -->
+See [ADR 0009](../adr/0009-vendor-profiles-are-a-convention-gap.md).
+
 ## Getting messy data onto the convention
 
 Nobody's export arrives conforming. `engin_core.loaders` maps the headers a
