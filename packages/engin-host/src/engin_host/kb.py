@@ -5,6 +5,32 @@ capable) with a per-cell confidence (data completeness / consensus). In
 production these come from curated literature + per-host models with citations
 (the M1 milestone); here they exist to prove the scoring / uncertainty /
 attribution loop end to end. See ../README.md for provenance caveats.
+
+Every cell is ``provenance="illustrative"`` by default (see
+:class:`~engin_host.schema.Host`), so the status now travels with the number
+rather than living only in this docstring.
+
+**One capability resists sourcing for a reason worth knowing before anyone
+tries: ``gras``.** It looks like the easy one -- a regulatory-status question
+with a citable answer -- and it is not, because GRAS is not a property of an
+organism. Checked against FDA on 2026-08-16:
+
+- A GRAS conclusion attaches to a **substance under specific conditions of
+  use**, not to a production organism. The inventory reads *"pepsin A from
+  Komagataella phaffii DFB-002"*, *"egg-white protein from K. phaffii
+  GSD-1235"*, *"Bacillus subtilis SG188"* -- substance, strain, and use.
+- It is **strain-specific**. `B. subtilis` SG188 and `B. subtilis` PLSSC are
+  separate notices. "B. subtilis is 0.85 GRAS" corresponds to no citable fact.
+- FDA does **not approve** GRAS notices. It issues a "no questions" letter and
+  states it has not made its own determination, so even a per-substance cell
+  cannot honestly be labelled an approval.
+
+So a scalar per organism cannot be given a ``sources.yaml`` id without
+laundering an editorial judgement into a citation, which is the failure `D23`
+exists to prevent. A sourceable encoding would be a *count or list of accepted
+notices naming that organism as the production organism*, which is a different
+field with a different meaning -- and that is a schema decision, not a lookup.
+Recorded on #146 and #22.
 """
 
 from __future__ import annotations
