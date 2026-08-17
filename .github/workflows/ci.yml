@@ -120,14 +120,22 @@ jobs:
           fi
           echo "all $tested packages passed"
 
-      - name: Benchmarks (smoke)
+      - name: Benchmarks (calibration gate)
         working-directory: packages/engin-core
-        # `--seeds 4` on purpose. This step checks the benchmark still *runs*; it
-        # asserts nothing about the numbers (that gap is #20). The default is 20
-        # seeds so that the command printed in docs/benchmarks.md reproduces the
-        # table printed under it, and paying ~3 minutes on every PR to re-derive
-        # numbers nothing here compares against is not worth it.
-        run: python benchmarks/benchmark.py --seeds 4
+        # `--seeds 4` on purpose. The default is 20 seeds so that the command
+        # printed in docs/benchmarks.md reproduces the table printed under it, and
+        # paying ~3 minutes on every PR to re-derive that table is not worth it.
+        #
+        # `--check` is what turns this from a smoke test into a gate (#20). It used
+        # to assert nothing about the numbers, so a calibration regression passed
+        # all nine required checks while three published baseline tables rode on
+        # numbers nothing defended.
+        #
+        # It gates coverage *and* width, because coverage alone is not a safety
+        # metric -- an interval that always covers is trivially available, and
+        # docs/methods/out-of-distribution.md is the page that says so. The
+        # thresholds and the arithmetic behind them are in benchmark.py.
+        run: python benchmarks/benchmark.py --seeds 4 --check
 
   # The packages declare minimum versions rather than pins, which is right for a
   # library -- an application pins, a library states what it needs. But every other

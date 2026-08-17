@@ -230,7 +230,54 @@ def one_seed(seed: int, d: int = 5):
     )
 
 
-def synthetic(seeds=None) -> None:
+#: Floor on split-conformal coverage, and ceiling on the width that buys it.
+#:
+#: **Both, because coverage alone is not a safety metric.** That is this project's
+#: own published finding (``docs/methods/out-of-distribution.md``): an interval
+#: that always covers is trivially available -- report +/- infinity. A gate on
+#: coverage by itself can be satisfied by widening, so it would wave through the
+#: exact failure the out-of-distribution page exists to describe.
+#:
+#: The floor is set to catch a *collapse*, not to police noise. The failure mode
+#: that has actually happened here is the conformal path reverting to the naive
+#: epistemic-only interval, which the same run reports at ~0.56 against a healthy
+#: ~0.95. With 20 test points per seed, a 4-seed CI run estimates coverage from 80
+#: points, so the standard error at p=0.90 is about 3.4 points. A floor of 0.80
+#: sits roughly three of those below nominal and about seven above the broken
+#: value: wide enough never to flake, narrow enough that the regression cannot
+#: pass.
+#:
+#: The width ceiling is scaled to the problem rather than picked: titers on this
+#: simulator run around 50 g/L, and the healthy conformal width is ~16. At 30 an
+#: interval is over half the signal's range and has stopped being a forecast.
+COVERAGE_FLOOR = 0.80
+WIDTH_CEILING = 30.0
+
+
+def check_thresholds(cover_conf: float, width_conf: float) -> list[str]:
+    """Return the reasons this run should fail, or an empty list.
+
+    Separated from :func:`synthetic` so the thresholds are testable without
+    running the benchmark, which takes minutes.
+    """
+    failures = []
+    if cover_conf < COVERAGE_FLOOR:
+        failures.append(
+            f"split-conformal coverage {cover_conf:.3f} is below the floor "
+            f"{COVERAGE_FLOOR:.2f}. The calibration is not doing its job -- compare "
+            f"against the epistemic-only number in the same table, which is what "
+            f"this looks like when the conformal path is bypassed."
+        )
+    if width_conf > WIDTH_CEILING:
+        failures.append(
+            f"split-conformal mean width {width_conf:.1f} g/L is above the ceiling "
+            f"{WIDTH_CEILING:.0f}. Coverage bought by widening is not coverage; see "
+            f"docs/methods/out-of-distribution.md."
+        )
+    return failures
+
+
+def synthetic(seeds=None, check: bool = False) -> None:
     # Defaults to SEEDS, not 8. It was 8 until 2026-08-15 while docs/benchmarks.md
     # published the 20-seed figures, so `python benchmarks/benchmark.py` -- the
     # command the page prints -- did not reproduce the page: it returned +18.3% EI
@@ -268,6 +315,18 @@ def synthetic(seeds=None) -> None:
     print(f"  RSM optima    {avg('lift_rsm'):+6.1f}%   <- the baseline a process engineer uses")
     print(f"  random batch  {avg('lift_rand'):+6.1f}%")
     print("\nRSM is a real baseline, not a straw man. Where it wins, that is the result.")
+
+    if check:
+        failures = check_thresholds(avg("cover_conf"), avg("width_conf"))
+        if failures:
+            print("\nFAILED --check:", file=sys.stderr)
+            for f in failures:
+                print(f"  - {f}", file=sys.stderr)
+            raise SystemExit(1)
+        print(
+            f"\n--check passed: coverage {avg('cover_conf'):.3f} >= {COVERAGE_FLOOR:.2f}, "
+            f"width {avg('width_conf'):.1f} <= {WIDTH_CEILING:.0f} g/L"
+        )
 
 
 def _lift(traj: list[float]) -> list[float]:
@@ -494,7 +553,20 @@ def main(argv=None) -> None:
     parser.add_argument(
         "--seeds", type=int, default=SEEDS, help=f"seed count for either mode (default {SEEDS})"
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help=(
+            "exit non-zero if split-conformal coverage has collapsed or its width "
+            "has ballooned. This is what makes the benchmark a gate rather than a "
+            "smoke test (#20): without it a calibration regression passes every "
+            "required check. Synthetic only -- the real-data run is too slow to "
+            "put on a pull request."
+        ),
+    )
     args = parser.parse_args(argv)
+    if args.check and (args.data == "real" or args.multi_round):
+        parser.error("--check applies to the synthetic single-round run only")
     _git_sha()  # sample the tree before the work, not after it
     if args.multi_round:
         if args.data == "real":
@@ -503,7 +575,7 @@ def main(argv=None) -> None:
     elif args.data == "real":
         real()
     else:
-        synthetic(range(args.seeds))
+        synthetic(range(args.seeds), check=args.check)
 
 
 if __name__ == "__main__":
