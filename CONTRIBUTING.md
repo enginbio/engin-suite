@@ -20,6 +20,17 @@ Listed in order of how much it would help.
 
 For anything beyond a small fix, **open an issue first.** It keeps design discussion public and searchable, and it avoids you building something that conflicts with a decision you had no way of knowing about.
 
+**Not everything is an issue.** [Discussions](https://github.com/enginbio/engin-suite/discussions) is open, and it is the better place when there is nothing yet to track:
+
+| | |
+|---|---|
+| **Discussion** | "Does this apply to my process?" · "Has anyone tried X as a host?" · sharing a result · proposing a direction before it has a shape · asking why a decision went the way it did |
+| **Issue** | a defect, a specific change to make, a claim in the documentation you can show is wrong, or a piece of work someone could pick up |
+
+If you are unsure, start a discussion. Converting one into an issue is easy and costs nothing; a vague issue sits open and slowly stops being read, which is worse for both of us.
+
+**Questions about a published number are always welcome as either.** This project's argument is that its claims are checkable, so a question that turns out to be a defect is the most useful thing you can send.
+
 Decisions are recorded and numbered. If a change touches one, cite it (`implements D13`, `revisits D11`). If you think a decision is wrong, argue with the reasoning rather than routing around it — that's a legitimate contribution and sometimes the most valuable kind.
 
 ## Sign your commits (DCO)
