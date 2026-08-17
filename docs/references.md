@@ -39,6 +39,7 @@ register rather than a bibliography.
 | `2023-scientific-python-spec-9` | [SPEC 9 - Governance](https://scientific-python.org/specs/spec-0009/)<br/>Scientific Python community — *Scientific Python SPECs* | 2023 | standard | url |
 | `2024-konzock-try-costs` | [TRYing to evaluate production costs in microbial biotechnology](https://doi.org/10.1016/j.tibtech.2024.04.007)<br/>Konzock, Oliver, Nielsen, Jens — *Trends in Biotechnology* | 2024 | paper | doi |
 | `2024-responsible-biodesign-statement` | [Community Values, Guiding Principles, and Commitments for the Responsible Development of AI for Protein Design](https://responsiblebiodesign.ai/)<br/>Responsible AI x Biodesign signatories — *responsiblebiodesign.ai* | 2024 | web | url |
+| `2024-wilson-probabilistic-regret-bounds` | [Stopping Bayesian Optimization with Probabilistic Regret Bounds](https://doi.org/10.48550/arXiv.2402.16811)<br/>Wilson, James T. — *arXiv (stat.ML)* | 2024 | preprint | doi |
 | `2025-chan-broad-host-range` | [Broad-Host-Range Synthetic Biology: Rethinking Microbial Chassis as a Design Variable](https://doi.org/10.1021/acssynbio.5c00308)<br/>Chan, Dennis Tin Chat, Bjerg, Johan, Bernstein, Hans C. — *ACS Synthetic Biology 14(10):3815-3821* | 2025 | paper | doi |
 | `2025-jbei-flaviolin-media` | [Machine learning-led semi-automated medium optimization reveals salt as key for flaviolin production in Pseudomonas putida](https://doi.org/10.1038/s42003-025-08039-2)<br/>Joint BioEnergy Institute contributors — *Communications Biology 8* | 2025 | paper | doi |
 | `2025-jbei-isoprenol-crispri` | [Automation and machine learning drive rapid optimization of isoprenol production in Pseudomonas putida](https://doi.org/10.1038/s41467-025-66304-8)<br/>Joint BioEnergy Institute contributors — *Nature Communications 16* | 2025 | paper | doi |
@@ -54,6 +55,7 @@ register rather than a bibliography.
 | `2026-pymcdm-methods` | [pymcdm 1.4.0 — methods API](https://pypi.org/project/pymcdm/)<br/>pymcdm contributors — *PyPI / pymcdm.readthedocs.io* | 2026 | software | url |
 | `2026-rdkit-descriptors` | [Descriptor Calculation — RDKit documentation](https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-descriptors)<br/>RDKit contributors — *rdkit.org* | 2026 | software | url |
 | `2026-scikit-criteria` | [scikit-criteria 0.10 — aggregation methods](https://pypi.org/project/scikit-criteria/)<br/>scikit-criteria contributors — *PyPI / scikit-criteria.quatrope.org* | 2026 | software | url |
+| `2026-wang-regret-based-stopping` | [Regret-Based (epsilon, delta)-optimal Stopping Criteria for Bayesian Optimization](https://doi.org/10.48550/arXiv.2605.22561)<br/>Wang, Haowei, Wang, Jingyi, Wei, Qiyu — *arXiv (cs.LG)* | 2026 | preprint | doi |
 | `2026-zenodo-cho-k1-cultivations` | [Dataset Based on Chinese Hamster Ovary (CHO) Cultivations including Turbidity, Permittivity, O2 and CO2 Measurements](https://doi.org/10.5281/zenodo.20829178)<br/>Uhlendorff, S., Fulek, R., Eimler, J., Pein-Hackelbusch, M., Frahm, B. — *Zenodo* | 2026 | dataset | doi |
 
 ## Claims

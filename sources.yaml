@@ -70,6 +70,33 @@ sources:
     stability: doi
     type: paper
 
+  # -- Stopping criteria for Bayesian optimization (#18). Both were read before
+  # engin_core.stopping was written, and both changed its design: the first
+  # supplies the (epsilon, delta) framing it adopts, the second is why the
+  # newer and stronger-sounding criterion was not adopted.
+
+  - id: 2024-wilson-probabilistic-regret-bounds
+    title: Stopping Bayesian Optimization with Probabilistic Regret Bounds
+    authors: [Wilson, James T.]
+    year: 2024
+    venue: arXiv (stat.ML)
+    location: https://doi.org/10.48550/arXiv.2402.16811
+    accessed: 2026-08-17
+    stability: doi
+    type: preprint
+
+  - id: 2026-wang-regret-based-stopping
+    title: >-
+      Regret-Based (epsilon, delta)-optimal Stopping Criteria for Bayesian
+      Optimization
+    authors: [Wang, Haowei, Wang, Jingyi, Wei, Qiyu]
+    year: 2026
+    venue: arXiv (cs.LG)
+    location: https://doi.org/10.48550/arXiv.2605.22561
+    accessed: 2026-08-17
+    stability: doi
+    type: preprint
+
   - id: 2019-goldrick-indpensim
     title: >-
       Modern day monitoring and control challenges outlined on an
