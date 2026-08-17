@@ -51,8 +51,11 @@ cli = ["engin-core[cli]"]
 #   * it requires Python >= 3.11 (equilibrator-api, component-contribution and
 #     equilibrator-cache all do) while this package supports >= 3.10, so the
 #     marker keeps resolution working on 3.10 instead of breaking it;
-#   * its first call downloads a compound database from Zenodo, which its own
-#     tutorial puts at about ten minutes.
+#   * its first call downloads a compound database from Zenodo. Measured rather
+#     than quoted: the file is **1.34 GB** and `ComponentContribution()` took
+#     **86 s** on a fast connection. The upstream tutorial says "about ten
+#     minutes", which is a bandwidth-dependent number; the size is the durable
+#     one and is the reason this cannot be a default install or a CI step.
 #
 # Neither makes it a bad dependency; both make it a bad *default* one. Same shape
 # as engin-core's [tea] extra for BioSTEAM. The transform in thermo.py needs none
