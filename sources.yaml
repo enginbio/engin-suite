@@ -448,6 +448,79 @@ sources:
       register exists to prevent.
     type: paper
 
+  # -- Regulatory status of production organisms (ADR 0010 / #22 / #146 item 3).
+  # Two rows for one body of work on purpose: the article and the data it
+  # summarises carry *different licences*, and only one of them can be built on.
+
+  - id: 2026-efsa-qps-list
+    title: >-
+      Updated list of QPS-recommended microorganisms for safety risk assessments
+      carried out by EFSA
+    authors: [European Food Safety Authority]
+    year: 2026
+    venue: EFSA Knowledge Junction on Zenodo
+    location: https://doi.org/10.5281/zenodo.1146566
+    accessed: 2026-08-17
+    stability: doi
+    type: dataset
+    note: >-
+      The **concept** DOI, which resolves to the current version — at time of
+      access the spreadsheet published 2026-07-06. Deliberately not the
+      version-specific DOI: QPS is revised on a published cadence, and a row
+      pinned to one version goes stale silently while the concept DOI goes stale
+      loudly. Licensed **CC BY 4.0**, which is what makes an encoding derived
+      from it distributable. Columns: microbiological group, subgroup, family,
+      genus, species, synonyms, and up to three qualifications, plus a separate
+      sheet of taxonomic units excluded from QPS with the reason and the opinion
+      that excluded them.
+
+  - id: 2026-efsa-qps-update-23
+    title: >-
+      Update of the list of qualified presumption of safety (QPS) recommended
+      microbiological agents intentionally added to food or feed as notified to
+      EFSA 23
+    authors: [EFSA Panel on Biological Hazards]
+    year: 2026
+    venue: EFSA Journal
+    location: https://doi.org/10.2903/j.efsa.2026.9824
+    accessed: 2026-08-17
+    stability: doi
+    type: paper
+    note: >-
+      CC BY 4.0. Cited **only** for the capital-cost structure — Equation 9 (the
+      piecewise bioreactor total-direct-cost correlation over 0.33-200 m3),
+      Equation 10 (the capital charge factor), the indirect and contingency
+      factors, and Table 1's declining direct-cost factor. Those price standard
+      bioprocess vessel hardware (ASME BPE, 316L, CIP/SIP, full-vacuum design).
+      The paper's *subject* is animal cell culture, and its cell-type-specific
+      conclusions — the CO2-inhibition ceiling and the 20 m3 fed-batch optimum —
+      are deliberately **not** carried into engin-core, because they are about
+      animal cells rather than about vessels. Using the hardware correlation for
+      microbial fermentation is an argument this project is making, not a
+      finding this source supports; docs/limitations.md says so in those words.
+
+      **Licensed CC BY-ND 4.0 — no derivatives.** Cited for definitions (what a
+      taxonomic unit is, what a qualification is) and never as a data source. A
+      machine-readable table extracted from this article would be a derivative
+      work under a no-derivatives licence; the same values are CC BY 4.0 in
+      2026-efsa-qps-list, which is where the encoding takes them from. Same
+      conflict class as the NP Atlas and IndPenSim licence notes, and easier to
+      miss because the article is the more discoverable of the two.
+
+  - id: 2026-fda-gras-inventory
+    title: GRAS Notice Inventory
+    authors: [US Food and Drug Administration]
+    year: 2026
+    venue: fda.gov
+    location: https://www.fda.gov/food/generally-recognized-safe-gras/gras-notice-inventory
+    accessed: 2026-08-17
+    stability: url
+    url_only_because: >-
+      A live regulatory database with no DOI and no versioned archive. Cited for
+      what fields the inventory carries, which is a fact about the database as it
+      stands; re-check on the quarterly liveness sweep.
+    type: dataset
+
   - id: 2019-tibshirani-covariate-shift
     title: Conformal Prediction Under Covariate Shift
     authors: [Tibshirani, Ryan J., Foygel Barber, Rina, Candes, Emmanuel J., Ramdas, Aaditya]
@@ -1097,6 +1170,58 @@ claims:
       here, and a row claiming otherwise would be the same category error as
       D13's corrected cost-share split. If a microbial-specific capital
       correlation is found, this row is the one that should be superseded.
+
+  # -- ADR 0010. The encoding #188 left open.
+
+  - doc: docs/adr/0010-regulatory-status-is-two-facts-not-a-scalar.md
+    tier: A
+    source_id: 2026-efsa-qps-update-23
+    claim: >-
+      The lowest taxonomic unit for which QPS status is granted is the species,
+      for bacteria, yeasts and protists/algae — so QPS is organism-level by
+      construction, unlike GRAS. Where a hazard can be tested at strain or
+      product level, a qualification is attached to the taxonomic unit (no
+      acquired resistance genes to clinically relevant antimicrobials;
+      'production purposes only', meaning viable cells absent from the final
+      product).
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      This is the row that unblocks #22. #188 concluded that no per-organism
+      regulatory scalar could be cited, which was right about GRAS and does not
+      generalise: QPS is a different instrument that grants status at exactly the
+      level a per-host cell needs. The correction is to the *scope* of #188's
+      finding, not to the finding.
+
+  - doc: docs/adr/0010-regulatory-status-is-two-facts-not-a-scalar.md
+    tier: A
+    source_id: 2026-efsa-qps-list
+    claim: >-
+      Read against the six hosts in engin-host's KB: E. coli is excluded from QPS
+      by name because many strains are pathogens for humans and animals;
+      S. cerevisiae, Komagataella phaffii / K. pastoris (obligate synonym
+      Pichia pastoris) and B. subtilis are listed with qualifications; CHO and
+      cell-free are outside the scheme's scope entirely.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      Read from the spreadsheet itself rather than from a summary. The E. coli
+      exclusion is the load-bearing one: the shipped KB scores it 0.50 on `gras`
+      and CHO 0.30, which orders an organism that was assessed and refused above
+      one that was never in scope. That is the concrete evidence the scalar is
+      an axis that does not exist, rather than an axis calibrated badly.
+
+  - doc: docs/adr/0010-regulatory-status-is-two-facts-not-a-scalar.md
+    tier: A
+    source_id: 2026-fda-gras-inventory
+    claim: >-
+      The GRAS Notice Inventory records substance name, notice number, notifier,
+      intended conditions of use, statutory basis and a link to FDA's response
+      letter. The production organism is not a field — it appears inside
+      free-text substance names, so a per-organism count is an extraction with
+      judgement in it rather than a lookup.
+    strength: supports
+    reviewed: 2026-08-17
 
   - doc: DECISIONS.md
     tier: A

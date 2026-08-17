@@ -37,6 +37,22 @@ from __future__ import annotations
 
 from .schema import Host, KnowledgeBase
 
+# `gras` is not sourceable as written, and the follow-up found out why. #188
+# established that a GRAS conclusion attaches to a substance under specific
+# conditions of use rather than to an organism, so this scalar cannot carry a
+# `sources.yaml` id. ADR 0010 answers the encoding question that left open:
+#
+#   * EFSA's QPS list *is* organism-level -- status is granted at the species
+#     level, with qualifications, and is CC BY 4.0 on the Knowledge Junction.
+#     That is the citable per-host regulatory fact. # ref: 2026-efsa-qps-list
+#   * The FDA inventory has no production-organism field at all, so a per-host
+#     US number would be our own extraction wearing a citation.
+#     # ref: 2026-fda-gras-inventory
+#
+# The concrete symptom, if you want one before reading the ADR: `E. coli` scores
+# 0.50 below and CHO 0.30, but E. coli is *excluded from QPS by name* while CHO
+# was never in scope. The column orders "assessed and refused" above "not
+# applicable", which is not a quantity that has an axis.
 CAPABILITIES: list[str] = [
     "secretion",
     "glyco",
