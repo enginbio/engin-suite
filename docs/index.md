@@ -150,6 +150,13 @@ Cases where a simpler baseline wins are published in the same table as the wins.
 
 Two things help most: **real fermentation data** or pointers to public datasets, and **benchmarks where Engin loses**. See [Contributing](contributing).
 
+Questions, results and "does this apply to my process?" belong in
+[Discussions](https://github.com/enginbio/engin-suite/discussions); defects and
+specific changes belong in
+[Issues](https://github.com/enginbio/engin-suite/issues). If a number on this
+site looks wrong, either is the right place — the whole argument here is that the
+claims are checkable.
+
 The project has one maintainer and is [open to co-founders](governance).
 
 ---
