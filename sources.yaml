@@ -97,6 +97,55 @@ sources:
     stability: doi
     type: preprint
 
+  # -- Enzyme kinetics sources for engin-pathway's g_enzyme feature (#140 item 2).
+  # Checked before any code was written, because the answer decides whether the
+  # feature is buildable at all -- the same order that would have saved time on
+  # IndPenSim (CC-BY-NC-ND) and detl (AGPL-3.0).
+
+  - id: 2026-brenda-license
+    title: BRENDA enzyme database — licence and disclaimer
+    authors: [BRENDA / Technische Universitaet Braunschweig]
+    year: 2026
+    venue: brenda-enzymes.org
+    location: https://www.brenda-enzymes.org/license.php
+    accessed: 2026-08-17
+    stability: url
+    url_only_because: >-
+      The claim is what licence BRENDA grants today, and the publisher's own licence
+      page is the reference for that. It states CC BY 4.0, which is a change from the
+      historically academic-only access #140 assumes. Read from the licence page
+      rather than a summary, after the allotropy entry corrected in #193 showed a
+      badge and a licence file disagreeing.
+    type: dataset
+
+  - id: 2026-sabiork-terms
+    title: SABIO-RK — Terms & Conditions (Non-Commercial Purpose License)
+    authors: [HITS gGmbH]
+    year: 2026
+    venue: sabiork.h-its.org
+    location: https://sabiork.h-its.org/ui/terms
+    accessed: 2026-08-17
+    stability: url
+    url_only_because: >-
+      The claim is the licence text itself. Note the URL: the older
+      /layouts/content/termscondition.gsp path now 404s and the terms live at /ui/terms,
+      so a citation to the old path would resolve to nothing. Verbatim, the grant is
+      "for Non-Commercial Purpose only", and excludes use "in connection with a product
+      or service which is sold, offered for sale, licensed, leased, loaned, or rented".
+    type: dataset
+
+  - id: 2025-catpred-kinetics
+    title: >-
+      CatPred: a comprehensive framework for deep learning in vitro enzyme kinetic
+      parameters
+    authors: [Boorla, Veda Sheersh, Maranas, Costas D.]
+    year: 2025
+    venue: Nature Communications 16
+    location: https://doi.org/10.1038/s41467-025-57215-9
+    accessed: 2026-08-17
+    stability: doi
+    type: paper
+
   - id: 2019-goldrick-indpensim
     title: >-
       Modern day monitoring and control challenges outlined on an
