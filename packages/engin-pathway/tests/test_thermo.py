@@ -127,3 +127,45 @@ def test_vectorises_over_a_route():
     g = g_thermo([-44.8, 0.0, 12.0])
     assert g.shape == (3,)
     assert g[0] > g[1] > g[2]
+
+
+# -- Anchored to a live eQuilibrator measurement, not to the tutorial.
+# equilibrator-api 0.7.0, 2026-08-17, ATP hydrolysis via
+# `kegg:C00002 + kegg:C00001 = kegg:C00008 + kegg:C00009`:
+#   dg.value.magnitude = -29.64175327394397
+#   dg.error.magnitude =   0.30427785535776725  (kJ/mol)
+# eQuilibrator is not a test dependency -- the database is 1.34 GB -- so the
+# measurement is pinned as a constant instead. That is the honest trade: the
+# numbers came from the real API once, and the transform is checked against them
+# every run without shipping the download.
+
+ATP_HYDROLYSIS_DG = -29.64175327394397
+ATP_HYDROLYSIS_SD = 0.30427785535776725
+
+
+def test_a_real_measurement_maps_into_the_saturated_region():
+    """The canonical favourable reaction scores ~0.99999.
+
+    This is the caveat in the module docstring, demonstrated on the most common
+    energetic step in biochemistry rather than on a synthetic extreme.
+    """
+    g = g_thermo(ATP_HYDROLYSIS_DG)
+    assert g == pytest.approx(0.99999359, abs=1e-7)
+    assert g > 0.9999
+
+
+def test_a_real_measurements_uncertainty_survives_the_transform():
+    """+/- 0.30 kJ/mol is a narrow band, and it stays narrow: ~1.6e-06 wide."""
+    low, high = g_thermo_interval(ATP_HYDROLYSIS_DG, ATP_HYDROLYSIS_SD)
+    assert low < g_thermo(ATP_HYDROLYSIS_DG) < high
+    assert (high - low) == pytest.approx(1.58e-06, rel=0.05)
+
+
+def test_the_discriminating_window_is_where_the_bottleneck_is():
+    """Around -10 to +15 kJ/mol the score still separates steps; outside it, ties.
+
+    Pinned because it bounds what this feature can contribute to a ranking.
+    """
+    assert g_thermo(-10.0) - g_thermo(0.0) > 0.4  # still moving
+    assert g_thermo(0.0) - g_thermo(15.0) > 0.4
+    assert g_thermo(-30.0) - g_thermo(-60.0) < 1e-4  # already tied

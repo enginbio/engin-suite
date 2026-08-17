@@ -70,11 +70,43 @@ deviation -- ``-44.8 ± 0.6 kJ/mol`` in its own tutorial's example -- so this
 feature can be an interval rather than a point value, which is what the rest of
 this project would expect of it. :func:`g_thermo_interval` maps that through.
 
-It is an **optional extra** (``pip install engin-pathway[thermo]``) and not a
-default dependency, for two measured reasons rather than taste: it requires
-Python >= 3.11 where this package supports >= 3.10, and its first call downloads
-a compound database from Zenodo that its own documentation puts at about ten
-minutes. The same shape as engin-core's ``[tea]`` extra for BioSTEAM.
+### The contract, run rather than read
+
+Verified against ``equilibrator-api`` 0.7.0 on 2026-08-17, not taken from the
+tutorial::
+
+    cc = ComponentContribution()
+    dg = cc.standard_dg_prime(cc.parse_reaction_formula(
+        "kegg:C00002 + kegg:C00001 = kegg:C00008 + kegg:C00009"))   # ATP hydrolysis
+    dg.value.magnitude   # -29.64175327394397
+    dg.error.magnitude   #   0.30427785535776725
+    dg.units             #   kilojoule / mole
+
+So the return is a pint ``Measurement`` with ``.value`` and ``.error``, in kJ/mol,
+and :func:`g_thermo_interval` takes those two magnitudes directly.
+
+**Cost, measured rather than quoted.** The compound database is **1.34 GB** and
+``ComponentContribution()`` took **86 s** on a fast connection. The upstream
+tutorial says "about ten minutes" -- a bandwidth-dependent number, where the size
+is the durable one. It is an **optional extra**
+(``pip install engin-pathway[thermo]``) for that reason and because it requires
+Python >= 3.11 where this package supports >= 3.10. Same shape as engin-core's
+``[tea]`` extra for BioSTEAM.
+
+### What the live number says about this feature
+
+ATP hydrolysis is the canonical favourable reaction in biochemistry, and it maps
+to **0.99999359**, with a one-sigma interval **1.6e-06** wide. That is not a
+corner case -- it is the most common energetic step there is, sitting deep in the
+saturated region described above.
+
+The consequence is worth stating plainly, because it bounds what ``g_thermo`` can
+contribute to a ranking: **in a working pathway most steps are favourable, and
+this feature scores nearly all of them ~1.** Its discriminating window is roughly
+-10 to +15 kJ/mol -- around the thermodynamic bottleneck, not around the pathway.
+That is arguably the right place for it to be informative, since the bottleneck is
+what makes a route hard. But a route ranked mostly on ``g_thermo`` would be ranked
+mostly on ties.
 """
 
 from __future__ import annotations
