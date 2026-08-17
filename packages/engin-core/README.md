@@ -87,19 +87,19 @@ estimates σ with a *separate learned model* fitted to log-residuals. Normalizin
 by the GP's own sd needs no second model, which matters at the sample sizes this
 targets.
 
-Reproduce (`python benchmarks/benchmark.py`, mean over 8 seeds):
+Reproduce (`python benchmarks/benchmark.py`, mean over 20 seeds):
 
 | 90% interval built from… | Coverage (target 0.90) |
 |---|---|
-| epistemic-only, Gaussian ×1.645 | **0.55** — naive, overconfident |
+| epistemic-only, Gaussian ×1.645 | **0.59** — naive, overconfident (seed-dependent; read as ~0.55–0.62) |
 | total (model + noise), Gaussian ×1.645 | 0.86 — assumes normality, drifts per seed |
 | total, split-conformal ×q90 | **0.96** — honest |
 
 ## Benchmarks
 
-`python benchmarks/benchmark.py` (mean over 8 seeds, held-out):
+`python benchmarks/benchmark.py` (mean over 20 seeds, held-out):
 
-- Forecast: **RMSE ≈ 4.1 g/L**, **R² ≈ 0.96**. <!-- not-a-claim: our own benchmark on our own simulator -->
+- Forecast: **RMSE ≈ 3.8 g/L**, **R² ≈ 0.96**. <!-- not-a-claim: our own benchmark on our own simulator -->
 - Calibration: see table above.
 - Active-learning lift (best true titer of an 8-run batch vs the best true titer
   in the initial DoE): **EI ≈ +18%** vs **random ≈ −23%** — one recommended batch <!-- not-a-claim: our own benchmark on our own simulator -->
