@@ -55,9 +55,7 @@ def test_provenance_defaults_to_illustrative():
 
 def test_default_kb_is_entirely_illustrative():
     kb = default_kb()
-    assert all(
-        h.provenance_of(c) == "illustrative" for h in kb.hosts for c in kb.capabilities
-    )
+    assert all(h.provenance_of(c) == "illustrative" for h in kb.hosts for c in kb.capabilities)
 
 
 def test_sourced_cell_must_name_its_source():

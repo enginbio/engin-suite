@@ -83,8 +83,7 @@ class Host(BaseModel):
         for cap, prov in self.provenance.items():
             if prov == "sourced" and not self.sources.get(cap):
                 raise ValueError(
-                    f"host {self.name!r}: {cap!r} is marked sourced but carries no "
-                    f"sources.yaml id"
+                    f"host {self.name!r}: {cap!r} is marked sourced but carries no sources.yaml id"
                 )
         return self
 
