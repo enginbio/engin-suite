@@ -53,6 +53,13 @@ from .schema import Host, KnowledgeBase
 # 0.50 below and CHO 0.30, but E. coli is *excluded from QPS by name* while CHO
 # was never in scope. The column orders "assessed and refused" above "not
 # applicable", which is not a quantity that has an axis.
+#
+# ADR 0010 is **accepted**, and it sequences the change: drop `gras` from the
+# weighted sum, add the QPS status as a field `render_memo` *prints* and scoring
+# ignores, and defer ranking on it to #22. Read that consequence before wiring
+# the status into `scoring.py` -- "E. coli: excluded" shown without a target
+# market is a misleading number replacing a meaningless one, and QPS is about
+# food and feed, not about the detergent enzyme someone is actually making.
 CAPABILITIES: list[str] = [
     "secretion",
     "glyco",

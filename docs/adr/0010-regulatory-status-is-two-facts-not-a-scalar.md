@@ -1,6 +1,6 @@
 # 0010 — Regulatory status is two facts in two jurisdictions, not a scalar
 
-**Status:** Proposed (2026-08-17)
+**Status:** Accepted (2026-08-17)
 
 ## Context
 
@@ -68,12 +68,17 @@ re-estimating the number fixes an axis that does not exist.
 qualifications where present, and a `sources.yaml` id. This is the first cell in the KB that can
 honestly claim `sourced` under the mechanism #187 added.
 
-**3. Do not encode a US GRAS scalar or a derived notice count.** Not as a smaller number, not as a
-count. Deriving "how many notices name this organism" requires parsing free-text substance names, and
+**3. Do not encode a US GRAS *score*.** Not a scalar, and not a derived notice count standing in for
+one. Deriving "how many notices name this organism" requires parsing free-text substance names, and
 the resulting figure would carry a citation while resting on our own extraction — the exact laundering
-#188 identified, in a form harder to spot because it would look like a count of records. If the US
-side is wanted later it should be a per-substance lookup surfaced next to a specific product, which
-is a different feature.
+#188 identified, in a form harder to spot because it would look like a count of records.
+
+**A provenance pointer is a different thing and stays open.** Surfacing *"notices naming this organism
+as production organism exist; here is the inventory query"* is a link, not a quantity: it does not
+enter a score, does not claim completeness, and sends the reader to the authority rather than
+substituting for it. That is the same shape as the dataset manifests in `engin_core.datasets`, which
+record where something came from without asserting what it means. This record does not decide whether
+to build that — only that it is not foreclosed by the reasoning above, which is about scoring.
 
 **4. Do not average the two jurisdictions into one score.** They answer different questions, and a
 host can be QPS-listed in the EU while its relevance to a US filing depends entirely on the substance
@@ -84,6 +89,21 @@ plus the user's target market. It cannot be scored over a single number meaning 
 organism", because no such quantity exists.
 
 ## Consequences
+
+- **Display before scoring, and the order is not an implementation detail.** The retirement and the
+  encoding land in one step; making the encoding *rank* anything is deferred to #22. Concretely:
+  remove `gras` from the weighted sum now, because it is provably not a quantity and no further
+  evidence changes that; add the QPS status, its qualifications and its register id as a field
+  `render_memo` **prints** and scoring ignores.
+
+  The reason is the *E. coli* case, which is the sharpest argument for the change and also its
+  sharpest risk. QPS exclusion means *not presumed safe for intentional addition to food or feed*.
+  E. coli is the default chassis for detergent enzymes, pharmaceutical intermediates and materials —
+  categories where QPS is irrelevant. A flag reading "excluded" on the default chassis, shipped before
+  #22 supplies a target market, would be read as "E. coli is regulatorily disfavoured" by exactly the
+  first-time founder this suite is for. **Replacing a meaningless number with a misleading one is not
+  progress**, and the memo can carry the fact honestly — status, jurisdiction, scope and citation —
+  long before anything is entitled to rank on it.
 
 - **`gras` disappears from `CAPABILITIES` and the weighted score.** Regulatory status stops being one
   of ten interchangeable capabilities blended into a weighted sum. It becomes a flag with its own
@@ -106,8 +126,18 @@ organism", because no such quantity exists.
 
 ## Not decided here
 
-Whether the QPS status should influence ranking at all, or only appear in the memo as a flag, is
-`#22`'s remaining question and depends on the target-market input this record does not design.
+**How the QPS status should influence ranking**, once it is entitled to. The consequence above
+settles the *first* step — displayed, not scored — because that step is safe without further
+evidence. What a regulatory input should do to an ordering, given a target market, is `#22`'s
+remaining question and depends on an input this record does not design.
+
+**Whether to surface US notices as a provenance pointer**, per decision 3. Ruled in scope, not ruled
+necessary.
+
+**The refresh mechanism.** QPS is revised on a published cadence, so a vendored snapshot has a
+staleness clock. Whether that is a manual re-check, a `stability: url` liveness sweep entry, or a
+fetch through `engin_core.datasets` is a question for whoever implements the encoding — but a
+snapshot with no refresh story is how a sourced cell quietly becomes an unsourced one.
 
 [^2026-efsa-qps-update-23]: EFSA BIOHAZ Panel, *Update of the list of qualified presumption of safety (QPS) recommended microbiological agents … 23*, EFSA Journal 2026. [doi:10.2903/j.efsa.2026.9824](https://doi.org/10.2903/j.efsa.2026.9824). Open access under CC BY-ND 4.0.
 [^2026-efsa-qps-list]: EFSA, *Updated list of QPS-recommended microorganisms for safety risk assessments carried out by EFSA*, EFSA Knowledge Junction on Zenodo, CC BY 4.0. Concept DOI [10.5281/zenodo.1146566](https://doi.org/10.5281/zenodo.1146566), resolving at the time of writing to the version published 2026-07-06.
