@@ -6,22 +6,45 @@ from .schema import HostScore
 
 
 def render_memo(title: str, ranked: list[HostScore]) -> str:
-    """Render a ranked host list as a markdown recommendation memo."""
+    """Render a ranked host list as a markdown recommendation memo.
+
+    The provenance line is **derived from the scores**, not written here. It used
+    to be the fixed string "illustrative KB", which is true today and would have
+    quietly become false the moment any cell was sourced -- the same
+    prose-goes-stale failure this field exists to fix (#146).
+    """
+    any_illustrative = any(d.provenance != "sourced" for d in ranked)
+    basis = (
+        "Some capability values are **illustrative** -- hand-assigned, not sourced"
+        if any_illustrative
+        else "All capability values behind these scores are sourced"
+    )
     L = [
         f"# Host recommendation — {title}\n",
-        "_engin-host first-slice; illustrative KB. Score in [0,1]; "
-        "± is a 90% band from KB confidence._\n\n",
-        "| rank | host | score (90% band) | top drivers | flags |\n",
-        "|---|---|---|---|---|\n",
+        f"_engin-host first-slice. {basis}. Score in [0,1]; "
+        "± is a 90% band from KB confidence, which is a separate question from "
+        "whether the value was sourced._\n\n",
+        "| rank | host | score (90% band) | top drivers | flags | basis |\n",
+        "|---|---|---|---|---|---|\n",
     ]
     for r, d in enumerate(ranked, 1):
         drivers = ", ".join(f"{c} {v:.2f}" for c, v in d.contributions)
         flags = "; ".join(d.flags) if d.flags else "—"
-        L.append(f"| {r} | {d.host} | {d.score:.2f} ± {d.band90:.2f} | {drivers} | {flags} |\n")
+        L.append(
+            f"| {r} | {d.host} | {d.score:.2f} ± {d.band90:.2f} | {drivers} | {flags} "
+            f"| {d.provenance} |\n"
+        )
     best = ranked[0]
     L.append(
         f"\n**Recommendation:** {best.host} (score {best.score:.2f} ± {best.band90:.2f}). "
         f"Driven by {', '.join(c for c, _ in best.contributions)}. "
         f"{'No hard-constraint conflicts.' if best.feasible else 'Caveats above.'}\n"
     )
+    if best.unsourced:
+        L.append(
+            f"\n**This recommendation rests on unsourced values.** "
+            f"{len(best.unsourced)} of the capabilities it weighs are illustrative: "
+            f"{', '.join(best.unsourced)}. Treat the ranking as a demonstration of the "
+            f"scoring machinery rather than as evidence about these organisms.\n"
+        )
     return "".join(L)

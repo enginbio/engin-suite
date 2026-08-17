@@ -38,6 +38,11 @@ def score(kb: KnowledgeBase, query: HostQuery, top_k: int = 3) -> list[HostScore
     sd = np.sqrt((S**2) @ (w**2))  # linear error propagation
     contrib = C * w[None, :]  # per-capability contribution
 
+    by_name = {h.name: h for h in kb.hosts}
+    # Capabilities that actually move this score. A zero-weighted capability is not
+    # an input, so an unsourced value there should not make the output unsourced.
+    weighted = [c for c, wc in zip(kb.capabilities, w, strict=True) if wc > 0]
+
     out: list[HostScore] = []
     for i, name in enumerate(names):
         flags = []
@@ -46,6 +51,13 @@ def score(kb: KnowledgeBase, query: HostQuery, top_k: int = 3) -> list[HostScore
             if C[i, j] < thr:
                 flags.append(f"{c} {C[i, j]:.2f} < required {thr:.2f}")
         top = sorted(zip(kb.capabilities, contrib[i], strict=True), key=lambda kv: -kv[1])
+
+        host = by_name[name]
+        # A hard constraint reads a capability even at zero weight, so it is an
+        # input to feasibility and belongs in the provenance too.
+        considered = sorted(set(weighted) | set(query.hard))
+        unsourced = [c for c in considered if host.provenance_of(c) != "sourced"]
+
         out.append(
             HostScore(
                 host=name,
@@ -55,6 +67,8 @@ def score(kb: KnowledgeBase, query: HostQuery, top_k: int = 3) -> list[HostScore
                 contributions=[(c, float(v)) for c, v in top[:top_k]],
                 flags=flags,
                 feasible=not flags,
+                provenance="illustrative" if unsourced else "sourced",
+                unsourced=unsourced,
             )
         )
     out.sort(key=lambda d: (not d.feasible, -d.score))
