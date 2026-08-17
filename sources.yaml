@@ -574,12 +574,25 @@ sources:
     year: 2026
     venue: GitHub / Benchling-Open-Source
     location: https://github.com/Benchling-Open-Source/allotropy
-    accessed: 2026-08-14
+    accessed: 2026-08-16
     stability: url
     url_only_because: >-
-      The claim is about which instrument families this library parses, and the
-      parser directory is the reference for that. Counted from the GitHub API on
-      the accessed date: ~60 parser packages, none for a bioreactor or fermentor.
+      The claims are about what this library parses and what ASM can represent, and
+      the repository is the reference for both. Re-counted from the GitHub API on
+      2026-08-16, correcting the 2026-08-14 reading of "~60 parser packages, none
+      for a bioreactor or fermentor":
+
+      **54** parser packages, and the sharper statement is about the *target model*
+      rather than the parser list. The 26 shipped ASM schema families cover every
+      analyzer that sits around a bioreactor -- metabolite-analyzer,
+      solution-analyzer, bga, ph, cell-counting, plate-reader -- and include
+      **nothing for a cultivation time series**. Two parsers are genuinely
+      bioprocess-adjacent (NovaBio Flex2, Roche Cedex BioHT), so "none for a
+      bioreactor" was true of controllers and misleading about analyzers.
+
+      Architecture, also read from the repository: one hand-written package per
+      instrument (``{vendor}_parser.py``, ``{vendor}_structure.py``), not a
+      declarative grammar. That is what ADR 0009 cites it for.
     type: software
   # -- Register gaps found by the scheduled Tier A review (D23 / #127). Four Tier A
   # documents had zero claim rows, so the review workflow's step 1 had nothing to
