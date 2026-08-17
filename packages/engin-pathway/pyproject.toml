@@ -44,6 +44,20 @@ Repository = "https://github.com/enginbio/engin-suite"
 examples = ["matplotlib>=3.6"]
 # The `engin-pathway` console script; the project-file reader lives in engin-core.
 cli = ["engin-core[cli]"]
+# Reaction thermodynamics for `g_thermo` (#140), via eQuilibrator -- which `D9`
+# names explicitly as something to compose with rather than rebuild. Optional for
+# two measured reasons rather than taste:
+#
+#   * it requires Python >= 3.11 (equilibrator-api, component-contribution and
+#     equilibrator-cache all do) while this package supports >= 3.10, so the
+#     marker keeps resolution working on 3.10 instead of breaking it;
+#   * its first call downloads a compound database from Zenodo, which its own
+#     tutorial puts at about ten minutes.
+#
+# Neither makes it a bad dependency; both make it a bad *default* one. Same shape
+# as engin-core's [tea] extra for BioSTEAM. The transform in thermo.py needs none
+# of this -- it is a pure function of a number you can get any way you like.
+thermo = ["equilibrator-api>=0.7; python_version >= '3.11'"]
 dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.6", "pyyaml>=6.0"]
 
 [tool.setuptools.packages.find]
