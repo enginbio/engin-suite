@@ -125,6 +125,13 @@ a licensing question. A scikit-optimize fork retuned for noisy physical processe
   fragility, and there is still no fully-Bayesian option.
 - **Con** — the GitHub releases tab lags PyPI, so judge this one from PyPI and from
   commits rather than from the releases page.
+- **Con, and it is now the binding one** — the release cadence has stalled. `v1.1.0`
+  was published on 2025-02-19 and is still the latest tag; the `develop` branch has
+  not moved since 2026-02-10. What sits unreleased on `develop` is not trivial:
+  a DRSC constraint-handling algorithm merged in [#367](https://github.com/novonordisk-research/ProcessOptimizer/pull/367)
+  and the drop of Python 3.9 support. So the constraint capability this page sends
+  readers to BoFire for partly exists here, and you cannot `pip install` it. Pin a
+  commit or wait. *(Checked 2026-08-17.)*
 
 Reference: Bertelsen et al., *Journal of Chemical Information and Modeling* 65(4)
 (2025), [10.1021/acs.jcim.4c02240](https://doi.org/10.1021/acs.jcim.4c02240).
@@ -371,11 +378,17 @@ organism-specific model out of a curated universal model from a genome annotatio
 minutes. Fast, BiGG-namespaced, community-model capable — but it needs Diamond and an
 MILP solver installed out of band, the free-solver path is slow, and it is
 prokaryote-oriented, so *S. cerevisiae* and *P. pastoris* hosts are out of scope.
+**Its last commit and its last release are the same day, 2025-09-12** — not archived,
+no deprecation notice, no successor named, but nothing has moved in close to a year.
+Not yet a dead end; treat it as one to re-check rather than one to build a pipeline
+on. *(Checked 2026-08-17.)*
 
 [gapseq](https://github.com/jotech/gapseq) (GPL-3.0) infers pathways from sequence
 homology and gap-fills, producing per-reaction evidence a reviewer can interrogate —
 which carved output does not give you. It is the more actively curated of the two, with
-dated reference-database provenance. But it is R plus shell, so it is a subprocess
+dated reference-database provenance — and that gap has widened: gapseq moved to a `2.x`
+line during 2026 (`v2.1.0`, 2026-05-30) with commits through August while CarveMe stood
+still. *(Checked 2026-08-17.)* But it is R plus shell, so it is a subprocess
 dependency in a Python stack, and it is bacteria and archaea only.
 
 **Reaction thermodynamics.** [eQuilibrator](https://gitlab.com/equilibrator/equilibrator-api)
@@ -575,6 +588,18 @@ The purpose-built candidates are dead; the live candidates are generic ODE engin
 flowsheet simulators that happen to contain bioreactor units. Recent digital-twin work
 in this field publishes papers, not maintained packages. That absence is a real finding
 and is stated here rather than papered over (`D15`).
+
+**The nearest miss, named because `D15` requires it.** [BiRD](https://github.com/NREL/BioReactorDesign)
+(BSD-3-Clause) is purpose-built for bioreactors, actively developed — commits through
+2026-07-31 — and its 2026 OpenFOAM-13 merge added kLa function objects and kLa
+correlations, so it models the gas-liquid transfer the packages above have no
+abstraction for. It is rejected for this slot on scope, not on health: it is an
+OpenFOAM CFD toolbox solving hydrodynamics and interphase mass transfer, not a
+fermentation kinetics model, and standing up a case is a meshing-and-solver project
+rather than a `pip install`. Reach for it when the question is *transport inside a
+specific vessel geometry*; it will not give you a titer trajectory. Note the repository
+moved: `NREL/BioReactorDesign` now redirects to `NatLabRockies/BioReactorDesign`.
+*(Checked 2026-08-17.)*
 ```
 
 ### BASICO / COPASI — [copasi/basico](https://github.com/copasi/basico)
