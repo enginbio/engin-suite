@@ -431,6 +431,23 @@ sources:
       microbial fermentation is an argument this project is making, not a
       finding this source supports; docs/limitations.md says so in those words.
 
+  - id: 2012-vovk-conditional-validity
+    title: Conditional validity of inductive conformal predictors
+    authors: [Vovk, Vladimir]
+    year: 2012
+    venue: "Proceedings of the Asian Conference on Machine Learning, PMLR 25:475-490"
+    location: https://proceedings.mlr.press/v25/vovk12.html
+    accessed: 2026-08-17
+    stability: url
+    url_only_because: >-
+      PMLR proceedings volumes carry no DOIs. A journal version exists (Machine
+      Learning 92:349-376, doi:10.1007/s10994-013-5355-6) and would be the more
+      stable pointer, but the proposition numbering cited from this row is the
+      PMLR version's, which is the version actually read. Citing the DOI while
+      quoting the other version's numbering is the kind of near-miss this
+      register exists to prevent.
+    type: paper
+
   - id: 2019-tibshirani-covariate-shift
     title: Conformal Prediction Under Covariate Shift
     authors: [Tibshirani, Ryan J., Foygel Barber, Rina, Candes, Emmanuel J., Ramdas, Aaditya]
@@ -466,7 +483,13 @@ sources:
     stability: url
     url_only_because: >-
       A tutorial that circulates as a preprint; no journal version. Cited for
-      exposition of the marginal-versus-conditional distinction, not for a result.
+      exposition of the marginal-versus-conditional distinction and, since
+      2026-08-17, for its restatement of Vovk's Beta result for coverage
+      conditional on the calibration set. It is a *restatement* in both cases —
+      the underlying results are Vovk's and are cited to him
+      (2012-vovk-conditional-validity). This row said "not for a result" until
+      #144; that is no longer true and the wording is corrected rather than left
+      to drift.
     type: paper
 
   # -- Downstream-cost economics (D23 / #87). D13 is the decision the product
@@ -891,6 +914,81 @@ claims:
       Split conformal has a finite-sample, distribution-free coverage guarantee.
     strength: supports
     reviewed: 2026-08-13
+
+  # -- Low-N honesty (#144). The calibration sets this project's target user can
+  # afford are small, and until now nothing said what that costs.
+
+  - doc: docs/methods/conformal-calibration.md
+    tier: A
+    source_id: 2012-vovk-conditional-validity
+    claim: >-
+      The coverage band a calibration set buys, computed from Beta(n + 1 - l, l):
+      roughly 0.72-0.99 at the n = 9 floor, tightening to 0.876-0.925 at the 406
+      points of the industrial dataset. The nominal level is the distribution's
+      mean, not the coverage a given calibration set delivers.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      The figures are recomputed by the page's own code cell from the cited
+      distribution rather than transcribed, so the page cannot drift from the
+      result it cites. `test_coverage_interval_narrows_with_n_and_documents_the_headline_numbers`
+      pins the same three numbers in the test suite.
+
+  - doc: packages/engin-core/src/engin_core/gp.py
+    tier: A
+    source_id: 2012-vovk-conditional-validity
+    claim: >-
+      Coverage conditional on the calibration set is Beta(n + 1 - l, l) with
+      l = floor((n+1) * alpha) — so the nominal level is the *mean* of a
+      distribution, not the coverage any one calibration set delivers.
+      `conformal_coverage_interval` computes exactly this.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      The paper read was the PMLR/ACML version, where the PAC-type statement is
+      Proposition 2a: the predictor is (E, delta)-valid for
+      E >= epsilon + sqrt(-ln(delta) / 2n), with the recipe requiring the
+      calibration set to significantly exceed N = -ln(delta) / (2 epsilon^2).
+      That bound is Hoeffding-based and conservative — at epsilon=0.10,
+      delta=0.05 it demands n well above 150 before a 90% interval is
+      training-conditionally trustworthy. The exact Beta result is the tighter
+      and more useful of the two, so it is what the code implements; the
+      Proposition 2a bound is recorded here because it is the same paper's answer
+      to the same question and a reader who finds it should not think we missed it.
+
+  - doc: packages/engin-core/src/engin_core/gp.py
+    tier: A
+    source_id: 2021-angelopoulos-gentle-intro
+    claim: >-
+      Section 3.2 restates the Beta result in the exact form the code uses, and
+      its worked calibration code takes the ceil((n+1)*(1-alpha))/n quantile with
+      method="higher" — the same construction as `split_conformal_multiplier`.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      **Table 1 of this source is deliberately not cited.** It reports the
+      calibration size n(eps) needed for coverage slack eps at delta=0.1,
+      alpha=0.1 as 22 / 102 / 2491 / 9812 / 244390. Recomputing those from the
+      Beta result the same paper states gives systematically smaller values
+      (11 / 90 / 2429 / 9733 / 243492) under every reading of "1-alpha ± eps with
+      probability 1-delta" tried, including one- and two-sided tails and a
+      smallest-n-that-stays-valid definition. The discrepancy is unexplained.
+      Since the Beta result itself reproduces exactly and is all the code needs,
+      the table's numbers are simply not used, and no threshold in engin-core is
+      derived from them. Recorded rather than quietly avoided: a future reader
+      tempted to cite that table should know it was checked and did not resolve.
+
+  - doc: packages/engin-core/src/engin_core/gp.py
+    tier: A
+    source_id: 2018-lei-distribution-free
+    claim: >-
+      The split-conformal quantile is the ceil((n+1)(1-alpha))-th smallest
+      calibration score, so the level is unattainable unless n >= level/(1-level)
+      — n = 9 at the default 90%. `smallest_calibration_set` returns that floor
+      and `split_conformal_multiplier` now warns instead of silently clipping to
+      max(scores).
+    strength: supports
+    reviewed: 2026-08-17
 
   - doc: docs/methods/conformal-calibration.md
     tier: A

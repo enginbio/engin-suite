@@ -9,10 +9,12 @@ from __future__ import annotations
 
 from .gp import (
     GP,
+    conformal_coverage_interval,
     conformal_multiplier_oof,
     fit_gp,
     mapie_split_interval,
     prob_at_least,
+    smallest_calibration_set,
     split_conformal_multiplier,
 )
 from .handoff import (
@@ -52,6 +54,8 @@ __all__ = [
     "fit_gp",
     "split_conformal_multiplier",
     "conformal_multiplier_oof",
+    "conformal_coverage_interval",
+    "smallest_calibration_set",
     "mapie_split_interval",
     "prob_at_least",
     "expected_improvement",
