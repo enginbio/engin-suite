@@ -160,3 +160,38 @@ def test_knob_set_is_fixed_by_the_equations():
 def test_inverted_knob_range_is_rejected():
     with pytest.raises(ValidationError, match="feed_rate"):
         ReactorConfig(knob_bounds={**ReactorConfig().knob_bounds, "feed_rate": (0.06, 0.0)})
+
+
+# ------------------------------------------------- the scale-invariance limitation
+
+
+def test_scaling_the_whole_vessel_changes_nothing_about_titer():
+    """Pins the limitation, so it cannot be quietly fixed or quietly worsened.
+
+    ``_rhs`` sees volume only through the dilution term ``F/V``, and the feeding
+    switch is ``V < vmax``. Scaling ``v0``, ``vmax`` and the (volumetric) feed rate
+    by a common factor leaves both invariant, so the concentration trajectories are
+    pointwise identical and only ``V`` scales.
+
+    This is a **limitation under test, not a property worth having**: it is exactly
+    what it means for the simulator to have no oxygen state, and it is why no
+    statement about *scale* can be supported by this model. Documented under "The
+    simulator has no oxygen, so scale is inert" in ``docs/limitations.md`` (#190).
+
+    So a failure here is good news and a docs change, not a bug. Adding a
+    dissolved-oxygen state, a kLa correlation or an overflow branch should break
+    this test -- that is the signal that ``docs/limitations.md`` needs updating.
+    """
+    factor = 10_000.0
+    feed_rate, rest = 0.03, (5.0, 300.0, 10.0, 20.0)
+    big = ReactorConfig(v0=DEFAULT_REACTOR.v0 * factor, vmax=DEFAULT_REACTOR.vmax * factor)
+
+    titer_bench, trace_bench = simulate(feed_rate, *rest)
+    titer_big, trace_big = simulate(feed_rate * factor, *rest, config=big)
+
+    # Tolerance sits far above RK45 truncation error (~1e-6 at these settings) and
+    # far below any physical scale effect, so this fails on physics, not on noise.
+    assert titer_big == pytest.approx(titer_bench, abs=1e-4)
+    # X, S, P pointwise identical; V scales by exactly the factor.
+    assert np.allclose(trace_big[:, 1:4], trace_bench[:, 1:4], atol=1e-4)
+    assert np.allclose(trace_big[:, 4], trace_bench[:, 4] * factor, rtol=1e-6)

@@ -64,6 +64,91 @@ Current status is recorded in [Benchmarks](benchmarks.md).
 - **Cost coupling is demonstrated on mechanistic grounds.** No public dataset found supports validating cost-per-kilogram predictions end to end.
 - **Calibrated intervals degrade out of distribution.** Coverage is reported for out-of-distribution cases rather than omitted.
 
+## The simulator has no oxygen, so scale is inert
+
+Added 2026-08-18 ([#190](https://github.com/enginbio/engin-suite/issues/190)).
+Until then this page contained **zero** occurrences of oxygen, kLa, OTR or
+aeration, <!-- not-a-claim: grep count over this file before this section --> which
+on a page this specific about the 2% raw-material share and the 1-of-40 ingest <!-- not-a-claim: both figures are this page's own, cited in their own sections -->
+failure was the conspicuous silence rather than an omission.
+
+`engin_core.simulator` integrates the state vector `[X, S, P, V]` — biomass,
+substrate, product, volume. There is no dissolved-oxygen state, no kLa, no oxygen
+uptake rate and no overflow-metabolism branch.
+
+**The consequence is an algebraic identity, not a fidelity quibble.** Every
+concentration equation in `_rhs` depends on volume only through the dilution term
+`F/V`, and the feeding switch is `V < vmax`. Scaling `v0`, `vmax` and `feed_rate`
+by a common factor leaves `F/V` and the switch times unchanged, so `X`, `S` and
+`P` are *pointwise identical* and only `V` scales. **Varying the vessel changes
+nothing about the predicted titer.**
+
+Measured across six random designs, bench vessel against scaled vessel:
+
+| scale factor | vessel | largest titer difference |
+|---|---|---|
+| 10× | 25 L | 6.0e-07 g/L |
+| 1,000× | 2,500 L | 6.3e-07 g/L |
+| 10,000× | 25,000 L | 7.2e-07 g/L |
+| 100,000× | 250,000 L | 4.9e-07 g/L |
+
+The residual does not grow with scale, and it tracks the integrator: at
+`rtol=1e-9` it falls to 2.5e-09 and at `rtol=1e-12` to 1.8e-12.
+<!-- not-a-claim: measured on our own simulator, reproduced by benchmarks/scale_invariance.py -->
+So it is RK45 truncation error, not a scale effect — **the invariance is exact and
+the table is measuring the solver.**
+
+This makes one sentence in the code false, and it has been corrected:
+`ReactorConfig` said that "a scale-up question usually varies the second while
+holding the first", and varying precisely those parameters is provably a no-op.
+
+Two further consequences of the same omission:
+
+- **`feed_rate` has no feasibility ceiling.** The only limits are the knob bound
+  and the `vmax` volume cap, neither of which is physical. With all five knobs at
+  their upper bounds the simulator reports peak biomass of **124 g/L DCW in a 1 L vessel**, <!-- not-a-claim: measured on our own simulator; reproduced by benchmarks/scale_invariance.py -->
+  and across 3,000 random designs **9.9%** exceed 100 g/L, <!-- not-a-claim: measured on our own simulator; reproduced by benchmarks/scale_invariance.py -->
+  with no penalty of any kind. That is deep inside the high-cell-density regime
+  the oxygen-transfer literature is entirely about.
+- **The interior optimum is partly an artifact of the knob bounds.** Across the
+  top 40 of 3,000 random designs, mean unit-cube coordinates are `feed_rate` 0.89
+  and `Sf` 0.91 — pinned near their upper bounds.
+  <!-- not-a-claim: measured on our own simulator; reproduced by benchmarks/scale_invariance.py -->
+  Raise the bound and the optimum follows.
+
+**Why this is the omission that matters.** Oxygen transfer is, in the standard
+review of the subject, "often the rate-limiting step" in aerobic bioprocesses, and
+predicting kLa is called a crucial step in bioreactor design and
+scale-up.[^2009-garcia-ochoa-otr-scaleup] Because kLa is set by power input,
+gas flow and broth properties rather than by volume, transfer capacity does not
+arrive free with a bigger vessel — which is the reason scale-up is hard, and
+exactly what a model without an oxygen state cannot represent.
+
+The coupling this model is missing is also specific rather than diffuse. In
+high-cell-density culture the substrate feed rate must be adapted to the cells'
+changing capability to avoid overfeeding and inhibitory by-products, and
+heterologous protein production itself *lowers* the maximal specific oxygen uptake
+rate.[^2014-schaepe-overfeeding] So in a real vessel `induction_time` tightens the
+feasible `feed_rate`; here the two knobs are independent by construction.
+
+**What this does and does not invalidate.** The GP, the conformal calibration, the
+recommender and the sensitivity readout are unaffected — they are claims about
+learning a response surface from data, and they are measured against real
+production data in [Calibration on real production
+data](methods/real-data-calibration.md). What is not supported is any statement
+that varying *scale* in this simulator tells you something about scale. Tier 1 and
+tier 2 in the table above were always "the loop works end to end"; this section
+says which specific question the bundled simulator cannot be asked.
+
+Adding the missing physics — a dissolved-oxygen state, a kLa correlation and an
+overflow branch — is a modelling project with its own validation burden, and it is
+tracked on [#190](https://github.com/enginbio/engin-suite/issues/190) rather than
+done quietly here.
+
+[^2009-garcia-ochoa-otr-scaleup]: Garcia-Ochoa & Gomez, *Bioreactor scale-up and oxygen transfer rate in microbial processes: an overview*, Biotechnology Advances 27(2) (2009) 153–176. [doi:10.1016/j.biotechadv.2008.10.006](https://doi.org/10.1016/j.biotechadv.2008.10.006).
+
+[^2014-schaepe-overfeeding]: Schaepe, Kuprijanov, Simutis & Lübbert, *Avoiding overfeeding in high cell density fed-batch cultures of E. coli during the production of heterologous proteins*, Journal of Biotechnology 192 Pt A (2014) 146–153. [doi:10.1016/j.jbiotec.2014.09.002](https://doi.org/10.1016/j.jbiotec.2014.09.002).
+
 ## Ingest confidence is not calibrated
 
 The schema-inference score reported by `engin_core.loaders` is an **ordinal

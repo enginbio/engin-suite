@@ -105,9 +105,23 @@ class ReactorConfig(BaseModel):
     ``knob_bounds`` are positional arguments to :func:`simulate`, so a sixth knob is a
     change to ``_rhs``, not a configuration. What is configurable is each knob's range.
 
-    Sits alongside :class:`Kinetics` on purpose: kinetics is *what the organism does*,
-    this is *what the equipment does*, and a scale-up question usually varies the second
-    while holding the first.
+    Sits alongside :class:`Kinetics` on purpose: kinetics is *what the organism does*
+    and this is *what the equipment does*.
+
+    **This object does not make the model answer a scale-up question, and an earlier
+    version of this docstring said it did** -- "a scale-up question usually varies the
+    second while holding the first". Varying precisely those parameters is provably a
+    no-op. Every concentration equation in :func:`_rhs` sees volume only through the
+    dilution term ``F/V``, and the feeding switch is ``V < vmax``, so scaling ``v0``,
+    ``vmax`` and ``feed_rate`` together leaves ``X``, ``S`` and ``P`` pointwise
+    identical and scales only ``V``. Titer is unchanged; there is no dissolved-oxygen
+    state to break the symmetry. Measured and reproduced by
+    ``benchmarks/scale_invariance.py``, and written up under "The simulator has no
+    oxygen, so scale is inert" in ``docs/limitations.md`` (#190).
+
+    What this object *is* good for is the rest of it: ``t_end``, ``x0``, the output
+    grid, and the per-knob ranges, plus giving :func:`engin_core.tea.design_context` a
+    volume and a duration to denominate cost in. Those are real. Scale is not.
     """
 
     v0: float = Field(V0, gt=0, description="initial (batch) volume, L")
