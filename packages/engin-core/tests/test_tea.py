@@ -15,6 +15,7 @@ from engin_core.tea import (
     PurityGrade,
     annual_capital_charge_usd,
     bioreactor_direct_cost_usd,
+    break_even,
     capital_charge_factor,
     capital_cost_per_batch_usd,
     cost_samples,
@@ -380,3 +381,120 @@ def test_override_covers_the_product_class_the_default_does_not():
     assert params.purity_multiplier == 30.0
     with pytest.raises(ValueError):
         CostParameters(purity_multiplier_override=0.0)
+
+
+# --- Break-even inversion (#143 piece 2). ---
+
+
+def _design():
+    return np.array([[0.5, 0.5, 0.5, 0.5, 0.5]])
+
+
+def test_break_even_titer_actually_hits_the_target():
+    U = _design()
+    r = break_even(U)
+    assert r.reachable and r.value is not None
+    # The root is a root: cost at the returned titer equals the target.
+    assert r.cost_at_value == pytest.approx(r.target_usd_per_kg, rel=1e-6)
+    model = ParametricCostModel()
+    assert float(model.cost_per_kg(np.array([r.value]), U)[0]) == pytest.approx(
+        r.target_usd_per_kg, rel=1e-6
+    )
+
+
+def test_break_even_agrees_with_the_forward_model_either_side():
+    # Above the break-even titer the target is met; below it, not. This is the
+    # property that makes the inversion worth trusting.
+    U = _design()
+    r = break_even(U)
+    model = ParametricCostModel()
+    assert float(model.cost_per_kg(np.array([r.value * 1.1]), U)[0]) < r.target_usd_per_kg
+    assert float(model.cost_per_kg(np.array([r.value * 0.9]), U)[0]) > r.target_usd_per_kg
+
+
+def test_a_harder_target_needs_a_higher_titer():
+    U = _design()
+    easy = break_even(U, params=CostParameters(target_usd_per_kg=300.0))
+    hard = break_even(U, params=CostParameters(target_usd_per_kg=120.0))
+    assert hard.value > easy.value
+
+
+def test_an_unreachable_target_refuses_rather_than_returning_a_number():
+    U = _design()
+    r = break_even(U, params=CostParameters(target_usd_per_kg=5.0))
+    assert r.reachable is False
+    assert r.value is None  # not a float nobody should act on
+    assert "does not close this gap" in r.note
+    assert r.searched == (0.1, 500.0)  # "unreachable" is scoped to what was searched
+
+
+def test_a_target_met_at_the_bracket_floor_says_so():
+    U = _design()
+    r = break_even(U, params=CostParameters(target_usd_per_kg=100_000.0))
+    assert r.reachable and r.value == pytest.approx(0.1)
+    assert "at or below" in r.note
+
+
+def test_prob_reaching_is_the_inverse_of_prob_meets_target():
+    # The two questions are the same question. If the GP says P(titer >= break-even)
+    # is 0.4, then P(cost <= target) should be about 0.4 too -- and if these ever
+    # disagree, one of the two paths has a bug.
+    gp, U = _fitted_gp(n=60, seed=0)
+    Uq = U[:1]
+    params = CostParameters(target_usd_per_kg=150.0)
+    r = break_even(Uq, params=params, gp=gp)
+    assert r.prob_reaching is not None
+    summary = cost_summary(gp, Uq, params=params, n_samples=20_000, seed=0)[0]
+    assert r.prob_reaching == pytest.approx(summary.prob_meets_target, abs=0.02)
+
+
+def test_break_even_refuses_the_axes_it_cannot_solve():
+    U = _design()
+    for axis in ("scale", "yield", "rate"):
+        with pytest.raises(ValueError, match="not available"):
+            break_even(U, solve_for=axis)
+
+
+def test_break_even_rejects_a_bad_bracket_and_multiple_designs():
+    with pytest.raises(ValueError, match="bracket"):
+        break_even(_design(), bracket=(50.0, 10.0))
+    with pytest.raises(ValueError, match="one design at a time"):
+        break_even(np.repeat(_design(), 3, axis=0))
+
+
+def test_non_monotone_cost_models_are_refused_not_silently_rooted():
+    # CostModel is a protocol; a flowsheet-backed one carries no monotonicity
+    # guarantee, and a root find over a non-monotone curve returns an arbitrary root.
+    class Wobbly:
+        def cost_per_kg(self, titer_g_L, U):
+            t = np.asarray(titer_g_L, float)
+            return 200.0 + np.sin(t)
+
+    with pytest.raises(ValueError, match="not monotone"):
+        break_even(_design(), model=Wobbly())
+
+
+def test_break_even_sees_purity_and_scale():
+    # Regression. `break_even` built its default ParametricCostModel from *no*
+    # parameters while reading the target from the caller's, so purity_grade and
+    # scale reached the target and never reached the cost curve -- every parameter
+    # set returned the same break-even titer. Invisible until #143 piece 1 and #17
+    # were stacked together, because before that there was nothing to vary.
+    U = _design()
+    base = break_even(U).value
+    purer = break_even(U, params=CostParameters(purity_grade=PurityGrade.PURIFIED)).value
+    scaled = break_even(
+        U,
+        params=CostParameters(scale=ProductionScale(working_volume_m3=20.0, batches_per_year=15)),
+    ).value
+    both = break_even(
+        U,
+        params=CostParameters(
+            purity_grade=PurityGrade.PURIFIED,
+            scale=ProductionScale(working_volume_m3=20.0, batches_per_year=15),
+        ),
+    ).value
+    # Each added cost pushes the break-even titer up, and both together push furthest.
+    assert purer > base
+    assert scaled > base
+    assert both > purer and both > scaled
