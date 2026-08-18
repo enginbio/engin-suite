@@ -47,6 +47,15 @@ addopts = "-q"
 # own src plus the sibling engin-core it imports. pytest resolves these relative
 # to rootdir, and .pth-provided paths are not visible during a pytest run.
 pythonpath = ["src", "../engin-core/src"]
+# engin-core warns when a calibration set is small enough to make the conformal
+# multiplier noisy (#144). It is correct every time it fires here, because a few
+# dozen assay measurements is the regime this package exists for (see lown.py) --
+# so it fired on ten tests and buried anything new. Silenced for this suite only;
+# users still get it, and the *downgrade* warning from level_for_split (#197) is
+# deliberately left visible because it reports an action taken, not a caveat.
+filterwarnings = [
+    "ignore:calibration set of .*true coverage lies in roughly:UserWarning",
+]
 
 [tool.ruff]
 line-length = 100

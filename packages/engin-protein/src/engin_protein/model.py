@@ -88,9 +88,15 @@ asserts the orderings on every run, so these numbers can no longer drift unnotic
 from __future__ import annotations
 
 import itertools
+import warnings
 
 import numpy as np
-from engin_core import prob_at_least, split_conformal_multiplier
+from engin_core import (
+    highest_attainable_level,
+    prob_at_least,
+    smallest_calibration_set,
+    split_conformal_multiplier,
+)
 from numpy.typing import NDArray
 from sklearn.linear_model import Ridge
 from sklearn.utils import resample
@@ -100,6 +106,40 @@ from .schema import Campaign, ScoredDesign, Variant
 
 DEFAULT_N_ESTIMATORS = 24
 DEFAULT_ALPHA = 1.0
+
+
+def level_for_split(n_cal: int, level: float, *, context: str) -> float:
+    """The requested ``level``, or the highest one ``n_cal`` can support (#197).
+
+    The faces in :mod:`engin_protein.lown` and :mod:`engin_protein.evaluate` choose
+    their own calibration split from ``cal_fraction``, so a user who asks for a 90%
+    interval on a 24-variant campaign never chose the ``n_cal = 7`` that cannot
+    deliver it. Raising there would make the low-N face unusable in the low-N
+    regime, which is the regime it exists for.
+
+    So the level is **downgraded to what the split supports, loudly**, and the
+    achieved value is recorded on the model as
+    :attr:`CalibratedFitnessModel.level`. The user asked for 0.90 and gets 0.875 --
+    correctly labelled, which is the only part that was ever non-negotiable.
+
+    :meth:`CalibratedFitnessModel.calibrate` still *raises* on the same condition,
+    and the asymmetry is deliberate: there the caller named the level explicitly
+    against a calibration set they supplied, so there is nothing to adapt on their
+    behalf.
+    """
+    ceiling = highest_attainable_level(n_cal)
+    if level <= ceiling:
+        return float(level)
+    warnings.warn(
+        f"{context}: a calibration split of {n_cal} cannot support a "
+        f"{level:.0%} interval -- the ceiling is n/(n+1) = {ceiling:.4f}. "
+        f"Calibrating at {ceiling:.4f} instead and recording it as `model.level`. "
+        f"For {level:.0%}, assay more variants or raise `cal_fraction` so the "
+        f"split reaches {smallest_calibration_set(level)}.",
+        UserWarning,
+        stacklevel=3,
+    )
+    return float(ceiling)
 
 
 class CalibratedFitnessModel:
@@ -128,6 +168,12 @@ class CalibratedFitnessModel:
         self._length: int | None = None
         self._width: int | None = None
         self.q: float | None = None
+        self.level: float | None = None
+        """Coverage level the multiplier was calibrated at. Set by :meth:`calibrate`."""
+        self.n_calibration: int | None = None
+        """Calibration-set size behind :attr:`q`. Kept so the interval's provenance
+        travels with the model rather than living in the caller's memory -- at this
+        package's sample sizes it is what decides whether the level means anything."""
 
     # ---------------------------------------------------------------- internals
 
@@ -182,19 +228,60 @@ class CalibratedFitnessModel:
         return self
 
     def calibrate(
-        self, data: Campaign | list[Variant], level: float = 0.90
+        self,
+        data: Campaign | list[Variant],
+        level: float = 0.90,
+        warn_below_slack: float | None = 0.05,
     ) -> CalibratedFitnessModel:
         """Split-conformal calibration on held-out variants.
 
         Must be variants the model was *not* fit on. Calibrating on training data
         produces an interval that is honest about nothing.
+
+        **A level the calibration set cannot support is refused, not approximated**
+        (#197). Split conformal takes the ``ceil((n+1) * level)``-th smallest score,
+        so ``level`` is capped at ``n / (n+1)`` -- 0.973 at n=36. Above that the
+        quantile does not exist and ``split_conformal_multiplier`` falls back to the
+        largest observed score: the widest interval those points justify, but *not*
+        the requested level.
+
+        engin-core warns there. This raises, and the difference is deliberate.
+        engin-core is a general library whose caller may legitimately want the
+        widest-justifiable interval. Here the multiplier is minted into
+        :class:`ScoredDesign` bounds that a user reads as *the* interval at
+        ``level``, and this package's stated regime is a few dozen assay
+        measurements (see :mod:`engin_protein.lown`) -- exactly where the ceiling
+        binds. A mislabelled interval is worse than an exception on a package whose
+        deliverable is the label.
+
+        The achievable level is on the exception, so the fix is in the message
+        rather than in a doc somewhere.
+
+        ``warn_below_slack`` passes through to engin-core's coverage-spread warning.
+        At this package's sample sizes that warning fires almost always and is
+        correct to; pass ``None`` where the smallness is already understood and the
+        noise is not telling the caller anything new.
         """
         if not self._models:
             raise RuntimeError("call fit() before calibrate()")
         variants = data.variants if isinstance(data, Campaign) else data
         seqs, y = self._labelled(variants)
+        ceiling = highest_attainable_level(len(y))
+        if level > ceiling:
+            raise ValueError(
+                f"level={level} is above what {len(y)} calibration variants can "
+                f"support: the ceiling is n/(n+1) = {ceiling:.4f}. Split conformal "
+                f"has no quantile to take above it, so the interval would be the "
+                f"widest these points justify while being labelled {level:.0%}. "
+                f"Use level <= {ceiling:.4f}, or calibrate on at least "
+                f"{smallest_calibration_set(level)} variants."
+            )
         mean, sd = self.predict_raw(seqs)
-        self.q = split_conformal_multiplier(y, mean, sd, level=level)
+        self.q = split_conformal_multiplier(
+            y, mean, sd, level=level, warn_below_slack=warn_below_slack
+        )
+        self.level = float(level)
+        self.n_calibration = int(len(y))
         return self
 
     def predict_raw(self, sequences: list[str]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:

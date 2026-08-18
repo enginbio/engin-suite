@@ -7,6 +7,8 @@ the wedge holds against real pLDDT or a real campaign.
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -227,3 +229,32 @@ def test_prior_campaigns_of_a_different_length_are_ignored():
         batch_size=5,
     )
     assert len(res["acquired"]) == 5
+
+
+# --- The level a small split can actually carry (#197). ---
+
+
+def test_low_n_faces_downgrade_the_level_they_cannot_support():
+    # The bug behind #197, at the layer that matters. Both faces choose their own
+    # calibration split from `cal_fraction`, so a user asking for a 90% interval on
+    # a small campaign never chose the n_cal that cannot deliver it. Before this,
+    # they got an interval labelled 90% that was really the widest the split could
+    # justify. Now the level is downgraded, said out loud, and recorded.
+    ls = make_landscape(epistasis=0.5, seed=0)
+    campaign = ls.sample_campaign(24, seed=3)  # n_cal = 7, ceiling 0.875
+    with pytest.warns(UserWarning, match=r"cannot support a 90% interval"):
+        copilot = LowNCopilot().fit(campaign, level=0.90)
+    assert copilot.model.level == pytest.approx(7 / 8)
+    assert copilot.model.n_calibration == 7
+
+
+def test_a_campaign_large_enough_downgrades_nothing():
+    # The other side of the same rule: once the split can carry the level, the
+    # request is honoured exactly and nothing is said.
+    ls = make_landscape(epistasis=0.5, seed=0)
+    campaign = ls.sample_campaign(60, seed=3)  # n_cal = 18, ceiling 0.947
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", UserWarning)
+        warnings.filterwarnings("ignore", message="calibration set of .*true coverage")
+        copilot = LowNCopilot().fit(campaign, level=0.90)
+    assert copilot.model.level == pytest.approx(0.90)
