@@ -18,9 +18,14 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 FEATURES: tuple[str, ...] = ("g_thermo", "g_enzyme", "g_cofactor", "g_tox", "g_expr")
 """The five per-step goodness scores, each in [0, 1].
 
-**Every one of these is supplied by hand today** -- there is no ingest from a route
-database, no thermodynamics, and no enzyme data. `simulate.py` is the only in-repo
-supplier. #140 records what that blocks.
+**Four of the five are supplied by hand.** ``g_thermo`` can now come from
+eQuilibrator via :func:`~engin_pathway.thermo_bridge.step_from_reaction` (#140
+item 3); the rest have no ingest, and `simulate.py` is the only other in-repo
+supplier. Which is which travels with the step -- see :attr:`Step.measured`,
+added because a mixed step was otherwise indistinguishable from a guessed one.
+
+*This paragraph said "every one of these is supplied by hand today" until
+2026-08-18, which was true when written and stopped being true one PR later.*
 
 ## Where ``g_enzyme`` can legally come from, checked 2026-08-17
 
@@ -68,9 +73,24 @@ licence at all.
 
 
 class Step(BaseModel):
-    """One enzymatic step: goodness features in [0, 1]."""
+    """One enzymatic step: goodness features in [0, 1].
+
+    ``measured`` names the features that came from a source rather than from
+    somebody's judgement. It defaults to empty, which is the truth for a
+    hand-built step and keeps every route written before this field existed
+    correctly labelled with no edits.
+
+    **This became necessary when it stopped being uniform.** While every feature
+    was typed by hand, "these are expert judgements" was true of all of them and a
+    docstring said it adequately. :func:`~engin_pathway.thermo_bridge.step_from_reaction`
+    now returns a step whose ``g_thermo`` is measured against eQuilibrator and
+    whose other four are not, and without this field that step is
+    indistinguishable from one where all five were guessed (#140 item 4).
+    """
 
     features: dict[str, float]
+    measured: frozenset[str] = frozenset()
+    """Feature names backed by a source. Empty means every one is a judgement."""
 
     @field_validator("features")
     @classmethod
@@ -81,6 +101,23 @@ class Step(BaseModel):
             if not 0.0 <= x <= 1.0:
                 raise ValueError(f"feature {k!r}={x} not in [0,1]")
         return v
+
+    @model_validator(mode="after")
+    def _check_measured(self) -> Step:
+        unknown = self.measured - set(FEATURES)
+        if unknown:
+            raise ValueError(f"measured names unknown features: {sorted(unknown)}")
+        return self
+
+    @property
+    def judged(self) -> frozenset[str]:
+        """Features resting on expert judgement -- the complement of ``measured``."""
+        return frozenset(FEATURES) - self.measured
+
+    @property
+    def fully_judged(self) -> bool:
+        """True when nothing in this step came from a source."""
+        return not self.measured
 
     def vector(self) -> NDArray[np.float64]:
         return np.array([self.features[f] for f in FEATURES], float)
@@ -96,6 +133,40 @@ class Route(BaseModel):
     route_id: str
     steps: list[Step] = Field(..., min_length=1)
     manufacturability: float | None = None
+
+    @classmethod
+    def from_manual_scores(
+        cls,
+        route_id: str,
+        step_features: list[dict[str, float]],
+        manufacturability: float | None = None,
+    ) -> Route:
+        """Build a route whose every feature is an expert judgement.
+
+        Identical in result to constructing :class:`Step` objects directly -- what
+        it adds is that the call site *says so*. #140 item 4 asks for exactly
+        that: the provenance of a ranking should be legible from the code that
+        produced it, rather than inferred from the absence of anything saying
+        otherwise.
+
+        Use :func:`~engin_pathway.thermo_bridge.step_from_reaction` where a
+        feature can be measured instead.
+        """
+        return cls(
+            route_id=route_id,
+            steps=[Step(features=f) for f in step_features],
+            manufacturability=manufacturability,
+        )
+
+    @property
+    def fully_judged(self) -> bool:
+        """True when no step in this route carries a measured feature.
+
+        The honest headline for a ranking: if this is True, the ordering reflects
+        the priors of whoever typed the numbers, with a conformal interval around
+        them.
+        """
+        return all(s.fully_judged for s in self.steps)
 
     @model_validator(mode="after")
     def _check_label(self) -> Route:
