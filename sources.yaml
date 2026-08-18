@@ -482,6 +482,26 @@ sources:
     stability: doi
     type: paper
 
+  - id: 2025-fdh-fermentation-tea
+    title: >-
+      Techno-economic analysis of industrial-scale fermentation for formate
+      dehydrogenase (FDH) production
+    authors: [Bioresources and Bioprocessing contributors]
+    year: 2025
+    venue: Bioresources and Bioprocessing 12
+    location: https://doi.org/10.1186/s40643-025-00985-3
+    accessed: 2026-08-17
+    stability: doi
+    type: paper
+    note: >-
+      CC BY 4.0. Cited as the **bound** on Straathof's purity multiplier rather
+      than as a second estimate of it: this is a His-tagged enzyme where IMAC
+      resin is 65% of variable operating cost, and its crude-to-pure ratios run
+      13x-43x across four scenarios — an order of magnitude above the ~3.3x that
+      Straathof's shares imply for bulk and intermediate-scale products. Two
+      product classes, not a disagreement. Also examined for #15 and found
+      unusable there; see that claim row.
+
   # -- Low-N protein fitness (D23 / #89). engin-protein's ridge-over-GP result.
 
   - id: 2022-hsu-protein-fitness-baselines
@@ -990,6 +1010,72 @@ claims:
       particular processes, not about bulk products as a class. The generalized
       version was mine, not the source's. Corrected in DECISIONS.md, README.md
       and docs/guides/cost.md.
+
+  # -- Purity as a cost axis (#17), and why #15 stayed blocked.
+
+  - doc: packages/engin-core/src/engin_core/tea.py
+    tier: A
+    source_id: 2011-straathof-downstream-costs
+    claim: >-
+      Crude penicillin G and crude lipase sit near a 25% DSP share of production
+      cost, and the source states the same products purified and formulated
+      "would have been closer to the 50-55% range". Converting those shares to a
+      multiplier on the downstream term, holding upstream cost fixed, gives
+      3.0x-3.7x and 3.3x at the midpoint — which is what `purity_dsp_multiplier`
+      returns.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      **The conversion is the part that needed care, and it is ours.** Straathof
+      reports *shares of production cost*; the model's downstream term is
+      absolute $/kg. Holding upstream cost fixed is the modelling choice — it is
+      the right one because purifying further adds unit operations to the same
+      fermentation, but it is a choice, and holding *total* cost fixed instead
+      would give 2.1x. A test asserts the multiplier is not 2.1x, so a later
+      "simplification" to the share ratio fails the build rather than silently
+      halving the effect.
+
+  - doc: packages/engin-core/src/engin_core/tea.py
+    tier: A
+    source_id: 2025-fdh-fermentation-tea
+    claim: >-
+      Crude-to-pure cost ratios of 13x-43x for a His-tagged enzyme purified by
+      IMAC, where resin is 65% of variable operating cost — an order of magnitude
+      above the Straathof-derived multiplier.
+    strength: contested
+    reviewed: 2026-08-17
+    note: >-
+      Filed `contested` because it does not confirm the default and does not
+      refute it either: it establishes that the multiplier is strongly
+      product-class dependent, which is why `purity_multiplier_override` exists
+      and why the docstring says plainly which class the default is calibrated
+      for. A single global constant would have been wrong by 10x for one class,
+      and this row is the reason there is not one.
+
+  - doc: docs/limitations.md
+    tier: A
+    source_id: 2025-fdh-fermentation-tea
+    claim: >-
+      This is the closest candidate found for #15's broth-composition model, and
+      it does not support one: its four scenarios move biomass density
+      (4.2-50 g/L), expression level (0.1-5% of cell mass) and scale (1 L to
+      200,000 L) together, so the cost differences cannot be attributed to
+      biomass load.
+    strength: contradicts
+    reviewed: 2026-08-17
+    note: >-
+      **Recorded as a negative result so the search is not repeated.** #15 needs
+      DSP cost as a function of biomass load, secreted-vs-intracellular, and an
+      impurity proxy. On the 2026-08-17 pass: no published correlation for
+      biomass load was found that does not confound it with something else; the
+      secreted-vs-intracellular literature is qualitative ("avoids the costly
+      lysis step", "simplifies downstream processing") with no costed comparison
+      for a comparable product; and nothing was found to calibrate an impurity
+      proxy against. This source even suggests extracellular FDH expression could
+      eliminate IMAC entirely but does not cost that alternative. #15 therefore
+      stays blocked, which is the correct outcome rather than a failure — a
+      coefficient cannot represent a unit operation that either exists or does
+      not.
 
   - doc: DECISIONS.md
     tier: A

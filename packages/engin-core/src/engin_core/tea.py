@@ -60,6 +60,7 @@ dominates. See `D13` in ``DECISIONS.md``, including the withdrawn justification.
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Protocol, runtime_checkable
 
 import numpy as np
@@ -76,6 +77,8 @@ __all__ = [
     "capital_charge_factor",
     "annual_capital_charge_usd",
     "capital_cost_per_batch_usd",
+    "PurityGrade",
+    "purity_dsp_multiplier",
     "CostModel",
     "ParametricCostModel",
     "BioSteamCostModel",
@@ -246,6 +249,75 @@ def capital_cost_per_batch_usd(scale: ProductionScale) -> float:
     return annual_capital_charge_usd(scale) / (scale.batches_per_year * scale.n_vessels)
 
 
+class PurityGrade(str, Enum):
+    """Product specification, as a cost axis (#17).
+
+    Demirel's argument is that the field's systematic error is purifying to
+    pharmaceutical grade for commodity products that do not need it. The cost
+    model could not express that at all, because specification entered nowhere.
+
+    **Two grades exist here, and that is a statement about the evidence rather
+    than a simplification for convenience.** Straathof names exactly two points
+    for the same molecules at the same scale; a third grade would be a number
+    somebody made up.  # ref: 2011-straathof-downstream-costs
+    """
+
+    CRUDE = "crude"
+    """Recovered but not purified or formulated -- Straathof's crude penicillin G
+    and crude lipase, near 25% DSP share of production cost."""
+
+    PURIFIED = "purified"
+    """Purified and formulated. Straathof puts the same products near the 50-55%
+    range at this specification."""
+
+
+#: DSP share of total production cost at each grade (Straathof 2011). The
+#: purified figure is the midpoint of the published 50-55% range.
+_DSP_SHARE: dict[PurityGrade, float] = {
+    PurityGrade.CRUDE: 0.25,
+    PurityGrade.PURIFIED: 0.525,
+}
+
+
+def purity_dsp_multiplier(
+    grade: PurityGrade | str,
+    crude_share: float = _DSP_SHARE[PurityGrade.CRUDE],
+    purified_share: float = _DSP_SHARE[PurityGrade.PURIFIED],
+) -> float:
+    """Multiplier on the downstream term for ``grade``, relative to crude.
+
+    **Straathof reports shares of production cost, not $/kg**, so the conversion
+    is explicit rather than a rescaling. For a fixed upstream cost ``U``, a DSP
+    share ``s`` implies ``DSP = U * s / (1 - s)``; the multiplier between two
+    grades is the ratio of those. From 25% to the published 50-55% range that is
+    **3.0x to 3.7x**, and 3.3x at the midpoint.
+
+    The held-fixed assumption is load-bearing and deliberate: purifying further
+    adds unit operations to the same fermentation, so upstream cost is what stays
+    put. Holding *total* cost fixed instead gives 2.1x and would be wrong, because
+    it assumes purification is free in aggregate.
+
+    **Calibrated for bulk and intermediate-scale products; it does not transfer
+    to affinity-purified ones.** A 2025 techno-economic study of formate
+    dehydrogenase -- a His-tagged enzyme where IMAC resin is 65% of variable
+    operating cost -- reports crude-to-pure ratios of 13x to 43x across its
+    scenarios, an order of magnitude above this figure.
+    # ref: 2025-fdh-fermentation-tea
+    For that product class pass explicit shares, or set
+    ``purity_multiplier_override`` on :class:`CostParameters`. One global constant
+    would be wrong for one class or the other, which is why there is not one.
+
+    # ref: 2011-straathof-downstream-costs
+    """
+    grade = PurityGrade(grade)
+    for name, share in (("crude_share", crude_share), ("purified_share", purified_share)):
+        if not 0.0 < share < 1.0:
+            raise ValueError(f"{name} must be a share in (0, 1), got {share}")
+    if grade is PurityGrade.CRUDE:
+        return 1.0
+    return (purified_share / (1.0 - purified_share)) / (crude_share / (1.0 - crude_share))
+
+
 class CostParameters(BaseModel):
     """Illustrative cost structure. Values are a caricature, not a real process.
 
@@ -277,6 +349,23 @@ class CostParameters(BaseModel):
     """Production scale and capital recovery (#143 piece 1). ``None`` keeps the
     pre-#143 behaviour exactly, so no previously published number moves; set it to
     price the plant rather than the bench vessel."""
+
+    purity_grade: PurityGrade = PurityGrade.CRUDE
+    """Product specification (#17). Defaults to ``CRUDE``, whose multiplier is
+    1.0, so every previously published number is unchanged and setting this is
+    the only way to move it."""
+
+    purity_multiplier_override: float | None = Field(None, gt=0)
+    """Use this multiplier instead of the Straathof-derived one. The escape hatch
+    for product classes the default does not cover -- affinity-purified proteins
+    sit an order of magnitude higher. See :func:`purity_dsp_multiplier`."""
+
+    @property
+    def purity_multiplier(self) -> float:
+        """The multiplier actually applied to the downstream term."""
+        if self.purity_multiplier_override is not None:
+            return self.purity_multiplier_override
+        return purity_dsp_multiplier(self.purity_grade)
 
 
 @runtime_checkable
@@ -321,8 +410,10 @@ class ParametricCostModel:
         facility = ctx["reactor_L_h"] * p.reactor_usd_per_L_h / product_kg
         # titer lever: dilute broth means more volume to process per kilogram.
         # Falls with titer. The sign here is the one D13 originally had backwards.
-        downstream = p.downstream_base_usd_per_kg * (
-            (p.downstream_reference_titer_g_L / titer) ** p.downstream_titer_exponent
+        downstream = (
+            p.downstream_base_usd_per_kg
+            * ((p.downstream_reference_titer_g_L / titer) ** p.downstream_titer_exponent)
+            * p.purity_multiplier
         )
         return raw_material + facility + downstream + self._capital(titer)
 
@@ -352,7 +443,8 @@ class ParametricCostModel:
             "raw_material": (ctx["substrate_fed_g"] / 1000.0) * p.substrate_usd_per_kg / product_kg,
             "facility": ctx["reactor_L_h"] * p.reactor_usd_per_L_h / product_kg,
             "downstream": p.downstream_base_usd_per_kg
-            * ((p.downstream_reference_titer_g_L / titer) ** p.downstream_titer_exponent),
+            * ((p.downstream_reference_titer_g_L / titer) ** p.downstream_titer_exponent)
+            * p.purity_multiplier,
             "capital": self._capital(titer),
         }
 
