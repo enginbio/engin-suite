@@ -147,6 +147,19 @@ maintained dedicated Python RSM package, and Engin should stop implying otherwis
 That remains true: BoFire builds designs under constraints, it does not give you the
 fitted quadratic and its prediction interval.
 
+**Licensed out of reach, and easy to mistake for BayBE.**
+[obsidian](https://github.com/MSDLLCpapers/obsidian) is a BoTorch-backed process
+optimizer and experiment designer aimed squarely at pharmaceutical process development
+— the closest thing in this slot to Engin's own use case. It is **GPL-3.0**, copyright
+Merck & Co., Inc. (Rahway), which is a *different company* from the Merck KGaA that
+publishes BayBE; readers conflate the two and the licences could not be further apart.
+Two things to know before reading it for ideas: the published PyPI package
+(`obsidian-apo`) and the latest GitHub release are both `0.8.6` from 2025-03-20, while
+`main` carries a squashed "Release 1.0.0" commit from 2026-07-29 that among other things
+deletes the Dash web app — so the installable package trails the repository by a major
+version with no tag to pin. And the repository was silent between those two commits.
+Cite the method; do not take the dependency. *(Checked 2026-08-18.)*
+
 **Dead ends.** `pyDOE3` was archived in May 2026 and points back at `pydoe`.
 [scikit-optimize](https://github.com/holgern/scikit-optimize) has been dormant since
 mid-2024. [dexpy](https://github.com/statease/dexpy) last moved in 2018.
@@ -336,6 +349,14 @@ well and does not predict titer. That gap is the whole reason `engin-pathway` ex
 it ranks routes by manufacturability, and route feasibility is somebody else's
 correctly-solved problem.
 
+**"Strain design" here means the mechanistic sense only** — compute a set of knockouts
+or interventions from a genome-scale model. Every entry below is stoichiometric and
+none of them reads a previous cycle's measurements. The data-driven sense of the same
+phrase — learn from the titers you measured last round, recommend what to build next —
+is a different capability with a different and much worse-supplied tool list, and it
+has its own slot, *Machine-learning recommendation across DBTL cycles*, below. A reader
+who takes this slot as covering both would conclude the problem is solved. It is not.
+
 ### COBRApy — [opencobra/cobrapy](https://github.com/opencobra/cobrapy)
 
 **Dual GPLv2+ / LGPLv2+.** For a permissively licensed project this needs a deliberate
@@ -411,6 +432,115 @@ for anyone without an institutional licence regardless of its own terms.
 
 **If you pick one:** COBRApy — it is not really a choice, it is the data model. Decide
 the GPL question deliberately before importing it.
+
+---
+
+## Machine-learning recommendation across DBTL cycles
+
+*Funnel stage: between route ranking (`engin-pathway`) and process optimization
+(`engin-core`) — the Design step that picks which strains to build next.*
+
+**Engin's position: does not build, and the reason is not that someone else has
+this covered.** The slot above ranks *interventions computed from a model*; this one
+is *learning from the last cycle's measurements* — given titers from the strains you
+built, which combination of gene targets, promoters or knockdowns should the next
+cycle build? `engin-core`'s recommender does exactly this shape of job over
+continuous process conditions, and nothing in the suite does it over genetic
+designs. Recorded here because a reader who assumes `D9` applies — that Engin skips
+this because a good open implementation exists — would be assuming something false.
+Whether Engin should serve it is [#211](https://github.com/enginbio/engin-suite/issues/211);
+`BIOSECURITY.md` §2 currently says it does not.
+
+### ART — [JBEI/ART](https://github.com/JBEI/ART)
+
+**Not open source, and this is the entry the page's licence warning was written for.**
+Non-commercial academic use only, *Patent Pending*, and access is by emailing Berkeley
+Lab for admission to a private repository.
+
+- **Pro** — the only tool in this slot with a published multi-cycle wet-lab record:
+  six consecutive DBTL cycles raising isoprenol titer in *P. putida* over an sgRNA
+  combination space. Engin already registers that campaign's final cycle as a dataset.
+- **Pro** — it recommends a *set* of strains with probabilistic predictions rather than
+  a single point pick, which is the batch-plus-interval shape the rest of this suite
+  uses, arrived at independently.
+- **Con, and it is the binding one** — **the public repository contains no source
+  code.** It holds a README, two licence PDFs, and `data/` and `notebooks/`
+  directories. The README says so in its third sentence. You cannot read it, vendor
+  it, or check what it does.
+- **Con** — the commercial licence is a paid ten-year term from Berkeley Lab's
+  licensing office, priced by headcount. For an Apache-2.0 project with commercial
+  users this is disqualifying, not inconvenient.
+- **Con** — no PyPI package, no releases, no version numbers. There is nothing to pin,
+  so a result produced with ART cannot be reproduced against a stated version.
+
+Reference: Radivojević et al., *Nature Communications* 11:4879 (2020),
+[10.1038/s41467-020-18008-4](https://doi.org/10.1038/s41467-020-18008-4).
+
+### METIS — [amirpandi/METIS](https://github.com/amirpandi/METIS)
+
+MIT. An active-learning workflow for optimizing genetic and metabolic networks, run
+from Colab notebooks.
+
+- **Pro** — the only permissively licensed recommender found in this slot, and it
+  publishes the multi-round combination-and-yield data behind its own results, so you
+  can benchmark against it rather than take its word.
+- **Pro** — zero-install Colab is the right friction level for the wet-lab user who is
+  the actual customer for this capability.
+- **Con** — dormant. Last commit 2022-11-07. *(Checked 2026-08-18.)*
+- **Con** — not a package: notebooks plus a loose `utils.py`, no PyPI, no releases, no
+  tests, no API surface. Depending on it means adopting and repackaging it, which is
+  `D10` territory only if you first establish the authors have stopped.
+
+Reference: Pandi et al., *Nature Communications* (2022),
+[10.1038/s41467-022-31245-z](https://doi.org/10.1038/s41467-022-31245-z).
+
+### FluxRETAP — [JBEI/FluxRETAP](https://github.com/JBEI/FluxRETAP)
+
+BSD-3-Clause (LBNL variant). Prioritises gene targets by correlating flux with product
+formation across a COBRApy model.
+
+- **Pro** — permissive, small and readable, and it answers the question a metabolic
+  engineer actually asks: which reactions to push or delete.
+- **Con** — it belongs to the slot above, not this one. It computes targets from a
+  model; it does not read your previous cycle's measurements. Listed here because it
+  is the near-miss a reader will find first and mistake for the thing.
+- **Con** — dormant since January 2025, notebooks-plus-`core/` with no packaging, and
+  the repository states the work is not yet published.
+
+**Adjacent infrastructure, both permissive, neither a recommender.**
+[JBEI/EDD](https://github.com/JBEI/edd) (BSD-3-Clause, LBNL) is the Test-side data
+repository ART reads from — genuinely deployable, with Docker and documented ops, but
+it has cut no releases at all, so upgrades mean tracking `trunk` by hand, and it has
+been quiet since January 2025. [JBEI/DIVA](https://github.com/JBEI/DIVA)
+(BSD-3-Clause) is the Build-side construct designer and is the most actively developed
+repository named on this page, with commits through 2026 — but it is a Java web
+platform with no releases and effectively no community, and it designs constructs
+rather than choosing which to build. *(Both checked 2026-08-18.)*
+
+**Dead ends and traps.** The academic combinatorial-BO repositories that look like they
+would fill this gap have all stopped: [COMBO](https://github.com/QUVA-Lab/COMBO) (2020),
+[Casmopolitan](https://github.com/xingchenwan/Casmopolitan) (2023),
+[Bounce](https://github.com/LeoIV/bounce) (2024). [BODi](https://github.com/aryandeshwal/BODi)
+is worse than dead — a single AISTATS code-drop commit with **no LICENSE file at all**,
+so it is all-rights-reserved and cannot be vendored whatever its state.
+
+**The absence claim, and what backs it (`D15`, `D23`).** Searched 2026-08-18: GitHub and
+PyPI for DBTL/strain-design recommenders, the JBEI and Agile BioFoundry organizations,
+the AbeelLab simulated-DBTL line, and the 2024–2026 combinatorial-perturbation and
+active-learning literature. **No maintained, permissively licensed, installable package
+was found that recommends genetic designs from prior cycle results.** Rejected
+near-misses and why: METIS is permissive and on-target but dormant and unpackaged;
+FluxRETAP is permissive and packaged-adjacent but model-driven; ART is maintained and
+on-target and not open; [AbeelLab/simulated-dbtl](https://github.com/AbeelLab/simulated-dbtl)
+(MIT) is a benchmark harness for comparing recommenders, not one;
+[BayBE](https://github.com/emdgroup/baybe) has the constraint vocabulary for the search
+space but no notion of a genetic design. If you know of a counterexample, that
+correction is worth more to this page than any entry on it.
+
+**If you pick one:** for a commercial user, none of them — read the ART paper, take the
+METIS data as a benchmark, and write it yourself. For an academic lab, ART, because the
+non-commercial licence is free to you and nothing else here has been through six real
+cycles.
 
 ---
 
