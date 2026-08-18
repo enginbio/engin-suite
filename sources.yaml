@@ -851,6 +851,30 @@ claims:
     strength: supports
     reviewed: 2026-08-11
 
+  - doc: packages/engin-core/src/engin_core/datasets.py
+    tier: A
+    source_id: 2025-zenodo-erythromycin-efp
+    claim: >-
+      The 23 EFP process variables divide into 5 process conditions, 6
+      cumulative feeds, 5 physicochemical indicators and 7 biochemical
+      indicators, and the target is chemical potency during fermentation. The
+      record states these by count and category only — it does not name the
+      individual variables.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      **A negative result, recorded so it is not re-run.** #10's remaining item
+      was glossing the other 22 columns "with the source paper in hand". The
+      paper (Neurocomputing 657) is paywalled and no accessible version carries a
+      variable table; the depositors' own data_loader.py hard-codes only
+      target='hx'; and this record gives counts without names. So the categories
+      and the target are cited, `our`/`cer`/`rq`/`kla` are readable as standard
+      bioprocess abbreviations, and the remaining codes stay unglossed on
+      purpose. They look like pinyin initialisms, which is a hypothesis and not a
+      citation — and this is the dataset that already produced four confident
+      false mappings by substring matching, so a plausible gloss would be that
+      same failure with better handwriting. Closing the gap needs the depositors.
+
   - doc: docs/methods/real-data-calibration.md
     tier: A
     source_id: 2025-sun-master-efp
