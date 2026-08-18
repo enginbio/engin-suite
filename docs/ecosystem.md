@@ -156,6 +156,40 @@ has a good paper and a Python ceiling below 3.11.
 [EDBO+](https://github.com/doyle-lab-ucla/edboplus) is research code — cite the
 method, don't depend on the package.
 
+### Benchmark harnesses: there is not one to run inside
+
+**Dead end, recorded here because the finding was living in a pull-request
+comment.** [#201](https://github.com/enginbio/engin-suite/pull/201) settled this
+for [#20](https://github.com/enginbio/engin-suite/issues/20) — `D9` says compose,
+so the prior question was whether an existing harness should own the
+benchmark comparison rather than this repository hand-rolling one. The answer was
+no, on two independent grounds: **both neutral harnesses are dormant**, and they
+**benchmark optimization planners against chemistry response surfaces**, which is
+one of the five comparisons #20 names and not the other four.
+
+This page is where a reader looks before re-surveying, so the snapshot lives here
+too. Checked 2026-08-17:
+
+| | licence | last pushed | last release |
+|---|---|---|---|
+| [Summit](https://github.com/sustainable-processes/summit) | MIT | Sep 2024 | 0.8.8, Dec 2022 |
+| [Olympus](https://github.com/the-matter-lab/olympus) | MIT | Nov 2024 | none, ever |
+
+Two details worth carrying, both of which cost time to find:
+
+**Olympus moved.** The widely-linked `aspuru-guzik-group/olympus` path is a
+**301 redirect** to `the-matter-lab/olympus`, not a dead link — so the GitHub API
+follows it silently and reports the new name, while a reader clicking an old
+citation lands somewhere they did not expect. Link the current path.
+
+**BayBE is not the third option here, despite shipping a `benchmarks/` module.**
+That module's own README describes it as testing "the performance of BayBE", with
+settings that parameterise BayBE scenario executions over `baybe.simulation`.
+Engin cannot run inside it without first becoming a BayBE campaign, which is a far
+larger commitment than a baseline comparison. BayBE stays what #20 already calls
+it — a *baseline to beat*, not a frame to sit in — and it is Apache-2.0, so that
+comparison carries no licence question when someone builds it.
+
 **If you pick one:** BayBE, unless the torch dependency is disqualifying, in which
 case ProcessOptimizer. Pick BoFire instead of BayBE when the binding difficulty is
 *constraints on the design itself* — a media mixture that must sum, a component that
