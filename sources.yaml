@@ -862,7 +862,84 @@ sources:
       sweep rather than trusted to stay put.
     type: standard
 
+  # -- Oxygen transfer, for the scale-invariance limitation (#190). Both rows
+  # evidence *why the omission matters* rather than any number of ours: the
+  # measurements in that section are all of our own simulator and are marked
+  # `not-a-claim`, reproduced by benchmarks/scale_invariance.py.
+
+  - id: 2009-garcia-ochoa-otr-scaleup
+    title: >-
+      Bioreactor scale-up and oxygen transfer rate in microbial processes:
+      an overview
+    authors: [Garcia-Ochoa, Felix, Gomez, Emilio]
+    year: 2009
+    venue: Biotechnology Advances 27(2) 153-176
+    location: https://doi.org/10.1016/j.biotechadv.2008.10.006
+    accessed: 2026-08-18
+    stability: doi
+    type: paper
+    note: >-
+      Full text is paywalled; everything cited from it is in the abstract, which
+      is open via PubMed 19041387. #190 quoted a line from a different paper's
+      body that could not be verified this way, and it was dropped rather than
+      cited unseen.
+
+  - id: 2014-schaepe-overfeeding
+    title: >-
+      Avoiding overfeeding in high cell density fed-batch cultures of E. coli
+      during the production of heterologous proteins
+    authors: [Schaepe, Sebastian, Kuprijanov, Alexander, Simutis, Rimvydas, Lubbert, Andreas]
+    year: 2014
+    venue: Journal of Biotechnology 192 Pt A 146-153
+    location: https://doi.org/10.1016/j.jbiotec.2014.09.002
+    accessed: 2026-08-18
+    stability: doi
+    type: paper
+    note: >-
+      Cited for the feed-rate/oxygen coupling that this simulator omits. As above,
+      only the open abstract is relied on. #190 quotes this paper as saying "an
+      obvious constraint to the substrate feed rate is oxygen transfer capability
+      of the bioreactor"; that sentence is not in the abstract, so the claim rows
+      below cite what the abstract does state instead.
+
 claims:
+
+  # -- The scale-invariance limitation (#190). Both rows are `supports` for the
+  # *editorial* claim that omitting oxygen is the omission that matters. Neither
+  # supports a number: every figure in that section is measured on our own
+  # simulator and marked `not-a-claim`.
+
+  - doc: docs/limitations.md
+    tier: A
+    source_id: 2009-garcia-ochoa-otr-scaleup
+    claim: >-
+      "Oxygen transfer is the omission that makes the word scale-up unsupportable
+      here" — the review states that oxygen transfer is often the rate-limiting
+      step in aerobic bioprocesses and that measuring or predicting kLa is a
+      crucial step in the design, operation and scale-up of bioreactors. Both are
+      in the open abstract.
+    strength: supports
+    reviewed: 2026-08-18
+    note: >-
+      Deliberately *not* cited for the kLa exponent range (b about 0.4-0.8 on
+      power-per-volume) that #190 attributes to its Table 2. That table is behind
+      the paywall and was not read, so the section makes the weaker qualitative
+      claim -- kLa is set by power input, gas flow and broth properties rather
+      than by volume -- which the abstract does support.
+
+  - doc: docs/limitations.md
+    tier: A
+    source_id: 2014-schaepe-overfeeding
+    claim: >-
+      "In a real vessel induction_time tightens the feasible feed_rate, while this
+      model treats the two knobs as independent" — the abstract states that
+      heterologous protein production causes a substantial decrease in the maximal
+      specific oxygen uptake rate, and that in high-cell-density cultures the
+      substrate feed rate must be adapted to the cells' changing capabilities to
+      avoid overfeeding and inhibitory by-products.
+    strength: supports
+    reviewed: 2026-08-18
+
   # -- The tier-4 absence claim, which had no rows at all until #174. D23 puts the
   # heaviest evidence burden on exactly this shape of sentence, and the document
   # making it was absent from this register as a `doc:` key.
