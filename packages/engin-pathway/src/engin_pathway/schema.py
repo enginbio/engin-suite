@@ -42,6 +42,39 @@ UniKP         *no LICENSE file*             **No**
 CatPred       MIT *code*                    Code yes; **its dataset is the problem**
 ============  ============================  ==========================================
 
+## Where a *route* can legally come from, checked 2026-08-18
+
+#140 item 3's remaining half is traversal -- building routes from a pathway
+database. #198's check covered kcat/K\\ :sub:`M` sources only and explicitly did
+not cover these, so they were checked separately, from the licence text:
+
+============  ==========================================  ===========================
+Source        Terms                                       Usable by Apache-2.0?
+============  ==========================================  ===========================
+Rhea          CC BY 4.0                                   **Yes**, with attribution
+KEGG          "Non-academic use requires a commercial
+              license"                                    **No**
+MetaCyc       separate academic / commercial licences     **No** without one
+MetaNetX      CC BY 4.0 on its own namespace              **Partly** -- see below
+============  ==========================================  ===========================
+
+**Build traversal against Rhea.** Its licence says commercial use is permitted in
+as many words -- "copy, distribute, display and make commercial use of the
+database in all legislations, provided you credit Rhea" -- which is the only one
+of the four that answers the question without a lawyer.
+
+**KEGG is the one everybody reaches for first and it is out.** Same class as
+SABIO-RK in #198: not hostile, just licensed on terms an Apache-2.0 project
+cannot pass to its users.
+
+**MetaNetX is not a way around that, and this is the part worth not
+rediscovering.** Its own namespace mapping is CC BY 4.0, and it aggregates KEGG,
+MetaCyc and SABIO-RK among others -- stating itself that "the licensing
+agreements of those resources are specified in each of the downloadable files".
+So a wholesale pull imports the restrictions of whatever it drew from. It is a
+namespace, not a laundromat. Exactly the shape of CatPred in #198: a permissive
+wrapper over mixed provenance.
+
 Three things are worth carrying forward rather than re-deriving.
 
 **BRENDA changed, and the issue's premise is now half stale.** #140 says "several
