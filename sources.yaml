@@ -146,6 +146,41 @@ sources:
     stability: doi
     type: paper
 
+  # -- Route-database terms for engin-pathway traversal (#140 item 3). Checked
+  # separately from the kcat/KM sources in #198, which did not cover these.
+
+  - id: 2026-rhea-license
+    title: Rhea — License & Disclaimer
+    authors: [SIB Swiss Institute of Bioinformatics, EMBL-EBI]
+    year: 2026
+    venue: rhea-db.org
+    location: https://www.rhea-db.org/help/license-disclaimer
+    accessed: 2026-08-18
+    stability: url
+    url_only_because: >-
+      The claim is the licence Rhea grants, and the publisher's own page is the
+      reference. Verbatim: available under CC BY 4.0, so you may "copy, distribute,
+      display and make commercial use of the database in all legislations, provided
+      you credit Rhea". The only one of the four candidate route sources that
+      permits commercial use in as many words. Fetched with curl -- the page returns
+      403 to some user agents, which is why a plain fetch may appear to fail.
+    type: dataset
+
+  - id: 2026-kegg-legal
+    title: KEGG — Copyright and Disclaimer
+    authors: [Kanehisa Laboratories]
+    year: 2026
+    venue: kegg.jp
+    location: https://www.kegg.jp/kegg/legal.html
+    accessed: 2026-08-18
+    stability: url
+    url_only_because: >-
+      The claim is that KEGG cannot back a default path here. Verbatim from the
+      publisher: "Non-academic use of KEGG requires a commercial license." Same
+      class as SABIO-RK -- licensed on terms an Apache-2.0 project cannot pass on
+      to its users.
+    type: dataset
+
   - id: 2019-goldrick-indpensim
     title: >-
       Modern day monitoring and control challenges outlined on an
