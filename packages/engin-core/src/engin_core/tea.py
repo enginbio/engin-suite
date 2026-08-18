@@ -66,8 +66,9 @@ from typing import Protocol, runtime_checkable
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from pydantic import BaseModel, Field
+from scipy.optimize import brentq
 
-from .gp import GP
+from .gp import GP, prob_at_least
 from .simulator import DEFAULT_REACTOR, ReactorConfig, unit_to_physical
 
 __all__ = [
@@ -86,6 +87,8 @@ __all__ = [
     "design_context",
     "cost_samples",
     "cost_summary",
+    "BreakEven",
+    "break_even",
     "expected_cost_reduction",
     "recommend_batch_by_cost",
 ]
@@ -566,6 +569,170 @@ def cost_summary(
 
 
 # ----------------------------------------------------------------- acquisition
+
+
+class BreakEven(BaseModel):
+    """What would have to be true for a design to clear its price target (#143 piece 2).
+
+    ``cost_summary`` answers "given this process, what does it cost". This answers
+    the question the other way round, which is the one somebody deciding whether to
+    start actually has: a molecule, a market price, and no process yet.
+    """
+
+    solve_for: str
+    """Which quantity was inverted. Only ``"titer"`` today -- see :func:`break_even`."""
+
+    target_usd_per_kg: float
+
+    value: float | None
+    """The break-even titer in g/L, or ``None`` when the target is unreachable
+    anywhere in the searched range."""
+
+    reachable: bool
+    cost_at_value: float | None
+    searched: tuple[float, float]
+    """The bracket that was searched. Reported because "unreachable" is a statement
+    about this interval, not about physics."""
+
+    prob_reaching: float | None = None
+    """``P(titer >= value)`` under the GP posterior, when a fitted model was given.
+    **This is the uncertainty that exists here**, and it is not an interval on
+    ``value`` -- see :func:`break_even`."""
+
+    note: str = ""
+
+
+def break_even(
+    U: ArrayLike,
+    model: CostModel | None = None,
+    params: CostParameters | None = None,
+    solve_for: str = "titer",
+    bracket: tuple[float, float] = (0.1, 500.0),
+    gp: GP | None = None,
+    n_samples: int = 2000,
+    seed: int = 0,
+) -> BreakEven:
+    """Invert the cost model: what titer would clear ``target_usd_per_kg``?
+
+    A root-find over :meth:`CostModel.cost_per_kg`, which is monotone decreasing in
+    titer for the shipped parametric model -- more product per batch spreads the
+    same substrate, vessel-hours and recovery burden over more kilograms.
+
+    **The interval this issue asked for does not exist, and that is worth stating
+    rather than approximating.** #143 piece 2 specifies "an interval from the same
+    propagated samples ``cost_summary`` already uses". Those samples vary exactly one
+    thing: titer, drawn from the GP posterior. The break-even titer is the inverse of
+    a *fixed* cost curve at a *fixed* design point, so it is a deterministic root --
+    there is no distribution over it to summarise. Inverting each posterior draw
+    returns the same number every time.
+
+    The uncertainty that genuinely exists is the other half: whether the process
+    reaches that titer. Pass ``gp`` and this reports ``prob_reaching``, computed from
+    the same posterior, which is the honest counterpart and the exact inverse of
+    ``CostSummary.prob_meets_target``.
+
+    **Monotonicity is verified, not assumed.** :class:`CostModel` is a protocol, and
+    :class:`BioSteamCostModel` drives a real flowsheet with no such guarantee. A root
+    find that silently returns one of several roots is worse than one that refuses,
+    so the bracket is scanned first and a non-monotone curve raises.
+
+    **Only ``solve_for="titer"`` is available.** Not an oversight in either case:
+
+    - ``"scale"`` is now representable -- :class:`ProductionScale` landed with #143
+      piece 1 -- and inverting it is ordinary follow-up work rather than a blocked
+      dependency. It is simply not done here, so it raises rather than pretending
+      the axis does not exist.
+    - ``"yield"`` has nothing to solve for. Substrate fed is fixed by the design
+      knobs via :func:`design_context`, so yield is ``titer * volume / substrate``
+      and inverting it at a fixed design *is* inverting titer. A separate
+      ``solve_for="yield"`` would return the same root wearing a different label.
+
+    Returns a :class:`BreakEven`. ``reachable=False`` means the target is not met
+    anywhere in ``bracket`` -- a statement about the searched range, which is
+    reported alongside, rather than about physics.
+    """
+    if solve_for != "titer":
+        raise ValueError(
+            f"solve_for={solve_for!r} is not available; only 'titer' is. "
+            "'scale' is representable but not implemented here; 'yield' is "
+            "degenerate with titer at a fixed design point (see the docstring)."
+        )
+    lo, hi = (float(b) for b in bracket)
+    if not 0 < lo < hi:
+        raise ValueError(f"bracket must satisfy 0 < lo < hi, got {bracket}")
+
+    p = params or CostParameters()
+    # `p` has to reach the *model*, not only the target. Building the default model
+    # without it silently inverted a cost curve with default purity and no scale
+    # while reporting the caller's target -- so purity_grade and scale changed
+    # nothing, which is the bug `test_break_even_sees_purity_and_scale` now pins.
+    # An explicitly supplied model owns its own parameters; `p` then contributes
+    # only `target_usd_per_kg`, and it is the caller's job to keep the two aligned.
+    model = model or ParametricCostModel(p)
+    U = np.atleast_2d(np.asarray(U, float))
+    if len(U) != 1:
+        raise ValueError(f"break_even inverts one design at a time, got {len(U)}")
+    target = p.target_usd_per_kg
+
+    def cost_at(titer: float) -> float:
+        return float(np.asarray(model.cost_per_kg(np.array([titer]), U)).ravel()[0])
+
+    grid = np.geomspace(lo, hi, 64)
+    costs = np.array([cost_at(t) for t in grid])
+    if not np.all(np.diff(costs) < 1e-12):
+        raise ValueError(
+            "cost is not monotone decreasing in titer over the bracket, so a root "
+            "find is not well posed. This holds for ParametricCostModel; a "
+            "flowsheet-backed CostModel carries no such guarantee. Narrow the "
+            "bracket or invert that model directly."
+        )
+
+    if costs[-1] > target:
+        return BreakEven(
+            solve_for=solve_for,
+            target_usd_per_kg=target,
+            value=None,
+            reachable=False,
+            cost_at_value=None,
+            searched=(lo, hi),
+            note=(
+                f"cost stays above ${target:,.2f}/kg across the whole bracket "
+                f"(${costs[-1]:,.2f}/kg even at {hi:g} g/L). Titer alone does not "
+                "close this gap for this design."
+            ),
+        )
+    if costs[0] <= target:
+        return BreakEven(
+            solve_for=solve_for,
+            target_usd_per_kg=target,
+            value=lo,
+            reachable=True,
+            cost_at_value=float(costs[0]),
+            searched=(lo, hi),
+            note=(
+                f"the target is already met at the bottom of the bracket ({lo:g} g/L), "
+                "so the break-even titer is at or below it rather than at this value."
+            ),
+        )
+
+    root = float(brentq(lambda t: cost_at(t) - target, lo, hi, xtol=1e-6))
+    out = BreakEven(
+        solve_for=solve_for,
+        target_usd_per_kg=target,
+        value=root,
+        reachable=True,
+        cost_at_value=cost_at(root),
+        searched=(lo, hi),
+    )
+    if gp is not None:
+        mean, sd = gp.predict(U)
+        out.prob_reaching = float(prob_at_least(mean, sd, root)[0])
+        out.note = (
+            "prob_reaching is P(titer >= break-even) under the GP posterior. It is "
+            "the uncertainty that exists here; the break-even titer itself is a "
+            "deterministic root, not a distribution."
+        )
+    return out
 
 
 def expected_cost_reduction(
