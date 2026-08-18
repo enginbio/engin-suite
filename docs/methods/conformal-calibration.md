@@ -173,6 +173,58 @@ nominal rate, without assuming normality.
 
 [^2021-angelopoulos-gentle-intro]: Angelopoulos & Bates, *A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification*, arXiv:2107.07511 (2021).
 
+## How big does the calibration set have to be
+
+Added 2026-08-17 for
+[#144](https://github.com/enginbio/engin-suite/issues/144). The page above
+measures coverage on a calibration set of 30 and reports it as working. That is
+true on average and incomplete: **coverage is a random quantity**, and 30 points
+buy a noisy draw from it.
+
+Conditional on the calibration set, coverage is Beta
+distributed,[^2012-vovk-conditional-validity]
+
+$$P\big(Y_{\text{test}} \in C(X_{\text{test}}) \mid \{(X_i, Y_i)\}_{i=1}^{n}\big)
+  \sim \mathrm{Beta}(n + 1 - l,\; l), \qquad l = \lfloor (n+1)\alpha \rfloor$$
+
+The nominal level is that distribution's *mean*. Any particular calibration set
+lands somewhere in its spread:
+
+```{code-cell} python
+from engin_core import conformal_coverage_interval, smallest_calibration_set
+
+print(f"  floor for a {NOMINAL:.0%} interval: n = {smallest_calibration_set(NOMINAL)}\n")
+for n in (9, 20, 30, 50, 100, 406, 1000):
+    lo, mean, hi = conformal_coverage_interval(n, level=NOMINAL)
+    print(f"  n = {n:>4}   coverage {lo:.3f} to {hi:.3f}   (mean {mean:.3f})")
+```
+
+Two things that table makes concrete.
+
+**There is a floor, and below it the guarantee is not merely weak but absent.**
+The method takes the $\lceil (n+1)(1-\alpha) \rceil$-th smallest calibration
+score, so that index has to exist: $n \geq \text{level} / (1 - \text{level})$,
+which is 9 at 90% and 99 at 99%.[^2018-lei-distribution-free] Below it
+`split_conformal_multiplier` falls back to the largest observed score — the
+widest interval those points justify, but not the requested level. **That
+fallback used to be silent.** It now warns, which is the substance of #144.
+
+**Even above the floor, small is expensive.** At the floor itself a "90%"
+interval has a true coverage somewhere around 0.72 to
+0.99,[^2012-vovk-conditional-validity] which is close to no statement at all.
+The industrial set used in the
+[quickstart](../quickstart.md) has 406 calibration points and earns a genuinely
+tight band. A first fermentation campaign has neither, and that gap is the honest
+reason this page's numbers should not be read as transferring to a new user's
+first dozen runs.
+
+Note the spread is quoted on **coverage**, not on the multiplier $q$ itself. The
+result is about coverage; converting it into an interval on $q$ would need a
+distributional assumption about the scores, which is the assumption split
+conformal exists to avoid.
+
+[^2012-vovk-conditional-validity]: Vovk, *Conditional validity of inductive conformal predictors*, PMLR 25:475–490 (2012). The same paper's Proposition 2a gives a PAC-type bound, $E \geq \epsilon + \sqrt{-\ln\delta / 2n}$; it is Hoeffding-based and markedly more conservative than the exact Beta result used here.
+
 ## What this does not establish
 
 ```{warning}
