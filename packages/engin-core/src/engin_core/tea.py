@@ -71,6 +71,11 @@ from .simulator import DEFAULT_REACTOR, ReactorConfig, unit_to_physical
 
 __all__ = [
     "CostParameters",
+    "ProductionScale",
+    "bioreactor_direct_cost_usd",
+    "capital_charge_factor",
+    "annual_capital_charge_usd",
+    "capital_cost_per_batch_usd",
     "CostModel",
     "ParametricCostModel",
     "BioSteamCostModel",
@@ -126,6 +131,121 @@ def design_context(
 # ---------------------------------------------------------------- cost models
 
 
+class ProductionScale(BaseModel):
+    """Plant scale, and the capital recovery that follows from it (#143 piece 1).
+
+    **Opt-in.** :class:`CostParameters` leaves this ``None``, in which case the cost
+    model behaves exactly as it did before and every previously published number is
+    unchanged. Setting it adds a capital term the flat ``reactor_usd_per_L_h`` rate
+    cannot express, because that rate is linear in volume and capital is not.
+
+    Everything here is Humbird (2021), which is the correlation #143 said had to be
+    sourced before any code.  # ref: 2021-humbird-scaleup-economics
+
+    **The issue asked for a scale exponent and the source does not have one.** The
+    published correlation is *piecewise linear with an intercept*:
+
+        TDC[$k] = 30.7 * V + 800     (V >= 0.33 m3)
+        TDC[$k] = 2285 * V + 49.5    (V <  0.33 m3)
+
+    The economy of scale is real but it lives in that fixed 800 and in a direct-cost
+    factor that falls from 12.1x at 1 m3 to 1.8x at 200 m3 — not in a six-tenths
+    exponent. Fitting an exponent to it would have been a plausible functional form
+    invented here, which is what CONTRIBUTING rule 1 rejects and what this field set
+    exists to avoid.
+
+    **What does not transfer, stated rather than smoothed over.** The correlation is
+    developed for animal cell culture. The *vessel* it prices is standard bioprocess
+    hardware — ASME BPE, 316L, CIP/SIP, full-vacuum design — which is why it is used
+    here for microbial fermentation, but that transfer is an argument, not a
+    measurement, and no source establishes it. The cell-type-specific conclusions in
+    the same paper (the CO2-inhibition ceiling, the 20 m3 optimum) are **not** carried
+    over. See ``docs/limitations.md``.
+    """
+
+    working_volume_m3: float = Field(..., gt=0)
+    """Production vessel working volume. Distinct from ``ReactorConfig.vmax``, which
+    is the *simulated* vessel — the whole point of #143 is that the two differ."""
+
+    n_vessels: int = Field(1, ge=1)
+    """Production bioreactors in the facility. Capital is per vessel; a train of small
+    vessels and one large vessel cost differently, which is the comparison this
+    enables."""
+
+    batches_per_year: float = Field(..., gt=0)
+    """Completed batches per vessel per year. Turns a capital stock into a per-batch
+    charge, and is where turnaround and downtime enter."""
+
+    capital_charge_rate: float = Field(0.075, gt=0, lt=1)
+    """Discount rate ``i`` in the capital charge factor. Humbird's 7.5%, described
+    there as a common value for food manufacturing facilities."""
+
+    capital_lifetime_years: int = Field(10, ge=1)
+    """Amortization period ``n``. Humbird's 10 years, same basis."""
+
+    indirect_cost_factor: float = Field(0.6, ge=0)
+    """Engineering and construction fees applied to total direct cost."""
+
+    contingency_factor: float = Field(0.15, ge=0)
+    """Contingency applied to total plant cost to reach total capital investment."""
+
+
+def bioreactor_direct_cost_usd(working_volume_m3: float) -> float:
+    """Total direct cost of one installed bioreactor, from Humbird (2021) Equation 9.
+
+    Piecewise linear in volume, in 2020-ish USD. Reproduces that paper's own cost
+    table to within about 10% across 1-200 m3, which is the range it is stated over;
+    outside it this is extrapolation and the caller is not warned, because the paper
+    gives no basis for a warning threshold.
+
+    # ref: 2021-humbird-scaleup-economics
+    """
+    v = float(working_volume_m3)
+    if v <= 0:
+        raise ValueError(f"working_volume_m3 must be positive, got {working_volume_m3}")
+    thousands = 30.7 * v + 800.0 if v >= 0.33 else 2285.0 * v + 49.5
+    return thousands * 1_000.0
+
+
+def capital_charge_factor(rate: float = 0.075, years: int = 10) -> float:
+    """Annual capital charge as a fraction of total capital investment.
+
+    Humbird (2021) Equation 10, ``i / (1 - (1 + i)^-n)`` — the standard capital
+    recovery factor. At the defaults (7.5%, 10 years) this is about 0.15/y, the
+    figure that paper uses.
+
+    # ref: 2021-humbird-scaleup-economics
+    """
+    if not 0.0 < rate < 1.0:
+        raise ValueError(f"rate must be in (0, 1), got {rate}")
+    if years < 1:
+        raise ValueError(f"years must be >= 1, got {years}")
+    return rate / (1.0 - (1.0 + rate) ** -years)
+
+
+def annual_capital_charge_usd(scale: ProductionScale) -> float:
+    """Annualized capital cost of the production bioreactors.
+
+    The chain is Humbird's: total direct cost -> total plant cost (indirect factor)
+    -> total capital investment (contingency) -> annual charge (capital charge
+    factor). Bioreactors only — minor process equipment, buildings and utilities are
+    out of scope here and their absence is a floor on the number, not a rounding
+    error.
+
+    # ref: 2021-humbird-scaleup-economics
+    """
+    direct = bioreactor_direct_cost_usd(scale.working_volume_m3) * scale.n_vessels
+    total_plant = direct * (1.0 + scale.indirect_cost_factor)
+    total_capital = total_plant * (1.0 + scale.contingency_factor)
+    ccf = capital_charge_factor(scale.capital_charge_rate, scale.capital_lifetime_years)
+    return total_capital * ccf
+
+
+def capital_cost_per_batch_usd(scale: ProductionScale) -> float:
+    """Annual capital charge apportioned over a year of batches."""
+    return annual_capital_charge_usd(scale) / (scale.batches_per_year * scale.n_vessels)
+
+
 class CostParameters(BaseModel):
     """Illustrative cost structure. Values are a caricature, not a real process.
 
@@ -152,6 +272,11 @@ class CostParameters(BaseModel):
 
     target_usd_per_kg: float = Field(200.0, gt=0)
     """The bar a process must clear to be worth building."""
+
+    scale: ProductionScale | None = None
+    """Production scale and capital recovery (#143 piece 1). ``None`` keeps the
+    pre-#143 behaviour exactly, so no previously published number moves; set it to
+    price the plant rather than the bench vessel."""
 
 
 @runtime_checkable
@@ -199,7 +324,23 @@ class ParametricCostModel:
         downstream = p.downstream_base_usd_per_kg * (
             (p.downstream_reference_titer_g_L / titer) ** p.downstream_titer_exponent
         )
-        return raw_material + facility + downstream
+        return raw_material + facility + downstream + self._capital(titer)
+
+    def _capital(self, titer: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Annualized bioreactor capital per kilogram, or zero when scale is unset.
+
+        The batch is priced at *production* scale rather than at the simulated
+        vessel's: the design point fixes titer, and titer times the production
+        working volume is what a plant batch yields. That substitution is the whole
+        content of #143 piece 1 — without it, capital per kilogram at 2 L and at
+        20 m3 differ only linearly, which is the failure mode the issue describes.
+        """
+        scale = self.params.scale
+        if scale is None:
+            return np.zeros_like(np.asarray(titer, float))
+        # g/L * m3 * (1000 L/m3) / (1000 g/kg) == g/L * m3, in kg.
+        batch_kg = np.maximum(np.asarray(titer, float) * scale.working_volume_m3, 1e-9)
+        return capital_cost_per_batch_usd(scale) / batch_kg
 
     def cost_breakdown(self, titer_g_L: ArrayLike, U: ArrayLike) -> dict[str, NDArray[np.float64]]:
         """Per-centre costs, for checking the shares land where the literature says."""
@@ -212,6 +353,7 @@ class ParametricCostModel:
             "facility": ctx["reactor_L_h"] * p.reactor_usd_per_L_h / product_kg,
             "downstream": p.downstream_base_usd_per_kg
             * ((p.downstream_reference_titer_g_L / titer) ** p.downstream_titer_exponent),
+            "capital": self._capital(titer),
         }
 
 

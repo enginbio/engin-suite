@@ -11,6 +11,11 @@ from engin_core.tea import (
     CostModel,
     CostParameters,
     ParametricCostModel,
+    ProductionScale,
+    annual_capital_charge_usd,
+    bioreactor_direct_cost_usd,
+    capital_charge_factor,
+    capital_cost_per_batch_usd,
     cost_samples,
     cost_summary,
     design_context,
@@ -197,3 +202,111 @@ def test_cost_and_titer_still_choose_the_same_design_here():
         "cost and titer optima diverged -- D13 may now be demonstrable on this "
         "simulator; update the docs rather than relaxing this test"
     )
+
+
+# --- Production scale and capital recovery (#143 piece 1). ---
+
+
+def test_equation_9_reproduces_humbirds_own_cost_table():
+    # The published correlation against the table it was fitted to, 1-200 m3.
+    # Agreement is ~10%, which is what the piecewise fit buys; asserting tighter
+    # would be asserting something the source does not claim.
+    published_installed_usd_k = {
+        1: 774,
+        2: 856,
+        5: 966,
+        10: 1200,
+        20: 1500,
+        50: 2600,
+        100: 4000,
+        200: 6800,
+    }
+    for volume_m3, table_usd_k in published_installed_usd_k.items():
+        predicted = bioreactor_direct_cost_usd(volume_m3) / 1000.0
+        assert predicted == pytest.approx(table_usd_k, rel=0.11)
+
+
+def test_capital_charge_factor_matches_the_published_15_percent():
+    # Humbird Eq 10 at i=7.5%, n=10 years.
+    assert capital_charge_factor(0.075, 10) == pytest.approx(0.1457, abs=5e-4)
+    # Monotone in both arguments, in the directions that must hold.
+    assert capital_charge_factor(0.10, 10) > capital_charge_factor(0.075, 10)
+    assert capital_charge_factor(0.075, 20) < capital_charge_factor(0.075, 10)
+
+
+def test_capital_cost_per_kg_falls_with_scale():
+    # The point of the whole exercise: cost per kilogram at bench scale and at
+    # plant scale must differ in more than a linear volume factor.
+    def per_kg(volume_m3):
+        scale = ProductionScale(working_volume_m3=volume_m3, batches_per_year=20, n_vessels=1)
+        return capital_cost_per_batch_usd(scale) / (30.0 * volume_m3)  # 30 g/L
+
+    small, large = per_kg(1.0), per_kg(200.0)
+    assert small > large
+    # And the fall is faster than the vessel-cost ratio, because of the fixed term.
+    assert small / large > 10.0
+
+
+def test_scale_is_opt_in_and_changes_nothing_when_unset():
+    U = np.array([[0.5, 0.5, 0.5, 0.5, 0.5]])
+    titer = simulate_unit(U)
+    baseline = ParametricCostModel(CostParameters())
+    assert baseline.params.scale is None
+    assert baseline.cost_breakdown(titer, U)["capital"] == pytest.approx(0.0)
+
+    scaled = ParametricCostModel(
+        CostParameters(scale=ProductionScale(working_volume_m3=20.0, batches_per_year=15))
+    )
+    assert scaled.cost_per_kg(titer, U) > baseline.cost_per_kg(titer, U)
+
+
+def test_breakdown_still_sums_to_total_with_capital():
+    U = np.array([[0.4, 0.3, 0.6, 0.5, 0.5]])
+    titer = simulate_unit(U)
+    model = ParametricCostModel(
+        CostParameters(scale=ProductionScale(working_volume_m3=10.0, batches_per_year=12))
+    )
+    parts = model.cost_breakdown(titer, U)
+    assert sum(parts.values()) == pytest.approx(model.cost_per_kg(titer, U))
+
+
+def test_more_vessels_do_not_change_cost_per_kg_but_more_batches_do():
+    # n_vessels scales capital and output together, so per-kg is flat in it.
+    # batches_per_year is the utilisation lever and must move the number.
+    base = ProductionScale(working_volume_m3=20.0, batches_per_year=15, n_vessels=1)
+    more_vessels = base.model_copy(update={"n_vessels": 4})
+    more_batches = base.model_copy(update={"batches_per_year": 30})
+    assert capital_cost_per_batch_usd(more_vessels) == pytest.approx(
+        capital_cost_per_batch_usd(base)
+    )
+    assert capital_cost_per_batch_usd(more_batches) == pytest.approx(
+        capital_cost_per_batch_usd(base) / 2.0
+    )
+
+
+def test_production_scale_rejects_nonsense():
+    with pytest.raises(ValueError):
+        ProductionScale(working_volume_m3=0, batches_per_year=10)
+    with pytest.raises(ValueError):
+        ProductionScale(working_volume_m3=10, batches_per_year=-1)
+    with pytest.raises(ValueError):
+        bioreactor_direct_cost_usd(0)
+    with pytest.raises(ValueError):
+        capital_charge_factor(1.5, 10)
+
+
+def test_capital_chain_follows_the_published_sequence():
+    # TDC -> total plant cost (indirect) -> total capital investment (contingency)
+    # -> annual charge (capital charge factor). Pinned explicitly because each
+    # factor is a separate citation and a silent reordering would still "work".
+    scale = ProductionScale(working_volume_m3=20.0, batches_per_year=15, n_vessels=2)
+    direct = bioreactor_direct_cost_usd(20.0) * 2
+    expected = (
+        direct
+        * (1 + scale.indirect_cost_factor)
+        * (1 + scale.contingency_factor)
+        * capital_charge_factor(scale.capital_charge_rate, scale.capital_lifetime_years)
+    )
+    assert annual_capital_charge_usd(scale) == pytest.approx(expected)
+    # A 20 m3 vessel is $1.4M direct by Equation 9; sanity-check the magnitude.
+    assert 1.3e6 < bioreactor_direct_cost_usd(20.0) < 1.5e6

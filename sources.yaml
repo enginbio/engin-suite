@@ -409,6 +409,28 @@ sources:
     stability: doi
     type: paper
 
+  - id: 2021-humbird-scaleup-economics
+    title: Scale-up economics for cultured meat
+    authors: [Humbird, David]
+    year: 2021
+    venue: Biotechnology and Bioengineering 118(8):3239-3250
+    location: https://doi.org/10.1002/bit.27848
+    accessed: 2026-08-17
+    stability: doi
+    type: paper
+    note: >-
+      CC BY 4.0. Cited **only** for the capital-cost structure — Equation 9 (the
+      piecewise bioreactor total-direct-cost correlation over 0.33-200 m3),
+      Equation 10 (the capital charge factor), the indirect and contingency
+      factors, and Table 1's declining direct-cost factor. Those price standard
+      bioprocess vessel hardware (ASME BPE, 316L, CIP/SIP, full-vacuum design).
+      The paper's *subject* is animal cell culture, and its cell-type-specific
+      conclusions — the CO2-inhibition ceiling and the 20 m3 fed-batch optimum —
+      are deliberately **not** carried into engin-core, because they are about
+      animal cells rather than about vessels. Using the hardware correlation for
+      microbial fermentation is an argument this project is making, not a
+      finding this source supports; docs/limitations.md says so in those words.
+
   - id: 2019-tibshirani-covariate-shift
     title: Conformal Prediction Under Covariate Shift
     authors: [Tibshirani, Ryan J., Foygel Barber, Rina, Candes, Emmanuel J., Ramdas, Aaditya]
@@ -893,6 +915,46 @@ claims:
       Same purpose as the row above: the honest statement is that Engin uses
       unweighted split conformal and reports where it degrades, which is weaker
       than the field's position and is now said outright rather than implied.
+
+  # -- Scale and capital recovery (#143 piece 1).
+
+  - doc: packages/engin-core/src/engin_core/tea.py
+    tier: A
+    source_id: 2021-humbird-scaleup-economics
+    claim: >-
+      Installed bioreactor total direct cost is piecewise linear in working
+      volume — 30.7 * V + 800 in $k for V >= 0.33 m3, 2285 * V + 49.5 below it —
+      and the annual capital charge is i / (1 - (1+i)^-n), about 15%/y at i=7.5%
+      over 10 years, applied to a total capital investment reached from direct
+      cost via a 0.6 indirect factor and a 0.15 contingency.
+    strength: supports
+    reviewed: 2026-08-17
+    note: >-
+      **#143 asked for a scale exponent and the source does not contain one.**
+      The correlation is linear with an intercept; the economy of scale lives in
+      that fixed term and in a direct-cost factor falling from 12.1x at 1 m3 to
+      1.8x at 200 m3, not in a six-tenths power law. Recorded because the issue's
+      own wording would have led to fitting an exponent, which would have been
+      exactly the invented functional form CONTRIBUTING rule 1 rejects. The
+      implementation reproduces the paper's cost table to within ~10% across
+      1-200 m3 and a test pins that.
+
+  - doc: docs/limitations.md
+    tier: A
+    source_id: 2021-humbird-scaleup-economics
+    claim: >-
+      The capital correlation engin-core uses is developed for animal cell
+      culture. It prices standard bioprocess vessel hardware, but no source
+      establishes that it transfers to microbial fermentation, and the paper's
+      cell-type-specific conclusions are not carried over.
+    strength: contested
+    reviewed: 2026-08-17
+    note: >-
+      Filed as `contested` rather than `supports` deliberately. The source
+      supports the correlation; it does not support the *use* being made of it
+      here, and a row claiming otherwise would be the same category error as
+      D13's corrected cost-share split. If a microbial-specific capital
+      correlation is found, this row is the one that should be superseded.
 
   - doc: DECISIONS.md
     tier: A

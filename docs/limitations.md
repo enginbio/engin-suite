@@ -127,6 +127,32 @@ behind it: optimizing net cost per kilogram rather than titer rests on the
 argument in [Decisions](decisions.md) (`D13`), which does not depend on this
 simulator.
 
+### The capital correlation is borrowed from a different cell type
+
+Added 2026-08-17 with the production-scale term
+([#143](https://github.com/enginbio/engin-suite/issues/143) piece 1). `ProductionScale`
+prices capital with Humbird's piecewise bioreactor correlation and capital charge
+factor.[^2021-humbird-scaleup-economics] **That work is about animal cell culture.**
+
+What is being borrowed is the price of a vessel — ASME BPE, 316L stainless,
+CIP/SIP, full-vacuum design — which is standard bioprocess hardware rather than
+anything specific to animal cells, and that is the argument for using it. It
+remains an argument. No source found establishes that the correlation transfers
+to microbial fermentation, and this page should not be read as claiming one does.
+The same paper's cell-type-specific conclusions are deliberately **not** carried
+over.
+
+Two consequences worth stating rather than leaving implicit:
+
+- **Bioreactors only.** Minor process equipment, buildings and utilities are
+  outside the term. The capital number is a floor, not an estimate.
+- **The correlation is stated over 0.33–200 m³.** Outside that range the code
+  extrapolates without warning, because the source gives no basis for choosing a
+  warning threshold and inventing one would be the same error the term was built
+  to avoid.
+
+[^2021-humbird-scaleup-economics]: Humbird, *Scale-up economics for cultured meat*, Biotechnology and Bioengineering 118(8) (2021). [doi:10.1002/bit.27848](https://doi.org/10.1002/bit.27848). CC BY 4.0.
+
 ## Reporting a limitation we have missed
 
 <https://github.com/enginbio/engin-suite/issues/new>
