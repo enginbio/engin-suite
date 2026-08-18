@@ -74,7 +74,7 @@ had not, and the distinction is now in the table itself:
 | Next-experiment recommendation | random batch of the same size | **implemented** — synthetic only |
 | Process optimization | response surface methodology (fitted quadratic) | **implemented** — synthetic only |
 | Multi-round optimization campaign | sequential RSM (Box–Wilson: steepest ascent, central composite, re-centre) | **implemented** — synthetic only |
-| Optimizer | an off-the-shelf Bayesian optimization library (BayBE, Ax) | not built |
+| Optimizer | an off-the-shelf Bayesian optimization library (BayBE) | **implemented** — synthetic only |
 | Techno-economics | BioSTEAM | not built |
 | Pathway ranking | step-count heuristic | **implemented** — synthetic routes, random-weight M0, and the margin is a property of the generator ([#124](https://github.com/enginbio/engin-suite/issues/124)) |
 | Host selection | "use *E. coli*" | not built |
@@ -106,8 +106,30 @@ than Engin's GP with expected improvement.
 | over 20 seeds | best-true-titer lift | forecast R² |
 |---|---|---|
 | RSM optima | **+21.3%** | 0.955 |
+| BayBE (off-the-shelf BO) | **+21.3%** | — |
 | Engin (GP + EI) | +15.9% | 0.962 |
 | random batch | −24.5% | — |
+
+**A third baseline beats Engin, and this one is not a textbook method.** BayBE —
+Merck's Bayesian optimization library, GP surrogate over BoTorch — proposes better
+designs than Engin's expected improvement on **20 of 20 seeds**, on the identical
+protocol: same 120-point design, same 70-run training split, same batch of eight,
+scored on noise-free true titer. Reproduce with
+`python benchmarks/baybe_baseline.py --seeds 20` and the `[bo]` extra.
+
+That matters more than the two RSM results. RSM is what a process engineer already
+does, so losing to it says the floor is above us. BayBE is what the field's current
+practice looks like, so this says something about the ceiling.
+
+```{warning}
+**BayBE's +21.3% is the same number as RSM's, and that is a coincidence — not two
+methods finding one optimum.** The obvious reading is that both saturate at the
+best batch this design space allows. They do not: BayBE's per-seed lifts are all
+twenty distinct, spanning +4.5% to +40.9%, so nothing is hitting a ceiling. The
+means agree to one decimal and the runs do not agree seed by seed.
+
+Checked because the tidier story was the one worth doubting.
+```
 
 ```text
 provenance: engin-core 0.1.0  |  @ aeec0dd  |  seeds 0-19 (n=20)  |  simulator defaults  |  numpy 2.5.2  |  run 2026-08-15

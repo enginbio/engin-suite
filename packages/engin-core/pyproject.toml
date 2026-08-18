@@ -39,6 +39,20 @@ cli = ["pyyaml>=6.0"]
 # while this package supports 3.10+, and pulls ~40 transitive dependencies including
 # numba and thermo. Keeping it out of the default install preserves the light path.
 tea = ["biosteam>=2.51; python_version >= '3.12'"]
+# The off-the-shelf Bayesian-optimization baseline (#20). Optional for a reason
+# that is sharper than "torch is heavy":
+#
+#   On macOS x86_64 torch has **no current wheel at all** -- the last release
+#   carrying one is 2.2.2, and 2.3.0 onward ships zero. So on that platform BayBE
+#   installs only against a two-year-old torch, which in turn predates the numpy 2
+#   ABI and raises "RuntimeError: Numpy is not available" until numpy is held
+#   below 2. A default dependency here would make this package unbuildable on such
+#   a machine at any current version.
+#
+# BayBE rather than Ax (Apache-2.0 matches D3, and its floor is >=3.10 against
+# Ax's >=3.11) and rather than ProcessOptimizer, which docs/ecosystem.md offers as
+# the torch-free alternative and which pulls torch too -- see #191.
+bo = ["baybe>=0.13; python_version >= '3.10'"]
 # The D11 data convention (engin_core.convention). Optional because the modelling
 # path needs none of it: the convention is the entry point for people bringing
 # their own data, not for the core loop, and keeping xarray and pandas out of the
