@@ -101,10 +101,26 @@ the situation has improved and this page is what should be updated.
 - **The bundled simulator cannot reproduce industrial COGS structure.** At the
   cost model's default substrate price ($0.55/kg, glucose-scale) and this simulator's <!-- not-a-claim: our own model default, set in tea.py -->
   substrate-to-product ratio at 1–2 L scale, raw material lands at roughly **2%** <!-- not-a-claim: measured on our own simulator; pinned in test_tea.py -->
-  of modelled cost, where the literature has substrate cost as a dominant term
-  set by yield — "more than 50% of the total costs" for commodity chemicals
+  of modelled cost.
+
+  **Corrected 2026-08-18: this bullet compared against the wrong end of the
+  continuum (#122).** It read that raw material lands at 2% "where the literature
+  has substrate cost as a dominant term set by yield — 'more than 50% of the total
+  costs' for commodity chemicals"
   ([Konzock & Nielsen 2024](https://doi.org/10.1016/j.tibtech.2024.04.007)).
   <!-- ref: 2024-konzock-try-costs -->
+  But `D13`'s other citation says the split **slides with selling price**, and the
+  cost model's defaults encode a **$200/kg specialty product**, not a commodity.
+  Straathof puts downstream at ~15% for ethanol at ~$0.5/kg against 45–92% for
+  biopharmaceuticals; a $200/kg product is not supposed to have commodity cost
+  structure, so being downstream-dominated here is predicted rather than anomalous.
+  <!-- ref: 2011-straathof-downstream-costs -->
+
+  The gap is still real — 2% sits below the 15–60% carbohydrate-feedstock range
+  Straathof reports across every process he analysed
+  <!-- ref: 2011-straathof-downstream-costs --> — but **its size cannot be
+  stated while the product class is undeclared**, because the figure it should be
+  compared against is a function of that class.
   That $0.55 is a model default rather than a quoted market rate: no open,
   citable price series for bulk industrial glucose was found, and the trade
   sources that carry one are paywalled. Reaching a comparable cost share here

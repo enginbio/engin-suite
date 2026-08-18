@@ -36,19 +36,39 @@ about either the performance of the cell factory or the fermentation process".
 An earlier version of this table gave a 35-50 / 20-25 / 15-20 split. Those
 figures were not sourceable and are gone -- see D13.
 
-**The bundled simulator cannot reproduce those shares, and that is worth knowing.**
-With realistic media prices (glucose ~$0.55/kg) and this simulator's substrate-to-
-product ratio of ~3.6 kg/kg at 1–2 L scale, raw material lands near **2%** of modelled
-cost, not the dominant share the literature describes. Reaching a comparable
-share would require pricing substrate at
-roughly **$28/kg**, which is not a feedstock, it is a fiction.
+**These defaults describe a product class, and it is worth saying which.** A
+$200/kg target against a $46/kg recovery cost at a 40 g/L reference titer is
+**specialty / enzyme-class economics**. It is not ethanol, and it is not a
+biopharmaceutical either. Nothing in this module said so until 2026-08-18, which
+made the comparison below hard to read (#122).
 
-So the defaults keep realistic unit costs and the modelled process is
-facility- and downstream-dominated. The consequence is concrete: **the yield lever —
-the one the literature says dominates real COGS — is nearly invisible on this
-simulator**, so cost optimization here is driven by the other two terms. Anyone
-using this to argue about industrial economics needs a representative process, not
-this one.
+**The simulator understates raw material, but by less than this docstring used to
+claim.** With glucose at ~$0.55/kg and this simulator's substrate-to-product ratio
+of ~3.6 kg/kg at 1–2 L scale, raw material lands near **2%** of modelled cost.
+Reaching a *commodity* share would require substrate at roughly **$28/kg**, which
+is not a feedstock, it is a fiction.
+
+**But a commodity share is the wrong benchmark for these defaults, and comparing
+against it was a category error.** This paragraph used to read "not the dominant
+share the literature describes", citing Konzock's ">50% of the total costs ... for
+commodity products such as ethanol". `D13`'s other citation says the split *slides
+with selling price*: Straathof puts downstream at roughly 15% for ethanol at
+~$0.5/kg, rising to 60-70% for enzymes and 45-92% for biopharmaceuticals against
+20-40% for bulk products. **A $200/kg product is not supposed to have commodity
+cost structure.** Being downstream-dominated at that price point is the predicted
+behaviour, not the anomaly.
+
+**The gap is real and smaller than stated.** 2% still sits below the 15-60%
+carbohydrate-feedstock range Straathof reports across every process he analysed,
+so the simulator does understate feedstock even for a specialty product. What
+cannot be stated is *by how much*, because the number it should be compared
+against is a function of the product class -- which is `D13`'s own argument, and
+is why declaring the class above is a prerequisite rather than a nicety.
+
+The consequence for optimization is unchanged: **the yield lever is nearly
+invisible on this simulator**, so cost optimization here is driven by the other
+two terms. Anyone using this to argue about industrial economics needs a
+representative process, not this one.
 
 **Note the sign on titer, because an earlier version of this module had it backwards.**
 Higher titer *reduces* downstream cost — less water to remove, smaller equipment,
