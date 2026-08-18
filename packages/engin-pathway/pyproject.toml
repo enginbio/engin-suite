@@ -68,7 +68,11 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q -m 'not network'"
+# Network tests are opt-in: `pytest -m network`. CI must not depend on
+# rhea-db.org being reachable -- a suite that goes red because someone else's
+# server is down teaches people to ignore red.
+markers = ["network: hits an external service (Rhea); deselected by default"]
 # Run from a bare checkout without relying on an editable install: this package's
 # own src plus the sibling engin-core it imports. pytest resolves these relative
 # to rootdir, and .pth-provided paths are not visible during a pytest run.
