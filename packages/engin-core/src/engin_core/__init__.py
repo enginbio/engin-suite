@@ -7,6 +7,16 @@ active-learning next-batch recommender, and an ARD sensitivity readout.
 
 from __future__ import annotations
 
+from .evidence import (
+    Assumption,
+    Baseline,
+    EvidenceReport,
+    IntervalClaim,
+    IntervalKind,
+    ReproStamp,
+    ValidationTier,
+    report,
+)
 from .gp import (
     GP,
     conformal_coverage_interval,
@@ -66,6 +76,14 @@ __all__ = [
     "unit_to_physical",
     "KNOBS",
     "KNOB_NAMES",
+    "Assumption",
+    "Baseline",
+    "EvidenceReport",
+    "IntervalClaim",
+    "IntervalKind",
+    "ReproStamp",
+    "ValidationTier",
+    "report",
     "HostDecision",
     "RankedRoute",
     "RouteRanking",
