@@ -128,6 +128,10 @@ def step_from_reaction(
             "g_cofactor": g_cofactor,
             "g_tox": g_tox,
             "g_expr": g_expr,
-        }
+        },
+        # Only g_thermo came from a source. Marking it is what stops this mixed
+        # step reading as a fully measured one downstream (#140 item 4) -- the
+        # gap this function opened when it shipped without the field.
+        measured=frozenset({"g_thermo"}),
     )
     return step, (float(low), float(high))
