@@ -18,7 +18,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.stats import spearmanr
 
-from .model import CalibratedFitnessModel
+from .model import CalibratedFitnessModel, level_for_split
 from .schema import Campaign, ScoredDesign, Variant
 
 
@@ -64,6 +64,7 @@ class DesignEvaluator:
                 f"campaign of {len(variants)} measured variants is too small to split "
                 f"into fit and calibration sets; need at least 4"
             )
+        level = level_for_split(n_cal, level, context="DesignEvaluator.fit")
         self.model.fit(variants[:-n_cal]).calibrate(variants[-n_cal:], level=level)
         return self
 

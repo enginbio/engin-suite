@@ -182,6 +182,26 @@ def smallest_calibration_set(level: float = 0.90) -> int:
     return n
 
 
+def highest_attainable_level(n_cal: int) -> float:
+    """The largest coverage level a calibration set of ``n_cal`` can support.
+
+    The exact inverse of :func:`smallest_calibration_set`. The conformal index
+    condition ``ceil((n+1) * level) <= n`` rearranges to ``level <= n / (n+1)``,
+    so the ceiling is simply ``n / (n+1)`` -- 0.900 at n=9, 0.973 at n=36, 0.990
+    at n=99.
+
+    Useful in the direction a user actually asks: they have the calibration set
+    they have, and the question is what level it can honestly carry, not how many
+    more points a chosen level would need.
+
+    # implements D8; ref: 2018-lei-distribution-free
+    """
+    n = int(n_cal)
+    if n < 1:
+        raise ValueError(f"n_cal must be positive, got {n_cal}")
+    return n / (n + 1.0)
+
+
 def conformal_coverage_interval(
     n_cal: int, level: float = 0.90, delta: float = 0.10
 ) -> tuple[float, float, float]:

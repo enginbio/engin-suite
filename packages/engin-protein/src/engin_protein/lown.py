@@ -24,7 +24,7 @@ from numpy.typing import NDArray
 from sklearn.linear_model import Ridge
 
 from .featurize import OneHotPhysicochemical
-from .model import CalibratedFitnessModel
+from .model import CalibratedFitnessModel, level_for_split
 from .schema import Campaign, ScoredDesign, Variant
 
 
@@ -64,6 +64,7 @@ class LowNCopilot:
         if len(variants) < 4:
             raise ValueError(f"need at least 4 measured variants; got {len(variants)}")
         n_cal = max(2, int(round(self.cal_fraction * len(variants))))
+        level = level_for_split(n_cal, level, context="LowNCopilot.fit")
         self.model.fit(variants[:-n_cal]).calibrate(variants[-n_cal:], level=level)
         self._best_observed = float(max(v.fitness for v in variants))
         return self

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from engin_core import highest_attainable_level
 
 from engin_protein import CalibratedFitnessModel, OneHotPhysicochemical, make_landscape
 
@@ -30,10 +31,52 @@ def test_intervals_are_calibrated():
 
 
 def test_calibration_widens_with_a_higher_level():
+    # 0.80 and 0.90 on purpose. This used to compare 0.80 against 0.99, which the
+    # 36-variant calibration split cannot support at all (#197): the 0.99 branch
+    # fell back to the largest observed score, so the assertion passed by
+    # exercising the fallback path while reading as a test of the conformal one.
+    # These two map to distinct conformal ranks -- the 30th and 34th smallest
+    # score -- so the comparison is between two real quantiles.
     _, train, cal = _split()
-    m80 = CalibratedFitnessModel().fit(train).calibrate(cal, level=0.80)
-    m99 = CalibratedFitnessModel().fit(train).calibrate(cal, level=0.99)
-    assert m99.q > m80.q
+    m80 = CalibratedFitnessModel().fit(train).calibrate(cal, level=0.80, warn_below_slack=None)
+    m90 = CalibratedFitnessModel().fit(train).calibrate(cal, level=0.90, warn_below_slack=None)
+    assert m90.q > m80.q
+    assert (m80.level, m90.level) == (0.80, 0.90)
+    assert m80.n_calibration == m90.n_calibration == len(cal)
+
+
+def test_calibrate_refuses_a_level_the_split_cannot_support():
+    # The bug this issue is about, now an exception rather than a mislabelled
+    # interval. engin-core warns here; this package raises, because the multiplier
+    # becomes a ScoredDesign bound the user reads as *the* interval at `level`.
+    _, train, cal = _split()
+    model = CalibratedFitnessModel().fit(train)
+    with pytest.raises(ValueError, match=r"above what \d+ calibration variants can support"):
+        model.calibrate(cal, level=0.99)
+    # The message carries the fix, not just the complaint.
+    with pytest.raises(ValueError, match=r"ceiling is n/\(n\+1\) = 0\.9730"):
+        model.calibrate(cal, level=0.99)
+    # And the ceiling itself is attainable.
+    model.calibrate(cal, level=highest_attainable_level(len(cal)), warn_below_slack=None)
+    assert model.q is not None
+
+
+def test_the_top_of_the_level_range_is_a_plateau():
+    # Worth pinning because it makes "higher level always widens" false, and a
+    # future edit picking two levels from inside the plateau would look like a
+    # regression in the test above rather than a property of small n.
+    # At n=36 any level above 35/37 takes the 36th smallest score -- the maximum --
+    # so 0.95 and 0.97 are the same interval.
+    _, train, cal = _split()
+    assert len(cal) == 36
+    fitted = CalibratedFitnessModel().fit(train)
+    q95 = CalibratedFitnessModel().fit(train).calibrate(cal, level=0.95, warn_below_slack=None).q
+    q97 = CalibratedFitnessModel().fit(train).calibrate(cal, level=0.97, warn_below_slack=None).q
+    assert q95 == pytest.approx(q97)
+    # ...and both sit at the largest calibration score, which is the ceiling of
+    # what 36 points can express however high the level goes.
+    below = fitted.calibrate(cal, level=0.90, warn_below_slack=None).q
+    assert q95 > below
 
 
 def test_score_requires_calibration():
