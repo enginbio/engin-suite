@@ -84,6 +84,89 @@ the true mean?* A forecast interval has to answer *where will the next
 measurement land?*, which also has to carry observation noise. Including the
 noise term (row two) fixes most of it.
 
+The same three intervals across a range of nominal levels, rather than only at
+90%. <!-- not-a-claim: the nominal level we asked for --> A calibration curve is the honest way to look at this: the diagonal is
+perfect calibration, below it is overconfidence, above it is conservatism.
+
+```{code-cell} python
+import matplotlib.pyplot as plt
+
+LEVELS = np.array([0.50, 0.60, 0.70, 0.80, 0.85, 0.90, 0.95])
+
+def coverage_curves(seeds):
+    """Empirical coverage at each nominal level, averaged over seeds.
+
+    One GP fit per seed, reused across levels -- the fit does not depend on the
+    level, only the multiplier does. `warn_below_slack=None` silences the
+    small-calibration-set warning per level; the size question is the subject of
+    its own section below rather than something to repeat seven times here.
+    """
+    out = {k: [] for k in ("epistemic", "gaussian", "conformal")}
+    for seed in seeds:
+        U, y = campaign(seed)
+        tr, ca, te = slice(0, 70), slice(70, 100), slice(100, 120)
+        gp = fit_gp(U[tr], y[tr], seed=seed)
+        mc, sdc = gp.predict(U[ca], include_noise=True)
+        m_noise, sd_noise = gp.predict(U[te], include_noise=True)
+        m_epi, sd_epi = gp.predict(U[te], include_noise=False)
+        err_noise, err_epi = np.abs(m_noise - y[te]), np.abs(m_epi - y[te])
+        z = norm.ppf(0.5 + LEVELS / 2)
+        out["epistemic"].append([np.mean(err_epi <= zi * sd_epi) for zi in z])
+        out["gaussian"].append([np.mean(err_noise <= zi * sd_noise) for zi in z])
+        out["conformal"].append([
+            np.mean(err_noise <= split_conformal_multiplier(
+                y[ca], mc, sdc, level=L, warn_below_slack=None) * sd_noise)
+            for L in LEVELS
+        ])
+    return {k: np.mean(v, axis=0) for k, v in out.items()}
+
+curves = coverage_curves(range(6))
+
+# Neutral grey and transparent background so the figure reads on the light and
+# dark site themes alike; axes pinned to the full [0,1] probability range rather
+# than auto-scaled, which is the axis choice that would flatter this most.
+GREY = "#6b7280"
+fig, ax = plt.subplots(figsize=(5.2, 5.2))
+fig.patch.set_alpha(0)
+ax.patch.set_alpha(0)
+ax.plot([0, 1], [0, 1], color=GREY, ls="--", lw=1, label="perfect calibration", zorder=1)
+for key, label, colour, marker in (
+    ("epistemic", "epistemic-only Gaussian", "#dc2626", "v"),
+    ("gaussian", "Gaussian, noise included", "#2563eb", "s"),
+    ("conformal", "split conformal", "#059669", "o"),
+):
+    ax.plot(LEVELS, curves[key], marker=marker, color=colour, label=label, zorder=2)
+ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_aspect("equal")
+ax.set_xlabel("nominal level"); ax.set_ylabel("empirical coverage")
+ax.set_title("Calibration curve, 6 seeds, 20 test points each", fontsize=10, color=GREY)
+for spine in ("top", "right"):
+    ax.spines[spine].set_visible(False)
+for spine in ("left", "bottom"):
+    ax.spines[spine].set_color(GREY)
+ax.tick_params(colors=GREY)
+ax.xaxis.label.set_color(GREY); ax.yaxis.label.set_color(GREY)
+ax.legend(fontsize=8, loc="upper left", frameon=False, labelcolor=GREY)
+fig.tight_layout()
+```
+
+Read it in three parts, and the third is the one that matters.
+
+**The red curve is below the diagonal everywhere** — not by a little, and not
+only at 90%. <!-- not-a-claim: the nominal level we asked for --> Epistemic-only intervals are overconfident at every
+level anyone would ask for.
+
+**The blue curve sits on the diagonal.** On this problem, including the noise
+term genuinely works. The figure is not evidence against it, and the next
+section says so at length.
+
+**The green curve is at or above the diagonal everywhere, never below.** That is
+what split conformal buys, and it is worth being precise about what it is: not
+better calibration than blue, but calibration that is *conservative by
+construction* rather than correct by assumption. Above the diagonal means
+intervals slightly wider than asked for. That is the direction an honest interval
+should err in, and the finite-sample guarantee is one-sided for exactly this
+reason.
+
 ## Why conformal, when row two already looks fine
 
 Read the second row honestly: on this simulator, adding the noise term gets
