@@ -209,8 +209,7 @@ def test_json_round_trips_and_is_machine_readable():
     assert payload["intervals"][0]["kind"] == "propagated"
     assert payload["repro"]["seeds"]["cost_samples"] == 7
     assert any(
-        a["name"] == "target_usd_per_kg" and not a["is_default"]
-        for a in payload["assumptions"]
+        a["name"] == "target_usd_per_kg" and not a["is_default"] for a in payload["assumptions"]
     )
 
 
