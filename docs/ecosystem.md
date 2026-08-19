@@ -356,7 +356,16 @@ BSD-3. The scikit-learn-contrib conformal library.
   an sklearn-compatible API.
 - **Pro** — `StdConformityScore` conformalizes an estimator that already reports a
   predictive standard deviation, so a GP forecast can be conformalized without
-  discarding the model's own variance.
+  discarding the model's own variance. **Pin `mapie>=1.5.0` if you want it.** It
+  shipped in 1.5.0 (2026-08-05) and does not exist at 1.4.1 or below — verified by
+  reading `mapie/conformity_scores/bounds/__init__.py` at both tags, where the export
+  list gains `StdConformityScore` only at 1.5.0. Paired with
+  `CrossConformalRegressor(method="plus")` it is the construction MAPIE's own
+  docstring calls J+GP, citing Jaber et al.; the preprint is
+  [arXiv:2401.07733](https://arxiv.org/abs/2401.07733), whose abstract describes
+  weighting non-conformity scores by the GP posterior standard deviation. The
+  published version named in that docstring is behind a paywall this page could not
+  read, so it is reported as MAPIE's citation rather than as one checked here.
 - **Con** — the v1 API is a rewrite; most tutorials on the internet target the dead
   v0 classes. The newer conditional-conformal features require torch, so
   "lightweight" holds only on the classical path.
@@ -426,9 +435,20 @@ releases through 2026, so treat that as withdrawn rather than merely softened. O
 thing to know before depending on it: the MIT licence is declared in packaging
 metadata and per-file headers, and there is no top-level LICENSE file — which this
 page treats as disqualifying elsewhere, so it is named here too.
-[venn-abers](https://github.com/ip200/venn-abers) solves a
+[venn-abers](https://github.com/ip200/venn-abers) (MIT) solves a
 different problem — validity of predicted *probabilities* for go/no-go decisions —
-and is a complement, not a substitute.
+and is a complement, not a substitute. **If you depend on it, pin `>=1.5.4`.** That
+release (2026-08-12) is a correctness fix, not a feature drop: its notes state that
+`VennAbersCV.fit` had been reusing one mutated estimator across folds, leaving
+`self.estimators_` holding "K+1 references to a single mutated object", that
+`predict_interval` scored the test set with the final fold's model and applied other
+folds' calibrators to it, that `epsilon` was ignored entirely on the
+cross-validation path, and that the regression upper bound returned a slope instead
+of the extreme calibration label when a test prediction exceeded all calibration
+predictions. A pin below 1.5.4 is silently miscalibrated in the cross path — the
+failure mode this page exists to warn about, and one no version-range check catches.
+Reference: [release v1_5_4](https://github.com/ip200/venn-abers/releases/tag/v1_5_4).
+*(Checked 2026-08-19.)*
 
 **Dead ends.** [nonconformist](https://github.com/donlnz/nonconformist), the historical
 reference implementation, has been dormant since 2021; crepes is the natural migration
