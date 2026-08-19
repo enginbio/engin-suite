@@ -43,6 +43,40 @@ def test_recommend_batch_is_diverse_and_shaped():
             assert np.linalg.norm(X[i] - X[j]) > 0.15
 
 
+def test_recommendation_never_repeats_a_design_already_run():
+    """The filter's second memory (#224).
+
+    This is the assertion whose absence let the defect survive: the old test above
+    checks diversity *within* the returned batch, which the filter always enforced,
+    and says nothing about the training designs.
+    """
+    U, y, _ = _dataset(seed=0)
+    gp = fit_gp(U, y, seed=0)
+    X, *_ = recommend_batch(gp, float(y.max()), k=8, seed=1, min_dist=0.15)
+    for x in X:
+        assert np.min(np.linalg.norm(gp.X - x, axis=1)) > 0.15
+
+
+def test_multi_round_campaign_stops_re_running_measured_conditions():
+    """The user-visible symptom: a fixed-pool campaign used to converge onto repeats.
+
+    Rounds are run with the *default* fixed ``seed``, which is the trap #224
+    describes -- the candidate pool is byte-identical every round, so without the
+    ``gp.X`` check the same high-EI points are returned again and again. The waste
+    is measured in reactor runs, so the assertion counts designs, not titer.
+    """
+    U, y, _ = _dataset(seed=0)
+    for _ in range(3):
+        gp = fit_gp(U, y, seed=0)
+        X, *_ = recommend_batch(gp, float(y.max()), k=8, min_dist=0.15)
+        # nothing proposed this round duplicates anything already run
+        for x in X:
+            assert np.min(np.linalg.norm(U - x, axis=1)) > 0.15
+        y_new = np.maximum(simulate_unit(X), 0.0)
+        U = np.vstack([U, X])
+        y = np.concatenate([y, y_new])
+
+
 def test_recommended_batch_beats_prior_best():
     # Self-validating active learning: simulate the *true* titer of the runs the
     # model recommends and confirm the best of them reaches or exceeds the best

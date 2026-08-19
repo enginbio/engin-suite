@@ -143,7 +143,33 @@ def test_recommend_batch_by_cost_returns_diverse_designs():
     assert X.shape == (6, 5) and acq.shape == (6,)
     for i in range(len(X)):
         for j in range(i + 1, len(X)):
-            assert np.linalg.norm(X[i] - X[j]) >= 0.15
+            assert np.linalg.norm(X[i] - X[j]) > 0.15
+
+
+def test_cost_recommendation_never_repeats_a_design_already_run():
+    """#224, the D13 recommender's half of it.
+
+    **The training set is drawn from the recommender's own candidate pool, and the
+    pool parameters are pinned to a case that actually fails without the fix.** Both
+    halves are load-bearing. A GP fitted on unrelated random points passes against
+    the unfixed code by luck -- in 5D with ``min_dist=0.15`` a fresh candidate rarely
+    lands inside a training point's exclusion ball -- and so does the pool-seeded
+    version at most ``(pool, seed)`` combinations, because an already-measured design
+    usually carries low acquisition and sorts far down the order.
+
+    At ``pool=400, seed=2`` it does not: the unfixed recommender returns a design at
+    distance **0.0** from a training point, an exact repeat. Verified by reverting
+    ``recommend.py`` and ``tea.py`` and re-running. If this test ever stops failing
+    against the unfixed code, it has stopped testing anything.
+    """
+    pool, seed = 400, 2
+    candidates = np.random.default_rng(seed).random((pool, 5))
+    already_run = candidates[:40]
+    gp = fit_gp(already_run, simulate_unit(already_run), seed=0)
+
+    X, _ = recommend_batch_by_cost(gp, best_cost=200.0, k=6, pool=pool, seed=seed)
+    for x in X:
+        assert np.min(np.linalg.norm(gp.X - x, axis=1)) > 0.15
 
 
 # ------------------------------------------------------- the pinned findings

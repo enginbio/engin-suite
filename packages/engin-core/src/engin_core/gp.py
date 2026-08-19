@@ -298,14 +298,40 @@ def split_conformal_multiplier(
     # implements D8; ref: 2002-papadopoulos-inductive-confidence
     # ref: 2018-lei-distribution-free
 
-    **Not** the same as MAPIE's ``ResidualNormalisedScore``, despite an earlier
-    claim here. That score belongs to the same family but estimates ``sigma_i``
-    with a *separate learned model* fitted to log-residuals (conformalized residual
-    fitting). Using the GP's own predictive sd needs no second model, which matters
-    in the low-N regime this project targets, and is the natural choice when the
-    base estimator already emits a principled uncertainty. MAPIE does not offer
-    normalize-by-base-model-sd out of the box, which is why this function exists
-    rather than wrapping it (D9).
+    **Not** the same as MAPIE's ``ResidualNormalisedScore``. That score belongs to
+    the same family but estimates ``sigma_i`` with a *separate learned model* fitted
+    to log-residuals (conformalized residual fitting). Using the GP's own predictive
+    sd needs no second model, which matters in the low-N regime this project targets,
+    and is the natural choice when the base estimator already emits a principled
+    uncertainty.
+
+    **The `D9` exemption is narrower than it used to be, because MAPIE caught up.**
+    This docstring previously said "MAPIE does not offer normalize-by-base-model-sd
+    out of the box, which is why this function exists rather than wrapping it (D9)."
+    That was true when written and stopped being true on **2026-08-05**, when MAPIE
+    1.5.0 added ``mapie.conformity_scores.StdConformityScore`` (#225). It is not a
+    future capability: ``pyproject.toml`` floors at ``mapie>=1.0`` and there is no
+    environment this package supports where that resolves below 1.5.0.
+
+    The score really is the same one. Checked by execution rather than by reading:
+    ``StdConformityScore`` carries ``sym=True``, and while its
+    ``get_signed_conformity_scores`` returns the *signed* ``(y - y_pred)/y_std``, the
+    public ``get_conformity_scores`` symmetrizes to ``|y - y_pred|/y_std`` — bitwise
+    ``np.allclose`` to the ``scores`` line below.
+
+    **What still justifies this function is the shape and the guards, not the score.**
+    MAPIE returns per-point bounds; this returns a bare scalar ``q`` for
+    ``mean ± q*sd``, and that scalar is load-bearing across ``GP.q90``, the package
+    README, the benchmarks and the demo. MAPIE also ships none of the small-n
+    machinery added in #144: the ``_conformal_rank(n, level)/n`` finite-sample rule
+    with ``method="higher"``, the ``smallest_calibration_set`` floor and its warning,
+    or the Beta coverage-spread warning governed by ``warn_below_slack``.
+
+    Whether that narrower exemption still clears `D9` is a maintainer judgement. It
+    is written down here so the question can actually be asked, which an argument
+    from a false premise prevented.
+
+    # implements D9; ref: 2026-mapie-std-conformity-score
     """
     y_cal = np.asarray(y_cal, float)
     mean_cal = np.asarray(mean_cal, float)

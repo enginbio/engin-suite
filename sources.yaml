@@ -902,6 +902,36 @@ sources:
       of the bioreactor"; that sentence is not in the abstract, so the claim rows
       below cite what the abstract does state instead.
 
+  - id: 2026-mapie-std-conformity-score
+    title: >-
+      MAPIE 1.5.0 — StdConformityScore, standard-deviation-normalized conformal
+      prediction from a base model's own predictive sd
+    authors: [MAPIE contributors]
+    year: 2026
+    venue: scikit-learn-contrib/MAPIE, release 1.5.0 (BSD-3)
+    location: https://github.com/scikit-learn-contrib/MAPIE/blob/v1.5.0/mapie/conformity_scores/bounds/std_normalised.py
+    accessed: 2026-08-19
+    stability: url
+    url_only_because: >-
+      A library capability at a specific tag. There is no DOI for a release, and
+      the tagged source file is the artefact the claim is actually about.
+    type: software
+    note: >-
+      **Pinned to a version on purpose (#225).** The claim this backs is a
+      capability claim about a moving dependency, and the previous version of it
+      -- "MAPIE does not offer normalize-by-base-model-sd out of the box", in
+      `gp.py`'s D9 exemption -- was true when written and expired silently when
+      1.5.0 shipped on 2026-08-05. Absent from v1.4.1; present in v1.5.0.
+
+      Verified by execution on 2026-08-19, not by reading: with mapie 1.5.0
+      installed, `StdConformityScore` carries `sym=True`, and although
+      `get_signed_conformity_scores` returns the signed `(y - y_pred)/y_std`, the
+      public `get_conformity_scores` symmetrizes to `|y - y_pred|/y_std` and is
+      `np.allclose` to engin-core's own score. #225 asserted the equivalence from
+      source-reading and flagged that it could not run it; this row is the run.
+
+      Re-check against the then-current MAPIE, not against "MAPIE".
+
 claims:
 
   # -- The scale-invariance limitation (#190). Both rows are `supports` for the
@@ -1151,6 +1181,27 @@ claims:
       the table's numbers are simply not used, and no threshold in engin-core is
       derived from them. Recorded rather than quietly avoided: a future reader
       tempted to cite that table should know it was checked and did not resolve.
+
+  - doc: packages/engin-core/src/engin_core/gp.py
+    tier: A
+    source_id: 2026-mapie-std-conformity-score
+    claim: >-
+      MAPIE offers normalize-by-base-model-sd conformal scoring, so the D9
+      exemption for split_conformal_multiplier rests on the scalar-multiplier API
+      shape and the #144 small-n guards rather than on MAPIE lacking the score.
+    strength: contradicts
+    reviewed: 2026-08-19
+    note: >-
+      Records the correction rather than hiding it (#225). The docstring's earlier
+      claim -- that MAPIE does not offer this out of the box -- was accurate until
+      MAPIE 1.5.0 on 2026-08-05 and false afterwards, and `docs/ecosystem.md`
+      already said so while the code did not. Two documents in this repository
+      disagreed about a fact and the code was on the wrong side.
+
+      Worth recording as a process finding too: the D23 pass reviewed the MAPIE
+      component row on 2026-08-15, *at the version that added the class*, and the
+      contradicting sentence twelve files away survived it. The register checks
+      that claims have sources, not that a source still says what the prose claims.
 
   - doc: packages/engin-core/src/engin_core/gp.py
     tier: A

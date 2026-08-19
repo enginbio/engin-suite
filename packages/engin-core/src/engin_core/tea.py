@@ -89,6 +89,7 @@ from pydantic import BaseModel, Field
 from scipy.optimize import brentq
 
 from .gp import GP, prob_at_least
+from .recommend import _is_far_enough
 from .simulator import DEFAULT_REACTOR, ReactorConfig, unit_to_physical
 
 __all__ = [
@@ -791,6 +792,13 @@ def recommend_batch_by_cost(
     mechanistic simulator they largely agree, because its titer-optimal designs also
     have high yield — see ``tests/test_tea.py``. The disagreement D13 anticipates
     needs a design space where pushing titer costs yield or rate.
+
+    **The diversity filter also excludes designs already in ``gp.X``**, not only the
+    other picks in this batch. It checked only the batch until 2026-08-19 (#224),
+    which made a multi-round campaign re-propose conditions it already had data for.
+    The check is shared with :func:`engin_core.recommend.recommend_batch` via
+    ``_is_far_enough`` so the two cannot drift apart again -- they previously
+    disagreed on the boundary as well, ``>=`` here against ``>`` there.
     """
     rng = np.random.default_rng(seed)
     candidates = rng.random((pool, len(gp.ell)))
@@ -799,7 +807,7 @@ def recommend_batch_by_cost(
     chosen: list[int] = []
     for idx in np.argsort(-acq):
         x = candidates[idx]
-        if all(np.linalg.norm(x - candidates[j]) >= min_dist for j in chosen):
+        if _is_far_enough(x, candidates, chosen, gp.X, min_dist):
             chosen.append(int(idx))
         if len(chosen) == k:
             break
