@@ -37,7 +37,6 @@ from engin_core import simulator as sim
 from engin_core.tea import CostParameters, cost_summary
 
 OUT = os.path.join(os.path.dirname(__file__), "outputs")
-os.makedirs(OUT, exist_ok=True)
 RNG = np.random.default_rng(7)
 
 
@@ -46,6 +45,11 @@ def add_noise(y, rng, rel=0.05, abs_=0.4):
 
 
 def main():
+    # Created here rather than at import. Importing a module should not touch the
+    # filesystem, and the smoke test in tests/test_run_demo.py points OUT at a tmp
+    # directory before calling main() -- which only works if the directory is made
+    # when the demo runs rather than when it is imported.
+    os.makedirs(OUT, exist_ok=True)
     d = len(sim.KNOB_NAMES)
 
     # ---- 1. Synthetic runs, split train / calibration / test (all same dist) ----
