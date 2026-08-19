@@ -109,8 +109,13 @@ def fit_gp(X: ArrayLike, y: ArrayLike, seed: int = 0, n_restarts: int = 8) -> GP
     """Fit an ARD-RBF GP (sklearn, LML-optimized) and return the engin-core wrapper.
 
     The returned model is *not yet calibrated* -- call
-    :func:`split_conformal_multiplier` (preferred) or :func:`conformal_multiplier_oof`
-    and store the result on ``gp.q90`` before trusting its intervals.
+    :func:`split_conformal_multiplier` and store the result on ``gp.q90`` before
+    trusting its intervals.
+
+    :func:`conformal_multiplier_oof` is a **fallback, not a peer**, for the case
+    where no run can be spared for a calibration set. It carries no finite-sample
+    coverage guarantee; this docstring used to offer the two as alternatives without
+    saying so (#226).
     """
     X = np.asarray(X, float)
     y = np.asarray(y, float)
@@ -371,11 +376,49 @@ def split_conformal_multiplier(
 def conformal_multiplier_oof(
     X: ArrayLike, y: ArrayLike, level: float = 0.90, k: int = 5, seed: int = 0
 ) -> float:
-    """Out-of-fold conformal multiplier -- the no-held-out-set fallback.
+    """Out-of-fold multiplier -- the no-held-out-set fallback, with **no guarantee**.
 
     Refits the GP on k-1 folds and scores the held-out fold, so the residuals are
-    honestly out-of-sample. Prefer :func:`split_conformal_multiplier` when you can
-    spare a calibration set; use this when every run is too precious to hold out.
+    honestly out-of-sample. Prefer :func:`split_conformal_multiplier` whenever a
+    calibration set can be spared; use this when every run is too precious to hold
+    out.
+
+    **This is not split conformal and does not inherit its guarantee.** Pooling
+    out-of-fold residuals and applying their quantile to an interval centred on the
+    *all-data* refit is the jackknife/cross-conformal family. Barber, Candès, Ramdas
+    & Tibshirani prove the 1-2*alpha* bound for jackknife+ and CV+ precisely because
+    those pair each residual with the same fold model's prediction at the test point;
+    this construction does not, and no finite-sample bound has been proven for it.
+    Vovk says the same of cross-conformal predictors. The name says *conformal* for
+    continuity with the API, and that is the strongest word this function has earned.
+
+    **Its coverage is empirical, and it is close to nominal.** Measured on the
+    bundled simulator, 5 knobs, k=5, 6 seeds, 1200 test points, nominal 0.90:
+    n=25 -> 0.901, n=40 -> 0.887, n=60 -> 0.890. That is honest behaviour from a
+    construction with no proof behind it, which is a fact about this estimator on
+    this simulator and not a property anyone should rely on elsewhere.
+
+    **Do not "fix" the quantile to the split-conformal rule.** The obvious tidy-up is
+    to reuse :func:`_conformal_rank` here as :func:`split_conformal_multiplier` does.
+    It was measured (#226) and it makes the intervals materially worse in exactly the
+    low-N regime this function exists for, because the fold models train on ``k-1``
+    folds and their inflated residuals already supply the conservatism the ``(n+1)``
+    correction would add a second time:
+
+    ======  ===========  =============  ==============  ================
+    ``n``   ``q`` as-is  ``q`` "fixed"  coverage as-is  coverage "fixed"
+    ======  ===========  =============  ==============  ================
+    25      3.02         6.49           0.901           0.962
+    40      2.41         2.92           0.887           0.910
+    60      1.94         2.15           0.890           0.915
+    ======  ===========  =============  ==============  ================
+
+    At n=25 the "corrected" rule takes the 24-of-25th score and more than doubles the
+    multiplier for six points of coverage nobody asked for. Two effects cancelling is
+    not a design and nothing proves they keep cancelling -- which is the reason for
+    the warning above, not a reason to break the numbers.
+
+    # ref: 2021-barber-jackknife-plus
     """
     X = np.asarray(X, float)
     y = np.asarray(y, float)

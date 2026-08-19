@@ -544,6 +544,28 @@ sources:
     stability: doi
     type: paper
 
+  - id: 2021-barber-jackknife-plus
+    title: Predictive inference with the jackknife+
+    authors: [Barber, Rina Foygel, Candes, Emmanuel J., Ramdas, Aaditya, Tibshirani, Ryan J.]
+    year: 2021
+    venue: The Annals of Statistics 49(1) 486-507
+    location: https://doi.org/10.1214/20-AOS1965
+    accessed: 2026-08-19
+    stability: doi
+    type: paper
+    note: >-
+      Cited for what `conformal_multiplier_oof` does **not** have (#226). The
+      1-2alpha guarantee is proven for jackknife+ and CV+, which pair each residual
+      with the *same fold model's* prediction at the test point. Pooling out-of-fold
+      residuals and applying their quantile to an all-data refit is not that
+      construction and carries no finite-sample guarantee.
+
+      Scope kept honest deliberately: Theorem 2's failure case is the naive and
+      leave-one-out (K=n) constructions, and the paper defines no non-plus K-fold
+      interval at all. So the defensible statement is "no guarantee has been proven
+      for this construction, and the K=n endpoint of its family provably fails" --
+      not that k=5 has been shown to break.
+
   - id: 2021-angelopoulos-gentle-intro
     title: >-
       A Gentle Introduction to Conformal Prediction and Distribution-Free

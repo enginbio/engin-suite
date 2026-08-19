@@ -10,6 +10,7 @@ from scipy.stats import beta
 
 from engin_core import (
     conformal_coverage_interval,
+    conformal_multiplier_oof,
     fit_gp,
     mapie_split_interval,
     prob_at_least,
@@ -17,6 +18,7 @@ from engin_core import (
     smallest_calibration_set,
     split_conformal_multiplier,
 )
+from engin_core.gp import _conformal_rank
 
 GAUSS_90 = 1.645
 
@@ -168,3 +170,64 @@ def test_coverage_interval_narrows_with_n_and_documents_the_headline_numbers():
 def test_coverage_interval_is_undefined_below_the_floor():
     lo, mean, hi = conformal_coverage_interval(5, level=0.90)
     assert all(np.isnan(v) for v in (lo, mean, hi))
+
+
+# ------------------------------------------- the out-of-fold fallback (#226)
+#
+# Until 2026-08-19 this function had no test at all: exported from the package
+# __init__, covered by the api-stability guarantee, recommended by fit_gp's own
+# docstring, and exercised by nothing. These are deliberately behavioural rather
+# than numerical -- the point is that it is exercised and that its documented
+# properties hold, not to pin a multiplier nobody has a guarantee for.
+
+
+def test_oof_multiplier_runs_and_is_a_usable_multiplier():
+    X, y = _dataset(seed=0, n=40)
+    q = conformal_multiplier_oof(X, y, level=0.90, k=5, seed=0)
+    assert np.isfinite(q)
+    assert q > 0.0
+
+
+def test_oof_multiplier_is_monotone_in_level():
+    """A higher nominal level must not produce a narrower interval."""
+    X, y = _dataset(seed=1, n=40)
+    q80 = conformal_multiplier_oof(X, y, level=0.80, k=5, seed=0)
+    q95 = conformal_multiplier_oof(X, y, level=0.95, k=5, seed=0)
+    assert q95 >= q80
+
+
+def test_oof_multiplier_does_not_use_the_split_conformal_rank():
+    """Pins the deliberate divergence documented in the docstring (#226).
+
+    The tidy-looking change is to reuse ``_conformal_rank`` here, as
+    ``split_conformal_multiplier`` does. It was measured and rejected: at n=25 it
+    more than doubles the multiplier and lifts coverage to 0.962 against a nominal
+    0.90, in the low-N regime this function exists to serve.
+
+    This test fails if someone applies that correction, and the docstring carries
+    the numbers explaining why they should not.
+    """
+    X, y = _dataset(seed=2, n=25)
+    q = conformal_multiplier_oof(X, y, level=0.90, k=5, seed=0)
+
+    # reconstruct both candidate rules from the same pooled scores
+    n = len(X)
+    rng = np.random.default_rng(0)
+    folds = np.array_split(rng.permutation(n), 5)
+    scores = []
+    for f in folds:
+        mask = np.ones(n, bool)
+        mask[f] = False
+        g = fit_gp(X[mask], y[mask], seed=0)
+        m, sd = g.predict(X[f], include_noise=True)
+        scores.append(np.abs(y[f] - m) / np.maximum(sd, 1e-9))
+    pooled = np.concatenate(scores)
+    plain = float(np.quantile(pooled, 0.90))
+    corrected = float(
+        np.quantile(
+            pooled, min(_conformal_rank(len(pooled), 0.90) / len(pooled), 1.0), method="higher"
+        )
+    )
+
+    assert q == pytest.approx(plain)
+    assert corrected > plain  # the rejected rule really is the wider one
