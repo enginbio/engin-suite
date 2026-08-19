@@ -48,11 +48,10 @@ adr/index
 
 **Open tooling for bioprocess forecasting and scale-up economics.**
 
-Turn a handful of fermentation runs into a titer forecast with honest uncertainty, a recommendation for what to run next, and a probabilistic cost-per-kilogram read that accounts for recovery.
+Turn a handful of fermentation runs into a titer forecast with honest uncertainty, a recommendation for what to run next, and a probabilistic cost-per-kilogram read that accounts for recovery.<sup>\*</sup>
 
-```{warning}
-**Pre-1.0. The calibration is measured on real production data. Nearly
-everything else is not.**
+:::{dropdown} <sup>\*</sup> Pre-1.0 — the calibration is measured on real production data, and nearly everything else is not
+:animate: fade-in-slide-down
 
 The conformal intervals have been tested against 406 erythromycin batches from a
 working pharmaceutical plant, and they cover at close to their nominal rate. The
@@ -60,12 +59,15 @@ forecasts they wrap are close to uninformative on that data. Both halves are
 published, because the first without the second would be the more flattering and
 the less true account.
 
-Everything else below — the next-batch recommender, the optimization
-comparisons, pathway ranking — comes from a mechanistic simulator, not from real
-fermentation campaigns. That is a genuine limitation, not a formality: see
+Everything else — the next-batch recommender, the optimization comparisons,
+pathway ranking — comes from a mechanistic simulator, not from real fermentation
+campaigns. That is a genuine limitation, not a formality: see
 [Limitations](limitations) for the five-tier validation status and
 [Benchmarks](benchmarks) for exactly what has and has not been run.
-```
+
+This caveat is repeated on the pages where it actually bites, rather than only
+here — a reader about to trust a number should meet it there.
+:::
 
 ## Start where you are
 
@@ -96,17 +98,17 @@ Scoring chassis against a production requirement, with a confidence band and har
 :::
 
 :::{grid-item-card} Will my process get there?
-:link: guides/forecasting
+:link: quickstart
 :link-type: doc
 
-A titer forecast with a calibrated interval from a small number of runs, and what to run next.
+A titer forecast with a calibrated interval from a small number of runs, and what to run
+next — worked end to end on real batches, including where the forecast is weak.
 :::
 
 :::{grid-item-card} What will it cost?
-:link: guides/cost
-:link-type: doc
-
-Cost per kilogram as a distribution, including recovery — not a single number.
+Cost per kilogram as a distribution, including recovery. The **guide is unwritten**; what
+the model does and does not capture is in
+[Limitations](limitations), and the API is in [`engin_core.tea`](api/index).
 :::
 
 ::::
