@@ -10,7 +10,7 @@ Listed in order of how much it would help.
 
 **Real fermentation data**, or pointers to public datasets we've missed. This is the project's hardest problem and the field's too: process knowledge is trade secret, so there is no public corpus to learn from. A dataset with documented provenance is worth more than a feature. See `BIOSECURITY.md` for how contributed data is handled.
 
-**Benchmarks where Engin loses.** A benchmark suite that always favours its author is worthless. If a simpler baseline — plain DoE, a step-count heuristic, an off-the-shelf optimizer — beats Engin on a case, that belongs in the published results table alongside the wins. We will not quietly drop it.
+**Benchmarks where Engin loses.** A benchmark suite that always favours its author is worthless. If a simpler baseline — plain DoE, a step-count heuristic, an off-the-shelf optimizer — beats Engin on a case, that belongs in the published results table alongside the wins. We will not quietly drop it. **[How to actually do this](https://docs.engin.bio/en/latest/contributing-a-benchmark.html)** — the harness is real, one function is the whole contract, and reproducing a published result is two commands. This is the only contribution here that needs no lab, no proprietary data and no permission.
 
 **Domain corrections.** If a modelling assumption is wrong in a way that would be obvious to someone who has actually run a campaign, say so. Bluntly is fine.
 

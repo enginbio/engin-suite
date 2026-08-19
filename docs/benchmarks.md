@@ -1,5 +1,14 @@
 # Benchmarks
 
+
+```{admonition} Found a case where Engin loses?
+:class: tip
+
+That belongs in this table, and it will not be quietly dropped — see
+[Contributing a benchmark](contributing-a-benchmark.md). The harness is a clone
+away, a baseline is one function, and reproducing what is below is two commands.
+```
+
 ## Real data first
 
 Real-data validation has landed, so the numbers that matter lead:
