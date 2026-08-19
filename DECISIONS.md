@@ -166,7 +166,19 @@ Ordering, recorded as a constraint so it survives the temptation to reverse it. 
 
 *Validation.* Real-data calibration coverage published, the out-of-distribution failure mode published, and one non-synthetic worked example a stranger can run. **All three are done** as of 2026-08-11.
 
-*Evidence.* **Every main component backed by a curated literature review** covering its implementation, its motivation and its conclusions, **with citations** — and any defect that review surfaces actually fixed, not merely logged. This is `D23`'s programme, and it is **not started**: the packages currently carry zero citations between them.
+*Evidence.* **Every main component backed by a curated literature review** covering its implementation, its motivation and its conclusions, **with citations** — and any defect that review surfaces actually fixed, not merely logged. This is `D23`'s programme. **Satisfied as of 2026-08-15** (see the status correction below).
+
+**Status corrected 2026-08-19 (#242): the evidence condition above read "not started", and had been false for four days.** It also said "the packages currently carry zero citations between them", which was false by then too — the code carries eleven distinct `ref:` ids across `engin-core`, `engin-host` and `engin-protein`.
+
+The condition was met on **2026-08-15**, not on the 13th as #242 proposed. Checked against the register's own history rather than taken on the issue's word, because a status line correcting a stale date should not introduce another one:
+
+- 2026-08-13 — twelve component rows exist, **eight** carry evidence
+- 2026-08-14 — **eleven** carry evidence; `D23`'s issue set (#79–#89) and the defects it spun out (#103, #107) are closed
+- 2026-08-15 — the twelfth, engin-host's capability knowledge base and scoring, is evidenced. **The condition becomes true here.**
+
+None of the twelve rows is `unaudited` or `bespoke-unjustified`; all six packages are covered; `references.md` is published and #80's uncited-claim check runs in CI.
+
+**What this correction does not decide.** Both gate conditions are now satisfied as written, and what follows from that is the question #242 actually asks — whether the cost paragraph above is understated, what "visibility push" bundles, and what discharges the gate. **Those are open and are not settled by this edit.** Recording an accurate status is maintenance; deciding what the status licenses is not, and a correction that quietly opened a gate would be worse than the stale line it replaced.
 
 **Amended 2026-08-11, because the first condition was read as the whole gate.** It was not, and the ordering matters: the validation items say the tool works; the evidence items say the project knows *why* it built what it built, and can show its reasoning to someone qualified to disagree. A tool that passes the first and fails the second is one whose author cannot answer "why this method rather than the obvious alternative" — which is the first question any serious reader asks, and the question this project's own audits keep answering badly.
 
