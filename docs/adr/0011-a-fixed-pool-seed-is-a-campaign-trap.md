@@ -1,6 +1,6 @@
 # 0011 — A fixed candidate-pool seed is reproducible for one call and a trap for a campaign
 
-**Status:** Proposed (2026-08-19)
+**Status:** Accepted (2026-08-19)
 
 ## Context
 
@@ -47,7 +47,12 @@ point.
 
 ## Decision
 
-**Not taken here.** This record exists so the choice is made deliberately rather than inherited.
+**Option 2 is accepted (2026-08-19): `seed` defaults to `None`.** A fresh candidate pool per call,
+reproducibility opt-in by passing a seed.
+
+This record was written as `Proposed` with the options laid out, because changing the meaning of a
+documented reproducibility knob is not a bug fix. It is now the decision, and the reasoning below is
+kept as it was written rather than rewritten to sound inevitable.
 
 The options, with what each costs:
 
@@ -69,7 +74,12 @@ library is built around is the wrong default, and the reproducibility it buys is
 typing a number. Option 3 leaves the project publishing benchmark numbers it obtained by avoiding
 its own default.
 
-## Consequences if option 2 is accepted
+## Consequences
+
+**Implementation is sequenced behind #224 part 1**, which is editing both recommenders right now
+([#228](https://github.com/enginbio/engin-suite/pull/228)). Accepting the decision does not license
+landing it into a file another change is mid-flight in; that ordering is the whole reason this
+record separates the decision from the patch.
 
 - `recommend_batch` and `recommend_batch_by_cost` change signature to `seed: int | None = None`.
   **Both are in files part 1 is currently editing**, so this lands after that PR.
