@@ -27,6 +27,7 @@ methods/conformal-calibration
 methods/out-of-distribution
 methods/real-data-calibration
 methods/vendor-export-ingest
+case-studies/process-development
 benchmarks
 contributing-a-benchmark
 limitations
