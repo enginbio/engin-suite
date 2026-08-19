@@ -1,7 +1,3 @@
----
-sd_hide_title: true
----
-
 # Engin
 
 ```{toctree}
@@ -49,8 +45,6 @@ design/data-convention
 design/host-selection
 adr/index
 ```
-
-# Engin
 
 **Open tooling for bioprocess forecasting and scale-up economics.**
 
