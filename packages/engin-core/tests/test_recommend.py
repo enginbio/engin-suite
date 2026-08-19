@@ -94,3 +94,35 @@ def test_an_explicit_seed_still_reproduces_exactly():
     assert np.array_equal(a, b)
     c, *_ = recommend_batch(gp, best, k=8, seed=8)
     assert not np.array_equal(a, c), "different seeds must give different pools"
+
+
+def test_recommendation_never_repeats_a_design_already_run():
+    """The filter's second memory (#224 part 1).
+
+    This is the assertion whose absence let the defect survive: the diversity test
+    above checks distances *within* the returned batch, which the filter always
+    enforced, and says nothing about the designs already run.
+    """
+    U, y, _ = _dataset(seed=0)
+    gp = fit_gp(U, y, seed=0)
+    X, *_ = recommend_batch(gp, float(y.max()), k=8, seed=1, min_dist=0.15)
+    for x in X:
+        assert np.min(np.linalg.norm(gp.X - x, axis=1)) > 0.15
+
+
+def test_multi_round_campaign_stops_re_running_measured_conditions():
+    """The user-visible symptom, in the units that matter: reactor runs.
+
+    Rounds are run with an explicit fixed ``seed`` so the candidate pool is
+    identical every round -- the sharpest version of the trap, and the one where
+    the unfixed filter returns the same high-EI points again and again.
+    """
+    U, y, _ = _dataset(seed=0)
+    for _ in range(3):
+        gp = fit_gp(U, y, seed=0)
+        X, *_ = recommend_batch(gp, float(y.max()), k=8, seed=1, min_dist=0.15)
+        for x in X:
+            assert np.min(np.linalg.norm(U - x, axis=1)) > 0.15
+        y_new = np.maximum(simulate_unit(X), 0.0)
+        U = np.vstack([U, X])
+        y = np.concatenate([y, y_new])
