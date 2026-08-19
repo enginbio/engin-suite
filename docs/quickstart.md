@@ -25,6 +25,41 @@ Engin is **not on PyPI** — see [Install](install.md). Clone and install from
 source.
 ```
 
+## You do not need a lab to run any of this
+
+Worth saying plainly, because nothing on this site said it
+([#240](https://github.com/enginbio/engin-suite/issues/240)). **Everything above
+runs on a laptop with a network connection.** No bench, no samples, no
+institutional affiliation, no account, no credential. The dataset is fetched from
+Zenodo over plain HTTPS — 8 MB, CC-BY-4.0, checksum-verified, with a provenance <!-- ref: 2025-zenodo-erythromycin-efp -->
+manifest written beside it. Someone with no access to a laboratory can run this
+tool end to end today, on measurements a working plant already took.
+
+That is not a demo mode. It is the same code path, on real industrial data.
+
+**Where the bench actually starts is narrower than "after the quickstart".** It
+depends on which stage you run, because they return different kinds of thing:
+
+| stage | what it returns | needs a bench? |
+|---|---|---|
+| this page — forecast + interval | a prediction about runs already recorded | **no** |
+| `engin-host` — [4] which chassis | a ranked shortlist with a confidence band | **no** — it is a decision, not an experiment |
+| `engin-pathway` — [3] which route | a ranked shortlist with an interval | **no** — same |
+| `engin-process` — [1] what to run next | *specific runs to perform* | **yes, to act on it** |
+| `engin-protein` — variants to assay | *specific variants to build and measure* | **yes, to act on it** |
+
+The two stages that cross the line still *run* without one — they just recommend
+work somebody has to do. Reading a recommendation costs nothing; only executing
+it needs equipment. So the honest boundary is not between dry and wet stages, it
+is between **deciding** and **doing**, and everything up to the doing is
+reachable from a laptop.
+
+One caveat specific to the command-line path: `engin-process` **simulates** your
+runs from the vessel you describe rather than reading your run history — see
+"If you would rather not write Python", below. This page does not — it uses
+measurements somebody actually took. If you have no lab, that difference is the
+one that matters, and it is the argument for starting here.
+
 ## What it does, and why each step exists
 
 ### 1. Fetch, with the licence and provenance attached
