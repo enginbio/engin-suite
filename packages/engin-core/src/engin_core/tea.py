@@ -761,7 +761,7 @@ def expected_cost_reduction(
     best_cost: float,
     model: CostModel | None = None,
     n_samples: int = 512,
-    seed: int = 0,
+    seed: int | None = 0,
 ) -> NDArray[np.float64]:
     """``E[max(best_cost - cost, 0)]`` — expected improvement in cost space.
 
@@ -778,7 +778,7 @@ def recommend_batch_by_cost(
     best_cost: float,
     k: int = 8,
     pool: int = 4000,
-    seed: int = 1,
+    seed: int | None = None,
     min_dist: float = 0.15,
     model: CostModel | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
@@ -791,6 +791,11 @@ def recommend_batch_by_cost(
     mechanistic simulator they largely agree, because its titer-optimal designs also
     have high yield — see ``tests/test_tea.py``. The disagreement D13 anticipates
     needs a design space where pushing titer costs yield or rate.
+
+    **``seed`` defaults to ``None``: a fresh candidate pool per call** (ADR 0011).
+    Pass an int for a bit-reproducible recommendation. The old default of ``1``
+    made the pool byte-identical every round, which capped a multi-round campaign
+    at the best point in that one fixed lattice -- see :func:`engin_core.recommend_batch`.
     """
     rng = np.random.default_rng(seed)
     candidates = rng.random((pool, len(gp.ell)))
