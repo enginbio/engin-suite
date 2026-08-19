@@ -56,7 +56,7 @@ print("recommended next runs (physical units):\n", unit_to_physical(X_next))
 print("titer drivers (ARD):", np.round(ard_importance(gp), 2))
 ```
 
-Full end-to-end demo (writes plots, a DoE CSV, and a scale-up risk memo):
+Full end-to-end demo (writes plots, a DoE CSV, and a DoE round-reduction memo):
 
 ```bash
 python examples/run_demo.py
