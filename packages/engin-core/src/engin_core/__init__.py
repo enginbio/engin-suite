@@ -20,7 +20,6 @@ from .evidence import (
 from .gp import (
     GP,
     conformal_coverage_interval,
-    conformal_multiplier_oof,
     fit_gp,
     highest_attainable_level,
     mapie_split_interval,
@@ -64,7 +63,6 @@ __all__ = [
     "GP",
     "fit_gp",
     "split_conformal_multiplier",
-    "conformal_multiplier_oof",
     "conformal_coverage_interval",
     "highest_attainable_level",
     "smallest_calibration_set",

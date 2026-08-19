@@ -521,6 +521,49 @@ sources:
       stands; re-check on the quarterly liveness sweep.
     type: dataset
 
+  - id: 2026-mapie-std-conformity-score
+    title: "MAPIE 1.5.0: StdConformityScore"
+    authors: [MAPIE contributors]
+    year: 2026
+    venue: scikit-learn-contrib/MAPIE
+    location: https://github.com/scikit-learn-contrib/MAPIE/blob/v1.5.0/mapie/conformity_scores/bounds/__init__.py
+    accessed: 2026-08-19
+    stability: url
+    url_only_because: >-
+      A capability claim about a library at a specific version, so the pointer is
+      the tagged source rather than a DOI. **Pinned to v1.5.0 deliberately**: the
+      claim this backs is "MAPIE ships an sd-normalized score", which was false
+      before 2026-08-05 and is what the previous unversioned wording got wrong.
+      An unpinned MAPIE reference is how the gp.py exemption stayed false for two
+      weeks while the register had reviewed MAPIE four days earlier -- D23 checks
+      that a claim has a source, not that the source still says what the prose
+      claims, and a version pin is what makes the next re-check falsifiable.
+    type: software
+    note: >-
+      Verified by import against the installed package rather than from HISTORY.md:
+      `get_signed_conformity_scores` returns `(y - y_pred) / y_std` with `y_std`
+      required from the base model's `predict(..., return_std=True)`. That is the
+      same quantity `split_conformal_multiplier` computes.
+
+  - id: 2021-barber-jackknife-plus
+    title: Predictive inference with the jackknife+
+    authors: [Barber, Rina Foygel, Candes, Emmanuel J., Ramdas, Aaditya, Tibshirani, Ryan J.]
+    year: 2021
+    venue: The Annals of Statistics 49(1):486-507
+    location: https://doi.org/10.1214/20-AOS1965
+    accessed: 2026-08-19
+    stability: doi
+    type: paper
+    note: >-
+      Cited for what engin-core deliberately does *not* implement (#226). The
+      finite-sample guarantee is proved for jackknife+/CV+ at 1-2*alpha, and it
+      holds because those methods pair each residual with the same fold model's
+      prediction at the test point. The non-plus construction that
+      `conformal_multiplier_oof` used -- pool out-of-fold residuals, apply the
+      quantile to an interval centred on the all-data refit -- is not that, and
+      carries no such bound. Removing the function rather than repairing it is the
+      decision this row supports.
+
   - id: 2019-tibshirani-covariate-shift
     title: Conformal Prediction Under Covariate Shift
     authors: [Tibshirani, Ryan J., Foygel Barber, Rina, Candes, Emmanuel J., Ramdas, Aaditya]
