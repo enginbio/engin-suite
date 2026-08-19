@@ -158,8 +158,36 @@ authors report considerably better prediction using an architecture built for th
 purpose. Engin's *calibration* transfers to real data; its *modelling*, pointed
 naively at a task it was not designed for, does not.
 
+## If you would rather not write Python
+
+There is a command-line path, and it is deliberately **not** a second route to this
+page's result. Each stage ships a console script that reads one `project.yaml`:
+
+```bash
+engin-host --init project.yaml   # writes a commented starter file to edit
+engin-host     --config project.yaml   # [4] which chassis?
+engin-pathway  --config project.yaml   # [3] which route?
+engin-process  --config project.yaml   # [1] what to run next?
+```
+
+The starter file is the useful part if you are new: it names every input in plain
+language and says which numbers are your judgement rather than something computed.
+
+**What it does not do is this page.** `engin-process` has no way to read your run
+history — its project file has no data section, and it *simulates* runs from the
+vessel you describe. So it exercises the same recommender against a model of your
+process, not against measurements of it, and none of the fetch, column-inference or
+provenance machinery above is on that path. Reading your own runs from the CLI is
+tracked in [#141](https://github.com/enginbio/engin-suite/issues/141).
+
+That distinction is the same one this page opens with, so it is worth stating twice:
+a result computed from a simulator shows the code runs, and a result computed from
+406 real batches shows something else. The CLI is the fastest way to see what
+questions the tool asks. This page is the way to see whether its answers hold up.
+
 ## Where to go next
 
+- [Install](install.md) — the full command set for the CLI above
 - [Data formats](guides/data-formats.md) — the convention and the ingest layer
 - [Conformal calibration](methods/conformal-calibration.md) — why the interval is built this way
 - [Out-of-distribution](methods/out-of-distribution.md) — where the intervals stop holding

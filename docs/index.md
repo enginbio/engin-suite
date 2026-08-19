@@ -80,7 +80,25 @@ Pick the row that describes you. The decisions are the same either way; what cha
 
 You have a molecule and a hypothesis, and you want to know what the questions even are.
 
-Start with **[Quickstart](quickstart)** — a spreadsheet of runs to a calibrated forecast — then come back for the decision you are facing.
+**If you would rather not write Python, start here:**
+
+```bash
+engin-host --init project.yaml
+```
+
+That writes a commented file naming every input each stage takes, in plain language —
+what `secretion` weighs, what `g_thermo` means, and which numbers are your judgement
+rather than something computed. Edit it, then run whichever stage you have filled in
+(`engin-host`, `engin-pathway`, `engin-process`). Each prints its own caveats on exit.
+See [Install](install.md) for the full command set.
+
+**If you would rather see it work on real data**, start with
+**[Quickstart](quickstart)** — 406 batches from a working plant to a calibrated
+forecast. It is a Python script, and it is the honest one: the CLI simulates your runs
+from the vessel you describe, while the quickstart uses measurements somebody actually
+took.
+
+Then come back for the decision you are facing.
 
 ::::{grid} 1 1 2 2
 :gutter: 2
