@@ -109,8 +109,17 @@ def fit_gp(X: ArrayLike, y: ArrayLike, seed: int = 0, n_restarts: int = 8) -> GP
     """Fit an ARD-RBF GP (sklearn, LML-optimized) and return the engin-core wrapper.
 
     The returned model is *not yet calibrated* -- call
-    :func:`split_conformal_multiplier` (preferred) or :func:`conformal_multiplier_oof`
-    and store the result on ``gp.q90`` before trusting its intervals.
+    :func:`split_conformal_multiplier` and store the result on ``gp.q90`` before
+    trusting its intervals.
+
+    **If you cannot spare a calibration split**, do not reach for a cross-validated
+    multiplier here; there is not one, deliberately (#226). Pooling out-of-fold
+    residuals and applying them to an interval centred on the all-data refit is a
+    jackknife-family construction, and the non-"plus" variants carry no
+    finite-sample coverage guarantee at any level. Use MAPIE's
+    ``CrossConformalRegressor``, which implements CV+ and has a published bound,
+    rather than something hand-rolled here that looks like it does.
+    # ref: 2021-barber-jackknife-plus
     """
     X = np.asarray(X, float)
     y = np.asarray(y, float)
@@ -298,14 +307,27 @@ def split_conformal_multiplier(
     # implements D8; ref: 2002-papadopoulos-inductive-confidence
     # ref: 2018-lei-distribution-free
 
-    **Not** the same as MAPIE's ``ResidualNormalisedScore``, despite an earlier
-    claim here. That score belongs to the same family but estimates ``sigma_i``
-    with a *separate learned model* fitted to log-residuals (conformalized residual
-    fitting). Using the GP's own predictive sd needs no second model, which matters
-    in the low-N regime this project targets, and is the natural choice when the
-    base estimator already emits a principled uncertainty. MAPIE does not offer
-    normalize-by-base-model-sd out of the box, which is why this function exists
-    rather than wrapping it (D9).
+    **MAPIE ships this score now, and the `D9` exemption is narrower than it was.**
+    Until 1.5.0 (2026-08-05) the nearest thing was ``ResidualNormalisedScore``,
+    which belongs to the same family but estimates ``sigma_i`` with a *separate
+    learned model* fitted to log-residuals. That is no longer the comparison:
+    ``StdConformityScore`` computes ``(y - y_pred) / y_std`` from the base model's
+    own ``predict(..., return_std=True)`` -- the same quantity as line-for-line
+    below. This docstring claimed "MAPIE does not offer normalize-by-base-model-sd
+    out of the box" until 2026-08-19, and by then it had been false for two weeks
+    while ``docs/ecosystem.md`` said the opposite (#225).
+    # ref: 2026-mapie-std-conformity-score
+
+    So the honest exemption is **not** "MAPIE cannot do this". It is that this
+    function returns a bare scalar ``q`` for ``mean +/- q*sd`` where MAPIE returns
+    per-point bounds -- and ``gp.q90`` as a scalar is load-bearing across the
+    README, the benchmarks, the demo and the test suite -- plus the small-n guards
+    MAPIE does not ship: the :func:`smallest_calibration_set` floor with its
+    fallback warning, and the ``warn_below_slack`` coverage-spread warning.
+
+    That is a weaker exemption than the one it replaces, and it is written this way
+    so a reviewer can weigh it rather than take it on trust. `D9` asks whether an
+    open equivalent exists; one now does, and what survives is an adapter argument.
     """
     y_cal = np.asarray(y_cal, float)
     mean_cal = np.asarray(mean_cal, float)
@@ -340,30 +362,6 @@ def split_conformal_multiplier(
 
     lvl = min(_conformal_rank(n, level) / n, 1.0)  # finite-sample conformal level
     return float(np.quantile(scores, lvl, method="higher"))
-
-
-def conformal_multiplier_oof(
-    X: ArrayLike, y: ArrayLike, level: float = 0.90, k: int = 5, seed: int = 0
-) -> float:
-    """Out-of-fold conformal multiplier -- the no-held-out-set fallback.
-
-    Refits the GP on k-1 folds and scores the held-out fold, so the residuals are
-    honestly out-of-sample. Prefer :func:`split_conformal_multiplier` when you can
-    spare a calibration set; use this when every run is too precious to hold out.
-    """
-    X = np.asarray(X, float)
-    y = np.asarray(y, float)
-    n = len(X)
-    rng = np.random.default_rng(seed)
-    folds = np.array_split(rng.permutation(n), k)
-    scores = []
-    for f in folds:
-        mask = np.ones(n, bool)
-        mask[f] = False
-        gp = fit_gp(X[mask], y[mask], seed=seed)
-        m, sd = gp.predict(X[f], include_noise=True)
-        scores.append(np.abs(y[f] - m) / np.maximum(sd, 1e-9))
-    return float(np.quantile(np.concatenate(scores), level))
 
 
 def mapie_split_interval(

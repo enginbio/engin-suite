@@ -168,3 +168,34 @@ def test_coverage_interval_narrows_with_n_and_documents_the_headline_numbers():
 def test_coverage_interval_is_undefined_below_the_floor():
     lo, mean, hi = conformal_coverage_interval(5, level=0.90)
     assert all(np.isnan(v) for v in (lo, mean, hi))
+
+
+def test_no_uncalibrated_second_multiplier_is_exported():
+    # #226. `conformal_multiplier_oof` was exported, recommended by `fit_gp`, called
+    # by nothing and tested by nothing -- and used a plain interpolated quantile,
+    # missing every guard #144 added to its sibling in the same file. It undercovered
+    # where this project lives: 0.87 against a nominal 0.90 at n=20.
+    #
+    # Removed rather than repaired: pooling out-of-fold residuals against an all-data
+    # refit is a jackknife-family construction with no finite-sample guarantee, so a
+    # repaired version would need a docstring explaining why not to trust it.
+    # This pins the removal so it is not reintroduced by reflex.
+    import engin_core
+
+    assert not hasattr(engin_core, "conformal_multiplier_oof")
+    assert "conformal_multiplier_oof" not in engin_core.__all__
+    from engin_core import gp as gp_module
+
+    assert not hasattr(gp_module, "conformal_multiplier_oof")
+
+
+def test_fit_gp_points_somewhere_real_when_there_is_no_calibration_split():
+    # Deleting the only alternative and saying nothing would be its own small
+    # dishonesty, so `fit_gp` names MAPIE's CV+ implementation. Assert the
+    # destination exists rather than trusting the docstring -- naming a capability
+    # a library does not have is exactly the #225 failure this pass also fixed.
+    from engin_core import fit_gp
+
+    doc = fit_gp.__doc__
+    assert "CrossConformalRegressor" in doc
+    from mapie.regression import CrossConformalRegressor  # noqa: F401

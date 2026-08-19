@@ -12,7 +12,12 @@ recommender) hand-written. This is the public core; the closed product overlay
 - `src/engin_core/simulator.py` — Monod/Luedeking-Piret fed-batch model; scipy
   `solve_ivp`, integrated piecewise across the feed/induction switches.
 - `src/engin_core/gp.py` — sklearn GP + split-conformal (sd-scaled) + MAPIE interval
-  + OOF calibration + `prob_at_least`. Normal CDF/PDF via `scipy.stats`.
+  + `prob_at_least`, plus the low-N guards (`smallest_calibration_set`,
+  `conformal_coverage_interval`, `highest_attainable_level`). Normal CDF/PDF via
+  `scipy.stats`. **There is no second, cross-validated multiplier**, deliberately:
+  `conformal_multiplier_oof` was removed in #226 because pooling out-of-fold
+  residuals against an all-data refit has no finite-sample guarantee. Send anyone
+  who cannot hold out a calibration split to MAPIE's `CrossConformalRegressor`.
 - `src/engin_core/recommend.py` — Expected-Improvement batch recommender.
 - `src/engin_core/sensitivity.py` — ARD sensitivity (GP lengthscales).
 - `examples/run_demo.py` — end-to-end demo (needs matplotlib).
