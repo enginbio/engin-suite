@@ -65,6 +65,8 @@ What we guarantee instead:
 
   **This bullet promised that in the present tense before it was true.** Until 2026-08-15 it read *"benchmark results are published with the dataset versions and seeds that produced them"*, while roughly 45 published numbers carried no seed, no version, no commit and no date. Corrected under [#125](https://github.com/enginbio/engin-suite/issues/125) — which also turned up that `python benchmarks/benchmark.py` ran 8 seeds while the page reported 20, so the documented command did not reproduce the documented numbers. It does now.
 
+**A default changed meaning in 2026-08-19, which is the case this section exists for.** `recommend_batch` and `recommend_batch_by_cost` took `seed: int = 1`; they now take `seed: int | None = None`. No name changed and no signature broke — but the *behaviour* did: the candidate pool is now drawn fresh on each call rather than being byte-identical every time. Code that relied on the old default for reproducibility must now pass a seed explicitly. The reasoning is [ADR 0011](adr/0011-a-fixed-pool-seed-is-a-campaign-trap.md); the short version is that the old default was reproducible for one call and silently capped a multi-round campaign at the best point in one fixed lattice. `project.yaml` runs are unaffected — the CLI has always passed an explicit seed.
+
 If you need bit-identical results across time — for a regulatory submission, say — pin the exact version and record it. That is the correct approach with any modelling library, and we would rather say so than imply a stability we cannot deliver.
 
 ## Python and dependency support

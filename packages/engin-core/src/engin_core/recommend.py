@@ -38,7 +38,7 @@ def recommend_batch(
     best_y: float,
     k: int = 8,
     pool: int = 4000,
-    seed: int = 1,
+    seed: int | None = None,
     min_dist: float = 0.15,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     """Rank a large candidate pool by EI; greedily pick ``k`` with a diversity filter.
@@ -47,6 +47,17 @@ def recommend_batch(
     the same units the GP predicts in. Returns ``(X, mean, sd, ei)`` for the
     picked points, where ``X`` are unit-cube design points and ``mean``/``sd``
     are the predictive titer (g/L).
+
+    **``seed`` defaults to ``None``, which means a fresh candidate pool per call**
+    (ADR 0011). Passing an int makes the pool -- and therefore the recommendation --
+    bit-reproducible, and that is the opt-in.
+
+    The old default of ``1`` was reproducible for one call and a trap for a
+    campaign: the pool was byte-identical every round, so the reachable design
+    space was a fixed lattice of ``pool`` points and a multi-round loop converged
+    to the best point *in that lattice* and stopped. On the bundled simulator that
+    ceiling was 110.770 g/L on every data seed, against 113.550 when the pool seed
+    varied per round.  <!-- measured on our own simulator -->
     """
     rng = np.random.default_rng(seed)
     d = gp.X.shape[1]

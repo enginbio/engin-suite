@@ -56,6 +56,12 @@ print("recommended next runs (physical units):\n", unit_to_physical(X_next))
 print("titer drivers (ARD):", np.round(ard_importance(gp), 2))
 ```
 
+**Running this in a loop?** `recommend_batch` draws a fresh candidate pool on each
+call, because `seed` defaults to `None` (ADR 0011). Pass `seed=<int>` when you want
+a bit-reproducible recommendation — but pass a *different* one each round, not a
+fixed one, or every round searches the same fixed set of candidate points and the
+campaign converges to the best point in that set rather than the best design.
+
 Full end-to-end demo (writes plots, a DoE CSV, and a DoE round-reduction memo):
 
 ```bash

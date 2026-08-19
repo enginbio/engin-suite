@@ -61,3 +61,36 @@ def test_recommended_batch_beats_prior_best():
         assert best_new_true >= best_true_prior - TOL, (
             f"seed {seed}: recommended {best_new_true:.1f} < prior true {best_true_prior:.1f} g/L"
         )
+
+
+# --- The candidate pool is fresh per call (ADR 0011, #224 part 2). ---
+
+
+def _gp_for_seed_tests(n=40, seed=0):
+    rng = np.random.default_rng(seed)
+    U = rng.random((n, 5))
+    return fit_gp(U, simulate_unit(U), seed=seed)
+
+
+def test_default_seed_draws_a_fresh_pool_each_call():
+    # The property, not a number. `seed=1` used to make the pool byte-identical on
+    # every call, so a multi-round campaign searched one fixed lattice and converged
+    # to the best point in it -- 110.770 g/L on every data seed, against 113.550 when
+    # the pool varied. ADR 0011 accepted defaulting to None.
+    gp = _gp_for_seed_tests()
+    best = float(gp.predict(gp.X)[0].max())
+    a, *_ = recommend_batch(gp, best, k=8)
+    b, *_ = recommend_batch(gp, best, k=8)
+    assert not np.array_equal(a, b), "default seed must not return an identical batch"
+
+
+def test_an_explicit_seed_still_reproduces_exactly():
+    # Reproducibility is not lost, it is opt-in. This is the half of ADR 0011 that
+    # someone would otherwise assume was traded away.
+    gp = _gp_for_seed_tests()
+    best = float(gp.predict(gp.X)[0].max())
+    a, *_ = recommend_batch(gp, best, k=8, seed=7)
+    b, *_ = recommend_batch(gp, best, k=8, seed=7)
+    assert np.array_equal(a, b)
+    c, *_ = recommend_batch(gp, best, k=8, seed=8)
+    assert not np.array_equal(a, c), "different seeds must give different pools"
