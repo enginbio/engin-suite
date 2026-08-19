@@ -28,6 +28,7 @@ methods/out-of-distribution
 methods/real-data-calibration
 methods/vendor-export-ingest
 benchmarks
+contributing-a-benchmark
 limitations
 ecosystem
 references
