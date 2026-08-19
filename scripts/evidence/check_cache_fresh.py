@@ -39,6 +39,7 @@ schedule. Nothing here needs to block a merge; it needs to be noticed within day
 from __future__ import annotations
 
 import difflib
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -48,6 +49,30 @@ try:
 except ImportError:  # pragma: no cover - only hit outside the docs env
     print("jupyter-cache is not installed; run this in the docs environment", file=sys.stderr)
     raise SystemExit(2) from None
+
+
+# A warning raised inside a notebook cell is reported against the kernel's
+# throwaway source file, whose directory embeds the kernel PID:
+#
+#     /var/.../T/ipykernel_84079/815839376.py:10: UserWarning: ...
+#
+# That number changes on every execution, so a page whose cells emit any warning
+# would differ from its own cache on every run. This check was written before any
+# page did (#182); #195 added a small-calibration-set warning to
+# conformal-calibration.md and made the difference real, so the next scheduled
+# run would have failed on the PID rather than on drift. Found while adding the
+# calibration figure in #230.
+_KERNEL_TMP = re.compile(r"ipykernel_\d+[/\\]\d+\.py")
+
+
+def _normalise(text: str) -> str:
+    """Drop output that changes between identical executions.
+
+    Only volatile *identifiers* are removed, never numbers a reader would act on.
+    Widening this is how a freshness check quietly stops checking, so anything
+    added here needs the same justification as the line above.
+    """
+    return _KERNEL_TMP.sub("ipykernel_<pid>/<cell>.py", text)
 
 
 def _outputs(nb: Any) -> list[tuple[str, str]]:
@@ -68,7 +93,7 @@ def _outputs(nb: Any) -> list[tuple[str, str]]:
             elif "data" in out:
                 data = out["data"]
                 rendered.append("".join(data.get("text/plain", "")))
-        pairs.append(("".join(cell.get("source", "")), "".join(rendered)))
+        pairs.append(("".join(cell.get("source", "")), _normalise("".join(rendered))))
     return pairs
 
 
