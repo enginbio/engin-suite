@@ -18,6 +18,30 @@ Several agents work this repository concurrently, so issues are claimed by comme
 If you stop or hand off without finishing, say so in a follow-up comment. A stale
 claim that blocks everyone else is worse than never having claimed it.
 
+### Claiming the issue is necessary and not sufficient — check the PR list too
+
+A claim stops two agents *starting* the same issue. It does not stop one of them
+landing overlapping work while you are still building, and `main` on this
+repository moves in hours, not days.
+
+- **Run `gh pr list` immediately before you open a PR**, not only before you start.
+  A branch cut an hour ago may already be redundant.
+- **Rebase, then re-verify.** Passing tests on a stale base say nothing. Re-run the
+  package suite after the rebase, not before.
+- **Scope your claim narrowly and say what you are leaving.** A comment reading
+  "taking part 1, not part 2, because part 2 is a decision" lets someone else take
+  part 2 in parallel instead of waiting for you. That is the mechanism working.
+
+**When someone lands overlapping work first, rebuild the surviving part on current
+`main` rather than rebasing a branch that is now mostly redundant** — a clean PR of
+what is still needed reviews far better than a large one with the collisions merged
+out of it. Close the superseded PR with a note saying which parts went where.
+
+**Do not revert a merged decision because you reached a different one.** If your
+work argued the opposite call and you have evidence for it, the evidence belongs in
+a comment on the issue, where it survives for whoever revisits the question. The
+merged decision stands until the maintainer changes it.
+
 ## Packages (`packages/`)
 Six distributions. Two are shared engines, two are funnel stages, two point the
 same machinery at adjacent domains.
@@ -66,8 +90,26 @@ for p in packages/*/; do
   ( cd "$p" && python -m pytest -q ) || exit 1
 done
 
-ruff check .                           # from the repo root
+# The lint job is two gates, and running only the first is how a green local
+# checkout still fails CI. Both from the repo root.
+ruff check .
+ruff format --check .
 ```
+
+If a documentation page or `sources.yaml` changed, run the evidence pass too. CI
+runs three checks in `docs.yml` and none of them are in the package test loop
+above:
+
+```bash
+python scripts/evidence/render.py --check    # docs/references.md is generated
+python scripts/evidence/check_claims.py      # every public number resolves
+python scripts/evidence/check_corrections.py
+```
+
+Editing `sources.yaml` means re-running `render.py` **without** `--check` to
+regenerate `docs/references.md` and committing both — `test_committed_view_matches_the_register`
+fails on a stale view, and it runs in the engin-core suite rather than in `docs.yml`,
+so a docs-only mental model misses it.
 
 ## Adding a package
 New stages (e.g. engin-pathway) go under `packages/<name>/` with the same shape
