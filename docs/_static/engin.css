@@ -1,0 +1,117 @@
+/* Engin documentation — presentation layer.
+ *
+ * Deliberately small, and deliberately not a framework. Three constraints shape
+ * every rule below:
+ *
+ * 1. **Every colour comes from a pydata-sphinx-theme custom property**
+ *    (`--pst-color-*`). The theme ships light and dark palettes and a user
+ *    toggle; hardcoding a hex value here would look correct in whichever mode
+ *    the author happened to be using and wrong in the other. There are no
+ *    literal colours in this file except `transparent`.
+ *
+ * 2. **Motion is opt-out, and the opt-out is respected.** Every transition sits
+ *    behind `prefers-reduced-motion`. Vestibular disorders are not an edge case,
+ *    and a docs site has no business animating through the preference.
+ *
+ * 3. **Nothing here is required for the page to work.** Cards, tabs and
+ *    dropdowns are functional with this file absent — it adjusts affordance and
+ *    rhythm, it does not supply behaviour. That is what keeps a solo-maintained
+ *    site (`D18`) from acquiring a front-end it has to keep alive.
+ */
+
+/* ---------------------------------------------------------------- headings */
+
+/* The navbar is sticky, so an anchor jump lands with the heading underneath it.
+ * scroll-margin is the one-line fix; without it every in-page link on the
+ * ecosystem map and the API reference arrives slightly wrong. */
+:is(h1, h2, h3, h4, .sd-card, .sd-tab-set) {
+  scroll-margin-top: 4.5rem;
+}
+
+/* Ragged-right headlines wrap badly at the exact widths a 3-column card grid
+ * produces. text-wrap:balance evens the line lengths instead of leaving one
+ * orphaned word — supported everywhere current, ignored harmlessly elsewhere. */
+h1,
+h2,
+.sd-card-title {
+  text-wrap: balance;
+}
+
+/* The lede under the title. Slightly larger measure, capped line length —
+ * roughly 70 characters is where continuous prose stops being comfortable. */
+.bd-main .bd-content h1 + p strong {
+  font-size: 1.15rem;
+}
+
+/* ------------------------------------------------------------------ cards */
+
+/* Cards are the routing surface, so they need to read as targets. The whole
+ * card is already a hit area when it carries :link: — Fitts's law says make it
+ * obvious that it is, rather than relying on the title looking like a link. */
+.sd-card {
+  border-color: var(--pst-color-border);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.sd-card:hover {
+  border-color: var(--pst-color-primary);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--pst-color-shadow) 60%, transparent);
+  transform: translateY(-2px);
+}
+
+/* Keyboard users get the same affordance as mouse users, which is the half
+ * that usually goes missing. :focus-visible rather than :focus so a mouse
+ * click does not leave a ring behind. */
+.sd-card:focus-within {
+  border-color: var(--pst-color-primary);
+  outline: 2px solid var(--pst-color-primary);
+  outline-offset: 2px;
+}
+
+/* A card whose body is a statement of absence — "not built", "tracked in #176" —
+ * should not look like a live destination. Unlinked cards lose the hover lift. */
+.sd-card:not(:has(a.sd-stretched-link)):hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--pst-color-border);
+}
+
+/* -------------------------------------------------------------- dropdowns */
+
+/* The front page and the ecosystem map both use dropdowns to hold an argument
+ * rather than to hide boilerplate, so the closed state should look like
+ * something worth opening, not like a disabled control. */
+details.sd-dropdown {
+  border-radius: 0.35rem;
+}
+
+details.sd-dropdown > summary.sd-card-header {
+  transition: background-color 0.15s ease;
+}
+
+details.sd-dropdown:not([open]) > summary.sd-card-header:hover {
+  background-color: color-mix(in srgb, var(--pst-color-primary) 12%, transparent);
+}
+
+/* ------------------------------------------------------------------- tabs */
+
+/* The audience router is a tab-set. Give the active tab a stronger tie to the
+ * panel below it than the theme default, because here the tab is a navigation
+ * choice rather than a formatting variant. */
+.sd-tab-set > label {
+  font-weight: 600;
+}
+
+/* ------------------------------------------------- motion, and opting out */
+
+@media (prefers-reduced-motion: reduce) {
+  .sd-card,
+  .sd-card:hover,
+  details.sd-dropdown > summary.sd-card-header {
+    transition: none;
+    transform: none;
+  }
+}

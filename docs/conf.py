@@ -150,6 +150,11 @@ html_context = {
 
 html_static_path = ["_static"]
 
+# Presentation only. Every rule is theme-variable-based so light and dark both
+# work, and the pages are fully functional with this file absent -- see the
+# header comment in engin.css for why it stays that small.
+html_css_files = ["engin.css"]
+
 # -- Build strictness -------------------------------------------------------
 
 # Warnings are errors in CI. A dead cross-reference is a broken promise on a
