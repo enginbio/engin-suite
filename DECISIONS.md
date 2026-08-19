@@ -206,6 +206,19 @@ So: the product is **Engin**, the entity stays **EnginBio**, the domain stays `e
 
 **What is *not* decided here.** No trademark clearance has been run — no register was queried and no live mark verified. A live `ENGIN` mark in class 9 or 42 would settle this outright and override this decision; that search is tracked privately and is the highest-information result available. Separately, PyPI has no prefix reservation (PEP 752 accepted, PEP 755 draft, Simple API still at 1.4), so `engin-*` cannot be reserved as a namespace — each name must be claimed by upload, which is why registering them is a live task rather than a formality.
 
+**D27 — Stage [0] target screening is permitted in the industrial direction, and its biosecurity review is this record.** `standing` · 2026-08-18
+Commitment #2 in `BIOSECURITY.md` requires that any capability bearing on §5 be assessed before it ships, with the assessment recorded here under a decision ID. This is that record for stage [0] (#176) — a screening layer that ranks candidate target molecules for a use type by cost and manufacturability interval.
+
+**§7 trigger 2 has fired, and this is the ahead-of-schedule reassessment it calls for.** That trigger reads "a proposed capability would identify or rank routes to a target the user did not supply." Stage [0] is exactly that proposal, so the policy is reassessed now rather than at the scheduled 2027-02-07 review.
+
+**Assessment: no meaningful uplift, and the reason is narrower than the sentence it replaces.** §3 previously rested part of its argument on "neither answers *what to make* — only *how this would be made at industrial scale*." Stage [0] makes the first clause false while leaving the conclusion intact, which is a sign the clause was never what carried it. What carries it is that the suite holds **no model of what a molecule does in an organism**. A ranking over manufacturing economics does not become uplift by having more than one candidate in it, and a cost-per-kilogram interval over a set of industrial molecules discloses nothing about physiological activity that was not already public.
+
+**Conditions on release, binding rather than aspirational.** The function-category index is sourced from public-domain EPA CPDat only — no GPL dependency (`D3`), and no NonCommercial data (`D12`'s licence rule). The ranking emits intervals and an explicit indistinguishability verdict rather than a bare ordering, because a point-estimate ranker over inputs that disagree by an order of magnitude produces confident-looking noise at the most expensive decision point. The scope statement says plainly that it does not address formulation, qualification or go-to-market.
+
+**What this decision does not touch.** Every item in `BIOSECURITY.md` §5 stands unchanged, including item 5 (predicted physiological activity, toxicity or pathogenicity). The medical / bioactivity direction is **#177**, it amends `D19` rather than this decision, and it is undecided. Nothing here authorises it, and stage [0] is scoped industrial-only precisely so the two can be decided separately.
+
+**Status: not built.** Per the pattern `BIOSECURITY.md` §6 already uses for cultivation prediction, the conditions above are binding terms on shipping stage [0], not descriptions of code that exists. This record is what Commitment #2 requires to exist *before* that code does.
+
 ---
 
 ## Superseded

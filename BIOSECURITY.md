@@ -1,8 +1,10 @@
 # Biosecurity Policy
 
-**Version 1.1 · Effective 2026-08-13 · Next scheduled review 2027-02-07**
+**Version 1.2 · Effective 2026-08-18 · Next scheduled review 2027-02-07**
 
-*1.1 is a correction, not a scheduled review: §3 overstated who endorses the community statement it cites, and §6 stated a contested empirical claim as settled. Both are marked in place. The §3 risk assessment and the §5 declined scope are unchanged.*
+*1.2 is an ahead-of-schedule reassessment under §7, triggered by a proposed capability that would rank candidate targets the user did not supply (stage [0], #176). §2 and §3 are reworded so the no-uplift assessment rests on the premise that actually carries it. **The §3 conclusion is unchanged, and the §5 declined scope is unchanged** — including item 5. The assessment is recorded as `D27` in `DECISIONS.md`, per Commitment #2.*
+
+*1.1 was a correction, not a scheduled review: §3 overstated who endorses the community statement it cites, and §6 stated a contested empirical claim as settled. Both are marked in place.*
 
 Maintainer contact: **biosecurity@engin.bio**
 
@@ -35,7 +37,9 @@ Engin helps a team decide how to manufacture a molecule they have **already sele
 | `engin-pathway` | Ranks candidate metabolic routes by predicted *manufacturability* — metabolic burden, toxic-intermediate risk, thermodynamic feasibility, host fit |
 | `engin-core` | Forecasts titer with calibrated uncertainty from a small number of runs, recommends the next experiment, and produces a probabilistic cost-per-kilogram estimate including downstream recovery |
 
-Engin does not propose targets, predict biological activity, model toxicity or pathogenicity, or design sequences.
+Engin does not predict biological activity, model toxicity or pathogenicity, or design sequences.
+
+**Target screening is proposed and not built.** A stage [0] layer that ranks *candidate* molecules for a use type by cost and manufacturability interval is under design ([#176](https://github.com/enginbio/engin-suite/issues/176)). It would rank targets the user did not supply, which is a §7 trigger; its capability review is recorded as `D27` in `DECISIONS.md`, and the conditions there are binding terms on shipping it. Until it ships, this policy describes a suite that takes the target as an input. The medical / bioactivity direction is **not** covered by that review — it remains §5 item 5, declined.
 
 ---
 
@@ -47,7 +51,9 @@ This is stated plainly rather than hedged, because vague reassurance is less use
 
 **Reasoning.** Engin addresses industrial viability — whether a route reaches an economical titer at tonne scale, and whether recovery costs consume the gain. These are questions about manufacturing economics over months of process development. Misuse is not constrained by cost of goods, unit economics, or whether a process survives transfer to a 100,000-litre reactor.
 
-The components are individually oriented the same way. Pathway ranking scores manufacturability and holds no model of physiological activity; it cannot distinguish a pharmaceutical intermediate from a solvent. Host selection matches a chassis to a production requirement. Neither answers *what to make* — only *how this would be made at industrial scale*.
+The components are individually oriented the same way. Pathway ranking scores manufacturability and holds no model of physiological activity; it cannot distinguish a pharmaceutical intermediate from a solvent. Host selection matches a chassis to a production requirement. Neither holds a model of what a molecule *does* in an organism — only of how it would be made at industrial scale.
+
+*Reworded 2026-08-18 (v1.2).* This paragraph previously ended "neither answers *what to make* — only *how this would be made at industrial scale*." That sentence was doing load-bearing work it could not carry: the proposed stage [0] screening layer (§2, `D27`) would rank candidate targets and so make the first clause false, while leaving this section's conclusion untouched. A claim that a capability on the roadmap would falsify was the wrong support for a no-uplift assessment, so it is replaced by the premise that actually holds — the suite models manufacturing economics and has no model of physiological activity. Ranking industrial molecules by cost does not become uplift by containing more than one candidate.
 
 **Where the field locates the real chokepoint.** The community statement *Community Values, Guiding Principles, and Commitments for the Responsible Development of AI for Protein Design* (released 2024-03-08; 189 signatories as of 2026-02-06, a list that is still open) identifies nucleic acid synthesis as the key biosecurity checkpoint for computational biodesign, on the reasoning that no computationally designed construct causes physical harm until it is manufactured. Engin sits downstream of design and upstream of nothing that bypasses that checkpoint.
 
