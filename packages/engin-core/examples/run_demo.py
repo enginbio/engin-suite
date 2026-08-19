@@ -2,7 +2,7 @@
 
     simulate a small DoE  ->  fit an uncertainty-aware titer model
     ->  calibrate the intervals (split conformal)  ->  check they are honest
-    ->  recommend the next DoE batch  ->  write a scale-up risk memo.
+    ->  recommend the next DoE batch  ->  cost it  ->  write the memo.
 
 Everything runs on synthetic mechanistic data (``engin_core.simulator``), so no
 partner data is required to demonstrate the value proposition. The active-
@@ -34,6 +34,7 @@ from engin_core import (
     unit_to_physical,
 )
 from engin_core import simulator as sim
+from engin_core.tea import CostParameters, cost_summary
 
 OUT = os.path.join(os.path.dirname(__file__), "outputs")
 os.makedirs(OUT, exist_ok=True)
@@ -82,6 +83,13 @@ def main():
     lift = 100.0 * (best_new - best_prior) / best_prior
 
     # ---- 6. P(hit target) for a stretch target ----
+    # Cost the two designs the bottom line compares (#231). The memo's headline used
+    # to be titer lift, which is the metric D13 exists to argue against -- the one
+    # artifact a human reads should not close on it.
+    i_best_known = int(np.argmax(y_obs))
+    costs = cost_summary(gp, np.vstack([U[i_best_known], Xnext[int(np.argmax(y_next_true))]]))
+    cost_params = CostParameters()
+
     target = float(np.percentile(y_obs, 95))
     p_best_known = float(prob_at_least(*gp.predict(U[[np.argmax(y_obs)]]), target)[0])
     p_reco = float(prob_at_least(m_next[[0]], sd_next[[0]], target)[0])
@@ -161,7 +169,7 @@ def main():
             w.writerow([f"{v:.3f}" for v in phys[i]] + [f"{y_obs[i]:.2f}", f"{y_true[i]:.2f}"])
 
     write_memo(
-        f"{OUT}/scale-up-risk-memo.md",
+        f"{OUT}/doe-round-reduction-memo.md",
         N,
         n_tr,
         n_te,
@@ -179,10 +187,12 @@ def main():
         phys_next,
         m_next,
         sd_next,
+        costs,
+        cost_params,
     )
     print(
         "\nWrote outputs/ -> calibration.png, sensitivity.png, active_learning.png, "
-        "doe_dataset.csv, scale-up-risk-memo.md"
+        "doe_dataset.csv, doe-round-reduction-memo.md"
     )
 
 
@@ -205,12 +215,24 @@ def write_memo(
     phys_next,
     m_next,
     sd_next,
+    costs,
+    cost_params,
 ):
     L = []
-    L.append("# Scale-up risk memo (auto-generated)\n")
+    L.append("# DoE round-reduction memo (auto-generated)\n")
     L.append(
         f"_engin-core demo — trained on {ntr} DoE runs, "
         f"validated on {nte} independent held-out runs._\n"
+    )
+    # The tier caveat travels with the artifact (#231). This is the surface most
+    # likely to leave the repo as a screenshot, and it was the only public one
+    # that did not say its numbers came from a simulator.
+    L.append(
+        "\n> **Tier 1 — simulator output, not laboratory data.** Every run below is "
+        "`engin_core.simulator`, so this memo shows that the loop is wired and "
+        "calibrated end to end. It is not evidence about any real strain or plant. "
+        "See `docs/limitations.md` for what each validation tier does and does not "
+        "establish.\n\n"
     )
     L.append("## Forecast quality (held-out)\n")
     L.append(f"- RMSE **{rmse:.1f} g/L**, R² **{ss:.2f}**\n")
@@ -239,6 +261,55 @@ def write_memo(
         "- Interpretation: one active-learning round moved the frontier without "
         "any new wet runs beyond the recommended batch — the DoE-round-reduction "
         "claim, demonstrated on mechanistic data.\n"
+    )
+
+    known, reco = costs
+    d_cost = 100.0 * (reco.expected_usd_per_kg - known.expected_usd_per_kg)
+    d_cost /= known.expected_usd_per_kg
+    disjoint = (
+        reco.upper_usd_per_kg < known.lower_usd_per_kg
+        or known.upper_usd_per_kg < reco.lower_usd_per_kg
+    )
+    L.append("\n## What it costs\n")
+    L.append(
+        f"- Best known condition: **${known.expected_usd_per_kg:.2f}/kg** "
+        f"(90% {known.lower_usd_per_kg:.2f}–{known.upper_usd_per_kg:.2f}).\n"
+    )
+    L.append(
+        f"- Top recommendation: **${reco.expected_usd_per_kg:.2f}/kg** "
+        f"(90% {reco.lower_usd_per_kg:.2f}–{reco.upper_usd_per_kg:.2f}) — "
+        f"**{d_cost:+.1f}%**.\n"
+    )
+    L.append(
+        f"- Against a **${cost_params.target_usd_per_kg:.0f}/kg** target, P(clears) is "
+        f"**{known.prob_meets_target:.0%}** and **{reco.prob_meets_target:.0%}**.\n"
+    )
+    L.append(
+        f"- The two cost intervals {'do not overlap' if disjoint else 'overlap'}, so "
+        f"the cost ranking {'is' if disjoint else 'is not'} decisive at this sample "
+        f"size.\n"
+    )
+    L.append(
+        f"- **Read the two deltas together.** Titer moved **{lift:+.0f}%** and cost "
+        f"**{d_cost:+.1f}%** — cost improves, but not in lockstep, because this "
+        "process is facility- and downstream-dominated and the yield lever is "
+        "correspondingly muted. `D13` is the decision to optimize net $/kg rather "
+        "than titer; this section is what that decision looks like when it is "
+        "measured instead of asserted.\n"
+    )
+    L.append(
+        "- **This is not a demonstration that cost optimization picks a different "
+        "design.** Here the cheaper design is also the higher-titer one, so titer "
+        "would have chosen the same batch. `docs/limitations.md` records why they "
+        "coincide on this simulator, and showing them disagree needs a process "
+        "where pushing titer costs yield or rate.\n"
+    )
+    L.append(
+        "- The cost interval is a **propagated credible interval, not a conformal "
+        "one** — it carries the GP's titer uncertainty through the cost model. "
+        "Calibrating it would need held-out *cost* observations, which require a "
+        "costed campaign nobody has run. The titer intervals above are conformal; "
+        "these are not, and the words are not interchangeable.\n"
     )
     with open(path, "w") as f:
         f.write("".join(L))
