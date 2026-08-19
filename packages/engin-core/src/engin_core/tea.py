@@ -89,6 +89,7 @@ from pydantic import BaseModel, Field
 from scipy.optimize import brentq
 
 from .gp import GP, prob_at_least
+from .recommend import _is_far_enough
 from .simulator import DEFAULT_REACTOR, ReactorConfig, unit_to_physical
 
 __all__ = [
@@ -804,7 +805,7 @@ def recommend_batch_by_cost(
     chosen: list[int] = []
     for idx in np.argsort(-acq):
         x = candidates[idx]
-        if all(np.linalg.norm(x - candidates[j]) >= min_dist for j in chosen):
+        if _is_far_enough(x, candidates, chosen, gp.X, min_dist):
             chosen.append(int(idx))
         if len(chosen) == k:
             break
