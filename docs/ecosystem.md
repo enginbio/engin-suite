@@ -38,6 +38,110 @@ in 2021, and that finding is worth as much as the recommendation.
 
 ---
 
+## What is in here
+
+Ten capability areas. Each card names what Engin does about that capability and the
+one implementation to reach for if you only take one — the detail sits under the link.
+
+::::{grid} 1 1 2 3
+:gutter: 3
+
+:::{grid-item-card} Bayesian optimization & DoE
+:link: eco-bo
+:link-type: ref
+
+**Engin:** composes, and benchmarks against
+
+**Reach for:** BayBE
+:::
+
+:::{grid-item-card} Distribution-free UQ
+:link: eco-uq
+:link-type: ref
+
+**Engin:** wraps
+
+**Reach for:** MAPIE
+:::
+
+:::{grid-item-card} Techno-economic analysis
+:link: eco-tea
+:link-type: ref
+
+**Engin:** composes
+
+**Reach for:** BioSTEAM
+:::
+
+:::{grid-item-card} Metabolic modelling & strain design
+:link: eco-gsmm
+:link-type: ref
+
+**Engin:** does not build
+
+**Reach for:** COBRApy
+:::
+
+:::{grid-item-card} ML recommendation across DBTL
+:link: eco-dbtl
+:link-type: ref
+
+**Engin:** does not build
+
+**Reach for:** none, for a commercial user
+:::
+
+:::{grid-item-card} Biosynthetic route enumeration
+:link: eco-routes
+:link-type: ref
+
+**Engin:** explicitly does not build
+
+**Reach for:** DORAnet
+:::
+
+:::{grid-item-card} Protein fitness prediction
+:link: eco-protein
+:link-type: ref
+
+**Engin:** composes
+
+**Reach for:** ESM-2 (650M)
+:::
+
+:::{grid-item-card} Mechanistic simulation & twins
+:link: eco-sim
+:link-type: ref
+
+**Engin:** builds a small one, reluctantly
+
+**Reach for:** BASICO
+:::
+
+:::{grid-item-card} Bioprocess data standards
+:link: eco-standards
+:link-type: ref
+
+**Engin:** builds loaders, adopts vocabulary
+
+**Reach for:** MIFE/MIFD + xarray
+:::
+
+:::{grid-item-card} Molecular & graph featurization
+:link: eco-featurization
+:link-type: ref
+
+**Engin:** composes
+
+**Reach for:** RDKit
+:::
+
+::::
+
+---
+
+(eco-bo)=
+
 ## Bayesian optimization and design of experiments
 
 *Funnel stage: process optimization (`engin-core`), campaign planning (`engin-protein`).*
@@ -49,7 +153,10 @@ objective is net $/kg rather than titer (`D13`), which is a different question f
 contribution, and a textbook response-surface baseline currently beats it on our
 own simulator — see [Benchmarks](benchmarks).
 
-### BayBE — [emdgroup/baybe](https://github.com/emdgroup/baybe)
+:::{dropdown} BayBE — Apache-2.0
+:animate: fade-in-slide-down
+
+[emdgroup/baybe](https://github.com/emdgroup/baybe)
 
 Apache-2.0. A BoTorch-backed Bayesian DoE engine built for wet-lab campaigns.
 
@@ -66,8 +173,12 @@ Apache-2.0. A BoTorch-backed Bayesian DoE engine built for wet-lab campaigns.
 
 Reference: Fitzner et al., *Digital Discovery* (2025),
 [10.1039/D5DD00050E](https://doi.org/10.1039/D5DD00050E).
+:::
 
-### Ax + BoTorch — [facebook/Ax](https://github.com/facebook/Ax), [meta-pytorch/botorch](https://github.com/meta-pytorch/botorch)
+:::{dropdown} Ax + BoTorch — MIT
+:animate: fade-in-slide-down
+
+[facebook/Ax](https://github.com/facebook/Ax), [meta-pytorch/botorch](https://github.com/meta-pytorch/botorch)
 
 MIT. The reference implementation of modern acquisition functions, plus a campaign
 layer over it.
@@ -82,8 +193,12 @@ layer over it.
   target the retired Service API.
 
 Reference: Balandat et al., NeurIPS 2020, [arXiv:1910.06403](https://arxiv.org/abs/1910.06403).
+:::
 
-### BoFire — [experimental-design/bofire](https://github.com/experimental-design/bofire)
+:::{dropdown} BoFire — BSD-3-Clause
+:animate: fade-in-slide-down
+
+[experimental-design/bofire](https://github.com/experimental-design/bofire)
 
 BSD-3-Clause. A BoTorch-backed framework that treats constrained DoE and Bayesian
 optimization as one problem, written by industrial chemical and pharmaceutical
@@ -109,8 +224,12 @@ practitioners.
 
 Reference: Dürholt et al., *Journal of Machine Learning Research* 26(204) (2025),
 [jmlr.org/papers/v26/24-1540.html](https://jmlr.org/papers/v26/24-1540.html).
+:::
 
-### ProcessOptimizer — [novonordisk-research/ProcessOptimizer](https://github.com/novonordisk-research/ProcessOptimizer)
+:::{dropdown} ProcessOptimizer — BSD-3-Clause
+:animate: fade-in-slide-down
+
+[novonordisk-research/ProcessOptimizer](https://github.com/novonordisk-research/ProcessOptimizer)
 
 BSD-3-Clause. `LICENSE.md` opens with the words "New BSD License" and carries the
 standard three-clause text; GitHub's classifier reports `NOASSERTION`, which is a
@@ -135,6 +254,7 @@ a licensing question. A scikit-optimize fork retuned for noisy physical processe
 
 Reference: Bertelsen et al., *Journal of Chemical Information and Modeling* 65(4)
 (2025), [10.1021/acs.jcim.4c02240](https://doi.org/10.1021/acs.jcim.4c02240).
+:::
 
 **Classical DoE.** [pydoe](https://github.com/pydoe/pydoe) (BSD-3) is the maintained
 home of the classical designs — factorial, Plackett-Burman, Box-Behnken, central
@@ -169,7 +289,8 @@ has a good paper and a Python ceiling below 3.11.
 [EDBO+](https://github.com/doyle-lab-ucla/edboplus) is research code — cite the
 method, don't depend on the package.
 
-### Benchmark harnesses: there is not one to run inside
+:::{dropdown} Benchmark harnesses: there is not one to run inside — dead end
+:animate: fade-in-slide-down
 
 **Dead end, recorded here because the finding was living in a pull-request
 comment.** [#201](https://github.com/enginbio/engin-suite/pull/201) settled this
@@ -202,6 +323,7 @@ Engin cannot run inside it without first becoming a BayBE campaign, which is a f
 larger commitment than a baseline comparison. BayBE stays what #20 already calls
 it — a *baseline to beat*, not a frame to sit in — and it is Apache-2.0, so that
 comparison carries no licence question when someone builds it.
+:::
 
 **If you pick one:** BayBE, unless the torch dependency is disqualifying, in which
 case ProcessOptimizer. Pick BoFire instead of BayBE when the binding difficulty is
@@ -210,6 +332,8 @@ can only appear with another — because that is the case it is built for and th
 where BayBE's constraint support runs out first.
 
 ---
+
+(eco-uq)=
 
 ## Distribution-free uncertainty quantification
 
@@ -220,7 +344,10 @@ multiplier is implemented in `engin-core`; MAPIE is kept as an independent
 cross-check precisely because it is a *different* method, which is the point of a
 cross-check. See [Conformal calibration](methods/conformal-calibration).
 
-### MAPIE — [scikit-learn-contrib/MAPIE](https://github.com/scikit-learn-contrib/MAPIE)
+:::{dropdown} MAPIE — BSD-3
+:animate: fade-in-slide-down
+
+[scikit-learn-contrib/MAPIE](https://github.com/scikit-learn-contrib/MAPIE)
 
 BSD-3. The scikit-learn-contrib conformal library.
 
@@ -249,8 +376,12 @@ So the entry cited the superseded reference *and* drew a conclusion from an abse
 that the project had itself already filled — the failure mode `D23` exists to catch,
 committed by the page that implements `D23` from the reader's side.
 ```
+:::
 
-### crepes — [henrikbostrom/crepes](https://github.com/henrikbostrom/crepes)
+:::{dropdown} crepes — BSD-3
+:animate: fade-in-slide-down
+
+[henrikbostrom/crepes](https://github.com/henrikbostrom/crepes)
 
 BSD-3. Conformal predictive *systems* — a calibrated predictive distribution per
 test object, not an interval at one confidence level.
@@ -266,8 +397,12 @@ test object, not an interval at one confidence level.
   between point releases. Narrower than MAPIE: no time series, no risk control.
 
 Reference: Boström, *Proceedings of COPA* (PMLR 230:236-249, 2024).
+:::
 
-### TorchCP — [ml-stat-Sustech/TorchCP](https://github.com/ml-stat-Sustech/TorchCP)
+:::{dropdown} TorchCP — LGPL-3.0 / GPL-3.0 — copyleft
+:animate: fade-in-slide-down
+
+[ml-stat-Sustech/TorchCP](https://github.com/ml-stat-Sustech/TorchCP)
 
 **LGPL-3.0 / GPL-3.0 — copyleft, and categorically different from everything else in
 this slot.** For an Apache-2.0 project with commercial users this needs legal review,
@@ -282,6 +417,7 @@ not a shrug.
   refreshed in roughly ten months while commits continue to land. There is no tagged
   point you can pin to and reason about; you are pinning to a PyPI upload or to a
   commit hash.
+:::
 
 **Also worth knowing.** [puncc](https://github.com/deel-ai/puncc) is MIT with a
 genuinely optional torch dependency and a certification-oriented framing. This page
@@ -304,6 +440,8 @@ distribution rather than an interval.
 
 ---
 
+(eco-tea)=
+
 ## Techno-economic analysis
 
 *Funnel stage: cost-per-kilogram (`engin-core`, the `[tea]` extra).*
@@ -313,7 +451,10 @@ Engin's contribution is the coupling — propagating a calibrated titer forecast
 recovery into a probabilistic $/kg — not the flowsheet simulation. See
 [Cost](guides/cost).
 
-### BioSTEAM — [BioSTEAMDevelopmentGroup/biosteam](https://github.com/BioSTEAMDevelopmentGroup/biosteam)
+:::{dropdown} BioSTEAM — NCSA
+:animate: fade-in-slide-down
+
+[BioSTEAMDevelopmentGroup/biosteam](https://github.com/BioSTEAMDevelopmentGroup/biosteam)
 
 NCSA (permissive). Flowsheet design, simulation, TEA and LCA of biorefineries.
 
@@ -331,8 +472,12 @@ NCSA (permissive). Flowsheet design, simulation, TEA and LCA of biorefineries.
 
 Reference: Cortés-Peña et al., *ACS Sustainable Chem. Eng.* (2020),
 [10.1021/acssuschemeng.9b07040](https://doi.org/10.1021/acssuschemeng.9b07040).
+:::
 
-### IDAES-PSE — [IDAES/idaes-pse](https://github.com/IDAES/idaes-pse)
+:::{dropdown} IDAES-PSE — BSD
+:animate: fade-in-slide-down
+
+[IDAES/idaes-pse](https://github.com/IDAES/idaes-pse)
 
 BSD. A Pyomo-based, equation-oriented framework for simultaneous simulation and
 design optimization.
@@ -346,8 +491,12 @@ design optimization.
   targets energy systems. Everything bioprocess-specific you write yourself.
 - **Con** — requires a post-install binary fetch for solvers, which breaks
   air-gapped and locked-down CI, and convergence debugging demands real PSE fluency.
+:::
 
-### QSDsan — [QSD-Group/QSDsan](https://github.com/QSD-Group/QSDsan)
+:::{dropdown} QSDsan — NCSA
+:animate: fade-in-slide-down
+
+[QSD-Group/QSDsan](https://github.com/QSD-Group/QSDsan)
 
 NCSA. A BioSTEAM-derived platform coupling simulation, TEA and life-cycle assessment
 in one system object.
@@ -359,6 +508,7 @@ in one system object.
   resource-recovery shaped, not industrial aerobic fermentation shaped.
 - **Con** — inherits BioSTEAM's pins and bus-factor risk, and adds a second layer of
   the same.
+:::
 
 **Not open, but name them honestly.** SuperPro Designer remains the industry default
 for batch bioprocess TEA and scheduling, and has no open-source equal on
@@ -373,6 +523,8 @@ pip-installable option that treats TEA uncertainty as a first-class construct an
 ships fermentation models to start from.
 
 ---
+
+(eco-gsmm)=
 
 ## Genome-scale metabolic modelling and strain design
 
@@ -391,7 +543,10 @@ is a different capability with a different and much worse-supplied tool list, an
 has its own slot, *Machine-learning recommendation across DBTL cycles*, below. A reader
 who takes this slot as covering both would conclude the problem is solved. It is not.
 
-### COBRApy — [opencobra/cobrapy](https://github.com/opencobra/cobrapy)
+:::{dropdown} COBRApy — GPLv2+ / LGPLv2+
+:animate: fade-in-slide-down
+
+[opencobra/cobrapy](https://github.com/opencobra/cobrapy)
 
 **Dual GPLv2+ / LGPLv2+.** For a permissively licensed project this needs a deliberate
 decision — shelling out is not the same as importing.
@@ -409,8 +564,12 @@ decision — shelling out is not the same as importing.
 
 Reference: Ebrahim et al., *BMC Syst. Biol.* (2013),
 [10.1186/1752-0509-7-74](https://doi.org/10.1186/1752-0509-7-74).
+:::
 
-### StrainDesign — [klamt-lab/straindesign](https://github.com/klamt-lab/straindesign)
+:::{dropdown} StrainDesign — Apache-2.0
+:animate: fade-in-slide-down
+
+[klamt-lab/straindesign](https://github.com/klamt-lab/straindesign)
 
 Apache-2.0 — the cleanest licence in this slot. Minimal cut sets, OptKnock,
 RobustKnock, OptCouple over a COBRApy model.
@@ -425,8 +584,10 @@ RobustKnock, OptCouple over a COBRApy model.
 - **Con** — self-classified as alpha on PyPI. Pin the version.
 
 Reference: Schneider et al., *Bioinformatics* (2022), 38(21):4981.
+:::
 
-### Model reconstruction: CarveMe and gapseq
+:::{dropdown} Model reconstruction: CarveMe and gapseq — Apache-2.0 / GPL-3.0
+:animate: fade-in-slide-down
 
 [CarveMe](https://github.com/cdanielmachado/carveme) (Apache-2.0) carves an
 organism-specific model out of a curated universal model from a genome annotation, in
@@ -445,6 +606,7 @@ dated reference-database provenance — and that gap has widened: gapseq moved t
 line during 2026 (`v2.1.0`, 2026-05-30) with commits through August while CarveMe stood
 still. *(Checked 2026-08-17.)* But it is R plus shell, so it is a subprocess
 dependency in a Python stack, and it is bacteria and archaea only.
+:::
 
 **Reaction thermodynamics.** [eQuilibrator](https://gitlab.com/equilibrator/equilibrator-api)
 (MIT, on GitLab) is the right answer for ΔG′° estimation and is actively developed. The
@@ -469,6 +631,8 @@ the GPL question deliberately before importing it.
 
 ---
 
+(eco-dbtl)=
+
 ## Machine-learning recommendation across DBTL cycles
 
 *Funnel stage: between route ranking (`engin-pathway`) and process optimization
@@ -485,7 +649,10 @@ this because a good open implementation exists — would be assuming something f
 Whether Engin should serve it is [#211](https://github.com/enginbio/engin-suite/issues/211);
 `BIOSECURITY.md` §2 currently says it does not.
 
-### ART — [JBEI/ART](https://github.com/JBEI/ART)
+:::{dropdown} ART — not open source
+:animate: fade-in-slide-down
+
+[JBEI/ART](https://github.com/JBEI/ART)
 
 **Not open source, and this is the entry the page's licence warning was written for.**
 Non-commercial academic use only, *Patent Pending*, and access is by emailing Berkeley
@@ -509,8 +676,12 @@ Lab for admission to a private repository.
 
 Reference: Radivojević et al., *Nature Communications* 11:4879 (2020),
 [10.1038/s41467-020-18008-4](https://doi.org/10.1038/s41467-020-18008-4).
+:::
 
-### METIS — [amirpandi/METIS](https://github.com/amirpandi/METIS)
+:::{dropdown} METIS — MIT
+:animate: fade-in-slide-down
+
+[amirpandi/METIS](https://github.com/amirpandi/METIS)
 
 MIT. An active-learning workflow for optimizing genetic and metabolic networks, run
 from Colab notebooks.
@@ -527,8 +698,12 @@ from Colab notebooks.
 
 Reference: Pandi et al., *Nature Communications* (2022),
 [10.1038/s41467-022-31245-z](https://doi.org/10.1038/s41467-022-31245-z).
+:::
 
-### FluxRETAP — [JBEI/FluxRETAP](https://github.com/JBEI/FluxRETAP)
+:::{dropdown} FluxRETAP — BSD-3-Clause
+:animate: fade-in-slide-down
+
+[JBEI/FluxRETAP](https://github.com/JBEI/FluxRETAP)
 
 BSD-3-Clause (LBNL variant). Prioritises gene targets by correlating flux with product
 formation across a COBRApy model.
@@ -540,6 +715,7 @@ formation across a COBRApy model.
   is the near-miss a reader will find first and mistake for the thing.
 - **Con** — dormant since January 2025, notebooks-plus-`core/` with no packaging, and
   the repository states the work is not yet published.
+:::
 
 **Adjacent infrastructure, both permissive, neither a recommender.**
 [JBEI/EDD](https://github.com/JBEI/edd) (BSD-3-Clause, LBNL) is the Test-side data
@@ -578,6 +754,8 @@ cycles.
 
 ---
 
+(eco-routes)=
+
 ## Biosynthetic route enumeration
 
 *Funnel stage: immediately upstream of `engin-pathway`.*
@@ -586,7 +764,10 @@ cycles.
 The whitespace is *ranking* the routes they produce by manufacturability, not finding
 them. `engin-pathway` consumes routes; it does not enumerate them.
 
-### DORAnet — [wsprague-nu/doranet](https://github.com/wsprague-nu/doranet)
+:::{dropdown} DORAnet — Apache-2.0
+:animate: fade-in-slide-down
+
+[wsprague-nu/doranet](https://github.com/wsprague-nu/doranet)
 
 Apache-2.0 — the only licence in this slot that is a drop-in match for Engin's.
 Forward, retro and hybrid chemo-enzymatic reaction network enumeration; the explicit
@@ -603,8 +784,12 @@ successor to Pickaxe and NetGen.
 
 Reference: Zhang et al., *Digital Discovery* (2025),
 [10.1039/d5dd00229j](https://doi.org/10.1039/d5dd00229j).
+:::
 
-### RetroPath2.0 — [brsynth/retropath2-wrapper](https://github.com/brsynth/retropath2-wrapper)
+:::{dropdown} RetroPath2.0 — MIT
+:animate: fade-in-slide-down
+
+[brsynth/retropath2-wrapper](https://github.com/brsynth/retropath2-wrapper)
 
 MIT code over the [RetroRules](https://retrorules.org/) rule set, with
 [rp2paths](https://github.com/brsynth/rp2paths) extracting pathways from the network.
@@ -623,14 +808,19 @@ MIT code over the [RetroRules](https://retrorules.org/) rule set, with
 
 Reference: Delépine et al., *Metabolic Engineering* (2018),
 [10.1016/j.ymben.2017.12.002](https://doi.org/10.1016/j.ymben.2017.12.002).
+:::
 
-### RetroBioCat 2 — [willfinnigan/RetroBioCat-2](https://github.com/willfinnigan/RetroBioCat-2)
+:::{dropdown} RetroBioCat 2 — CC BY-NC 4.0 — non-commercial
+:animate: fade-in-slide-down
+
+[willfinnigan/RetroBioCat-2](https://github.com/willfinnigan/RetroBioCat-2)
 
 **CC BY-NC 4.0 — non-commercial, not an OSI licence.** Note the regression: version 1
 was MIT. Listed because it is the most actively developed biocatalysis-specific route
 finder, shipping template-based and template-free expanders plus MCTS search with
 expert-curated enzyme rules. **Engin's commercial users cannot use it.** List it, don't
 depend on it.
+:::
 
 **Also.** [BioNavi](https://github.com/zengtsysu/BioNavi) (MIT) is a transformer-ensemble
 search that is strongest exactly where rule-based enumeration is weakest — complex
@@ -652,6 +842,8 @@ you need the publication-defensible answer and can eat KNIME.
 
 ---
 
+(eco-protein)=
+
 ## Protein fitness prediction and representation
 
 *Funnel stage: `engin-protein` featurization and the low-N loop.*
@@ -666,7 +858,10 @@ directions. Check the LICENSE file *and* the specific model checkpoint's card be
 committing to anything.
 ```
 
-### ESM-2 and the ESM family — [Biohub/esm](https://github.com/Biohub/esm)
+:::{dropdown} ESM-2 and the ESM family — MIT, with a caveat
+:animate: fade-in-slide-down
+
+[Biohub/esm](https://github.com/Biohub/esm)
 
 MIT, with a caveat. ESM-2 weights on HuggingFace are MIT; the newer ESM C / ESM3 /
 ESMFold2 code and weights are now MIT under Chan Zuckerberg Biohub, a genuine
@@ -686,8 +881,12 @@ separate Acceptable Use Policy, and at least one checkpoint card carries an unex
 
 Reference: Lin et al., *Science* (2023),
 [10.1126/science.ade2574](https://doi.org/10.1126/science.ade2574).
+:::
 
-### EVcouplings — [debbiemarkslab/EVcouplings](https://github.com/debbiemarkslab/EVcouplings)
+:::{dropdown} EVcouplings — MIT
+:animate: fade-in-slide-down
+
+[debbiemarkslab/EVcouplings](https://github.com/debbiemarkslab/EVcouplings)
 
 MIT, with a stated carve-out for included CNS scripts. Fits a Potts model to an MSA and
 scores variant effects.
@@ -700,8 +899,12 @@ scores variant effects.
   output.
 - **Con** — needs external HMMER and PLMC binaries on PATH, cannot score indels, and
   cannot score outside the aligned region.
+:::
 
-### ProteinGym — [OATML-Markslab/ProteinGym](https://github.com/OATML-Markslab/ProteinGym)
+:::{dropdown} ProteinGym — MIT
+:animate: fade-in-slide-down
+
+[OATML-Markslab/ProteinGym](https://github.com/OATML-Markslab/ProteinGym)
 
 MIT. The standard benchmark suite of deep mutational scanning assays, shipping splits
 plus reference implementations of the baselines — including an indel benchmark, which
@@ -714,6 +917,7 @@ very few resources offer.
 - **Con** — DMS assays are a biased proxy for engineering campaigns: mostly single
   substitutions on well-studied natural proteins, mostly saturating rather than low-N.
   Good ProteinGym numbers do not guarantee good performance on a 96-variant plate.
+:::
 
 **Also.** [SaProt](https://github.com/westlake-repl/SaProt) (MIT) fuses sequence with
 Foldseek structural tokens and has a companion aimed explicitly at wet-lab scientists
@@ -737,6 +941,8 @@ ProteinGym, with EVcouplings as the CPU-only epistasis-aware second opinion wher
 family has a deep alignment.
 
 ---
+
+(eco-sim)=
 
 ## Mechanistic simulation and digital twins
 
@@ -766,7 +972,10 @@ moved: `NREL/BioReactorDesign` now redirects to `NatLabRockies/BioReactorDesign`
 *(Checked 2026-08-17.)*
 ```
 
-### BASICO / COPASI — [copasi/basico](https://github.com/copasi/basico)
+:::{dropdown} BASICO / COPASI — Artistic-2.0
+:animate: fade-in-slide-down
+
+[copasi/basico](https://github.com/copasi/basico)
 
 Artistic-2.0. A Pythonic wrapper over the COPASI biochemical network engine.
 
@@ -781,8 +990,12 @@ Artistic-2.0. A Pythonic wrapper over the COPASI biochemical network engine.
   failures drop you out of Python fast.
 
 Reference: Bergmann, *JOSS* (2023), [10.21105/joss.05553](https://doi.org/10.21105/joss.05553).
+:::
 
-### Tellurium / libRoadRunner — [sys-bio/tellurium](https://github.com/sys-bio/tellurium)
+:::{dropdown} Tellurium / libRoadRunner — Apache-2.0
+:animate: fade-in-slide-down
+
+[sys-bio/tellurium](https://github.com/sys-bio/tellurium)
 
 Apache-2.0. Antimony's readable model language over a JIT-compiled SBML simulator.
 
@@ -795,6 +1008,7 @@ Apache-2.0. Antimony's readable model language over a JIT-compiled SBML simulato
 - **Con** — LLVM-backed binary wheels are a recurring install problem on new interpreters
   and on ARM. The GitHub releases tab also lags PyPI here, so judge it the way this page
   judges BioSTEAM: from commits and PyPI, not from the releases page.
+:::
 
 **Downstream.** [CADET-Core](https://github.com/cadet/CADET-Core) and
 [CADET-Process](https://github.com/fau-advanced-separations/CADET-Process) are
@@ -818,6 +1032,8 @@ problems.
 
 ---
 
+(eco-standards)=
+
 ## Bioprocess data standards
 
 *Funnel stage: the ingest layer (`engin-core.loaders`, `engin-core.convention`).*
@@ -837,7 +1053,10 @@ from each of the first two rows. Choosing OPC UA does not give you a file format
 SBML has nowhere to put your dissolved-oxygen trace.
 ```
 
-### MIFE / MIFD — [bioindustry-4.0/mim_ontology](https://gitlab.com/bioindustry-4.0/mim_ontology)
+:::{dropdown} MIFE / MIFD — GPL-3.0-or-later
+:animate: fade-in-slide-down
+
+[bioindustry-4.0/mim_ontology](https://gitlab.com/bioindustry-4.0/mim_ontology)
 
 GPL-3.0-or-later. The first fermentation-specific minimum-information standard, as paired
 metadata schemas for the experiment and the device.
@@ -855,8 +1074,12 @@ Reference: Georgakilas et al., *GigaScience* (2026),
 [10.1093/gigascience/giag038](https://doi.org/10.1093/gigascience/giag038).
 *(Corrected 2026-08-16: this read "Koehorst et al." Koehorst is the paper's last
 author, not its first.)*
+:::
 
-### xarray and CF conventions — [pydata/xarray](https://github.com/pydata/xarray)
+:::{dropdown} xarray and CF conventions — Apache-2.0
+:animate: fade-in-slide-down
+
+[pydata/xarray](https://github.com/pydata/xarray)
 
 Apache-2.0. Labeled N-dimensional arrays serializing to netCDF or Zarr.
 
@@ -870,8 +1093,12 @@ Apache-2.0. Labeled N-dimensional arrays serializing to netCDF or Zarr.
   be misleading, and Engin's convention says so.
 - **Con** — rectangular arrays. Channels sampled at different rates force NaN-padding or
   DataTree, neither ergonomic.
+:::
 
-### Frictionless Data — [frictionlessdata/frictionless-py](https://github.com/frictionlessdata/frictionless-py)
+:::{dropdown} Frictionless Data — MIT
+:animate: fade-in-slide-down
+
+[frictionlessdata/frictionless-py](https://github.com/frictionlessdata/frictionless-py)
 
 MIT. A JSON descriptor that types columns and travels next to plain CSVs.
 
@@ -882,6 +1109,7 @@ MIT. A JSON descriptor that types columns and travels next to plain CSVs.
   and does not scale.
 - **Con** — types columns, carries no domain semantics. Two labs can produce valid and
   mutually incompatible packages, so it does not solve interchange without MIFE on top.
+:::
 
 **Device protocols, clearly labelled as such.** [asyncua](https://github.com/FreeOpcUa/opcua-asyncio)
 (LGPL-3.0) is the pure-Python OPC UA client you will actually meet on a plant-floor skid;
@@ -903,6 +1131,8 @@ a young standard.
 
 ---
 
+(eco-featurization)=
+
 ## Molecular and graph featurization
 
 *Funnel stage: `engin-graph`, and through it `engin-pathway` and `engin-materials`.*
@@ -911,7 +1141,10 @@ a young standard.
 structured candidates and ranks them with a calibrated interval. The featurization and the
 message passing are not Engin's contribution.
 
-### RDKit — [rdkit/rdkit](https://github.com/rdkit/rdkit)
+:::{dropdown} RDKit — BSD-3
+:animate: fade-in-slide-down
+
+[rdkit/rdkit](https://github.com/rdkit/rdkit)
 
 BSD-3. The standard cheminformatics toolkit.
 
@@ -923,8 +1156,12 @@ BSD-3. The standard cheminformatics toolkit.
   molecular-weight-distribution semantics are not first-class.
 - **Con** — C++ behind Python bindings, so stack traces stop being informative at the
   boundary. It gives you graphs and descriptors, never a model.
+:::
 
-### PyTorch Geometric — [pyg-team/pytorch_geometric](https://github.com/pyg-team/pytorch_geometric)
+:::{dropdown} PyTorch Geometric — MIT
+:animate: fade-in-slide-down
+
+[pyg-team/pytorch_geometric](https://github.com/pyg-team/pytorch_geometric)
 
 MIT. The dominant GNN library.
 
@@ -941,8 +1178,12 @@ MIT. The dominant GNN library.
   GNN after the simpler thing has been shown to lose, not before.
 
 Reference: Fey & Lenssen, [arXiv:1903.02428](https://arxiv.org/abs/1903.02428).
+:::
 
-### mordredcommunity — [JacksonBurns/mordred-community](https://github.com/JacksonBurns/mordred-community)
+:::{dropdown} mordredcommunity — BSD-3
+:animate: fade-in-slide-down
+
+[JacksonBurns/mordred-community](https://github.com/JacksonBurns/mordred-community)
 
 BSD-3. A maintained fork of Mordred computing a wide 2D and 3D descriptor block.
 
@@ -952,6 +1193,7 @@ BSD-3. A maintained fork of Mordred computing a wide 2D and 3D descriptor block.
   with many near-duplicate or NaN descriptors, and the library does not filter for you.
 - **Con** — effectively one maintainer doing compatibility triage. Treat it as frozen
   functionality on life support. The original `mordred` has been dead since 2019.
+:::
 
 **Dead end, and this one surprises people.** [DGL](https://github.com/dmlc/dgl) is
 effectively abandoned upstream: no release since September 2024, a single outside-contributor
