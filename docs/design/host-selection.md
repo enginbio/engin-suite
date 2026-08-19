@@ -3,6 +3,20 @@
 **Status:** the absence claim **holds**, narrowed.
 **Last searched:** 2026-08-13 · **Re-check:** 2027-08 · Implements `D23`, closes #107.
 
+```{warning}
+**The shipped capability numbers are illustrative, not sourced.** `engin-host`'s
+knowledge base is roughly 60 hand-assigned values carrying no citations, and
+`Provenance` defaults to `"illustrative"` in the schema for exactly that reason
+([#146](https://github.com/enginbio/engin-suite/issues/146)). The scoring
+arithmetic over them is separately marked `bespoke-unjustified`
+([#103](https://github.com/enginbio/engin-suite/issues/103)).
+
+This note argues that **no published tool does this**. That is a claim about the
+rest of the field, and it is not a claim that these particular scores are right.
+Treat a ranking from the bundled KB as a worked example of the interface, not as
+advice about a chassis.
+```
+
 `engin-host` scores candidate microbial chassis against a production requirement. Its
 README claimed this was *"genuine whitespace"* with *"no standard commercial tool"* — an
 absence claim, published, and never searched.
