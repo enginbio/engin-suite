@@ -519,18 +519,6 @@ sources:
     stability: doi
     type: paper
     note: >-
-      CC BY 4.0. Cited **only** for the capital-cost structure — Equation 9 (the
-      piecewise bioreactor total-direct-cost correlation over 0.33-200 m3),
-      Equation 10 (the capital charge factor), the indirect and contingency
-      factors, and Table 1's declining direct-cost factor. Those price standard
-      bioprocess vessel hardware (ASME BPE, 316L, CIP/SIP, full-vacuum design).
-      The paper's *subject* is animal cell culture, and its cell-type-specific
-      conclusions — the CO2-inhibition ceiling and the 20 m3 fed-batch optimum —
-      are deliberately **not** carried into engin-core, because they are about
-      animal cells rather than about vessels. Using the hardware correlation for
-      microbial fermentation is an argument this project is making, not a
-      finding this source supports; docs/limitations.md says so in those words.
-
       **Licensed CC BY-ND 4.0 — no derivatives.** Cited for definitions (what a
       taxonomic unit is, what a qualification is) and never as a data source. A
       machine-readable table extracted from this article would be a derivative
@@ -538,6 +526,16 @@ sources:
       2026-efsa-qps-list, which is where the encoding takes them from. Same
       conflict class as the NP Atlas and IndPenSim licence notes, and easier to
       miss because the article is the more discoverable of the two.
+
+      *Corrected 2026-08-20.* This note opened with a paragraph belonging to
+      `2021-humbird-scaleup-economics` — Equation 9, the capital charge factor,
+      animal cell culture — duplicated here rather than moved, since that row
+      still carries it. It stated **"CC BY 4.0"**, contradicting the no-derivatives
+      finding four lines below it in the same row. On a source whose whole entry
+      exists to say *do not extract a table from this*, a stray sentence granting
+      derivative rights is the one error that matters, so it is removed rather
+      than left with a marker. EFSA Journal QPS updates are CC BY-ND 4.0;
+      re-verified against the publisher on 2026-08-20.
 
   - id: 2026-fda-gras-inventory
     title: GRAS Notice Inventory
