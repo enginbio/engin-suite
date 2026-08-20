@@ -28,6 +28,7 @@ methods/out-of-distribution
 methods/real-data-calibration
 methods/vendor-export-ingest
 case-studies/process-development
+case-studies/techno-economic-analysis
 benchmarks
 contributing-a-benchmark
 limitations
