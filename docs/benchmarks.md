@@ -72,6 +72,63 @@ and it is the easiest number in this project to quote carelessly.
 Full real-data results: [Calibration on real production
 data](methods/real-data-calibration.md).
 
+## Host selection against "just use *E. coli*"
+
+```bash
+cd packages/engin-host
+python benchmarks/ecoli_baseline.py
+```
+
+**What this cannot measure, stated first.** Whether `engin-host` picks the *right*
+host. The only ground truth here is `kb.py` — the table the scorer reads — and
+grading a scorer against its own inputs returns a number near 100% and means <!-- not-a-claim: a statement about method, not a measurement -->
+nothing by it. [#146](https://github.com/enginbio/engin-suite/issues/146) records
+that the knowledge base is 60 hand-assigned values with no citations, so there is
+no second opinion to grade against either.
+
+What it does measure is the machinery, and that does not need the knowledge base
+to be right: **does the tool differ from the default at all, and does the
+difference survive its own uncertainty band?**
+
+| capabilities weighted | agrees with *E. coli* | picks another, bands separate | picks another, bands overlap |
+|---|---|---|---|
+| 2 | 34.4% | 37.0% | 28.7% |
+| 3 | 34.8% | 39.5% | 25.7% |
+| 5 | 28.0% | 39.9% | 32.1% |
+| 10 | 17.8% | 39.1% | 43.2% |
+
+```text
+provenance: 2,000 random Dirichlet-weighted queries per row, seed 0, illustrative KB
+```
+<!-- not-a-claim: measured on our own illustrative knowledge base -->
+
+**Read the last column.** Across every query shape, roughly **40%** of queries <!-- not-a-claim: measured on our own illustrative knowledge base -->
+produce a recommendation that is both different from "just use *E. coli*" and
+separated from it by its own 90% band. <!-- not-a-claim: measured on our own illustrative knowledge base -->
+On the other 60% the tool either agrees with the default or names a host it <!-- not-a-claim: measured on our own illustrative knowledge base -->
+**cannot distinguish from the default** — and the second of those is the one worth
+knowing about, because it still prints a confident-looking ranking.
+
+That is the honest headline, and it is a loss in the sense
+[#20](https://github.com/enginbio/engin-suite/issues/20) asks for: on most
+queries, over this knowledge base, the multi-criteria machinery does not
+separate its answer from the thing everybody was going to do anyway.
+
+**The hard constraint is where it decisively wins.** With `glyco >= 0.5` — a
+therapeutic glycoprotein — *E. coli* is flagged infeasible on **100%** of queries <!-- not-a-claim: measured on our own illustrative knowledge base -->
+and never recommended.
+That result does not rest on the knowledge base's numbers being right, only on the
+glycosylation cell sitting below the threshold, and it is categorical rather than
+score-based: a hard constraint demotes below every feasible host regardless of
+score. Band overlap is deliberately **not** reported for that case — the ranking
+does not use it there, so the number would look like a result and be an artifact.
+
+**What this means for a reader.** If your requirement includes something *E. coli*
+physically cannot do, the tool earns its place by ruling it out. If your
+requirement is a weighting of soft preferences, expect it to either agree with the
+default or hand you a difference it cannot defend — and check the band before
+acting on the ranking.
+
 ## Baselines: what runs, and what is still a plan
 
 The commitment is that every claim is benchmarked against the simpler approach it
@@ -86,7 +143,7 @@ had not, and the distinction is now in the table itself:
 | Optimizer | an off-the-shelf Bayesian optimization library (BayBE) | **implemented** — synthetic only |
 | Techno-economics | BioSTEAM | not built |
 | Pathway ranking | step-count heuristic | **implemented** — synthetic routes, random-weight M0, and the margin is a property of the generator ([#124](https://github.com/enginbio/engin-suite/issues/124)) |
-| Host selection | "use *E. coli*" | not built |
+| Host selection | "use *E. coli*" | **implemented** — illustrative KB only |
 
 **The pathway row was wrong in the safer-looking direction**, and that is worth
 naming. It read `not built` until 2026-08-15 while `engin-pathway` had been
