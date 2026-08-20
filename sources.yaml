@@ -84,6 +84,38 @@ sources:
     accessed: 2026-08-17
     stability: doi
     type: preprint
+    note: >-
+      Single author. Any prose here that says "Wilson et al." would be wrong, and
+      #251 flagged it as a live risk in this module's framing.
+
+      Worth recording what this paper does **not** license, since `stopping.py`
+      cites it for the (epsilon, delta) framing: Wilson draws joint sample paths
+      via Matheron's rule and maximizes each draw. He never takes a product over a
+      discretized candidate set, and explicitly avoids marginalizing -- *"We opted
+      to avoid these issues by sampling f_t(x) jointly with f*_t rather than
+      marginalizing it out."* The independence product this module used until
+      2026-08-20 was not his construction.
+
+  - id: 2006-smith-winkler-optimizers-curse
+    title: >-
+      The Optimizer's Curse: Skepticism and Postdecision Surprise in Decision
+      Analysis
+    authors: [Smith, James E., Winkler, Robert L.]
+    year: 2006
+    venue: Management Science 52(3) 311-322
+    location: https://doi.org/10.1287/mnsc.1050.0451
+    accessed: 2026-08-20
+    stability: doi
+    type: paper
+    note: >-
+      Cited by `engin_core.stopping.posterior_incumbent` for the general result
+      that selecting the maximum of noisy estimates yields an optimistically biased
+      estimate of the selected item's true value (#250).
+
+      Used for the *mechanism*, not for a number. The magnitudes quoted in that
+      module -- an incumbent up to 9.9 g/L above the true maximum, 4 of 12
+      campaigns stopped after one round -- are measurements on this repository's own
+      simulator, and are marked as such rather than attributed here.
 
   - id: 2026-wang-regret-based-stopping
     title: >-

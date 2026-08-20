@@ -52,15 +52,29 @@ from numpy.typing import ArrayLike, NDArray
 from pydantic import BaseModel, Field
 from scipy.stats import norm
 
-__all__ = ["StopDecision", "ei_below_threshold", "headroom", "stop_decision"]
+from .gp import GP
+
+__all__ = [
+    "StopDecision",
+    "ei_below_threshold",
+    "headroom",
+    "posterior_incumbent",
+    "stop_decision",
+]
 
 
 class StopDecision(BaseModel):
     """Whether to run another round, and how sure that is.
 
-    ``p_worthwhile`` is the probability that **at least one** candidate beats the
-    incumbent by more than ``epsilon``. The recommendation is to stop when that
-    falls below ``delta``.
+    ``p_worthwhile`` is the probability that the **single most promising**
+    candidate beats the incumbent by more than ``epsilon`` -- ``max_i p_i``, not a
+    combination across candidates. The recommendation is to stop when it falls
+    below ``delta``.
+
+    It was ``1 - prod(1 - p_i)`` until 2026-08-20, which made the answer a function
+    of how many rows the caller passed rather than of the process (#251). The name
+    is unchanged because the quantity is still the probability the decision turns
+    on; what changed is that it is now one.
     """
 
     stop: bool
@@ -94,6 +108,36 @@ def _calibrated_scale(sd: NDArray[np.float64], q: float, level: float) -> NDArra
     return np.asarray(sd, float) * (q / z)
 
 
+def posterior_incumbent(gp: GP) -> float:
+    """The incumbent to hand :func:`headroom` and :func:`stop_decision` (#250).
+
+    The best *posterior mean* at the designs already run, rather than the best
+    observed value. ``include_noise=False`` on purpose: the question is what the
+    process achieves at that design, not what one assay happened to read.
+
+    **Why not ``max(observed y)``.** The maximum of ``n`` noisy draws is an
+    upward-biased estimate of the best achievable value -- Smith & Winkler's
+    optimizer's curse -- and the bias is largest exactly where it hurts: one assay
+    reading two or three sigma high becomes a permanent threshold nothing can beat,
+    and the campaign is told to stop with headroom remaining.
+
+    Measured on the bundled simulator over 12 seeds, with the calibrated rule and
+    ``epsilon=2 g/L``: the observed maximum sat **above the true maximum of the
+    response surface in 10 of 12 campaigns**, by a median of +2.4 g/L and as much as
+    +9.9. In **3 of 12** the inflated incumbent stopped the campaign where this
+    incumbent did not.  <!-- not-a-claim: measured on our own simulator -->
+
+    This is the choice Gramacy & Lee promote and the one BayBE makes
+    (``best_f`` from the posterior mean of the transformed targets). BoTorch
+    documents its ``best_f`` as assuming *noiseless* observations, and ships a
+    separate noisy acquisition for when they are not.
+
+    # ref: 2006-smith-winkler-optimizers-curse
+    """
+    mean, _ = gp.predict(gp.X, include_noise=False)
+    return float(np.max(mean))
+
+
 def headroom(
     mean: ArrayLike,
     sd: ArrayLike,
@@ -107,6 +151,23 @@ def headroom(
 
     ``q`` is the split-conformal multiplier; leave it ``None`` to use the raw GP
     posterior and accept its optimism.
+
+    ```{warning}
+    **``best`` must be a de-noised incumbent.** It enters as an absolute threshold
+    on the objective, so any upward bias in it passes through undamped and this
+    function reports less headroom than there is.
+
+    ``max(observed y)`` is biased upward -- it is the maximum of noisy draws, the
+    optimizer's curse -- and ``fit_gp`` fits a ``WhiteKernel``, so the model itself
+    says the observations are noisy. On the bundled simulator it sat above the true
+    maximum in 10 of 12 campaigns, by as much as **+9.9 g/L**, and in 3 of 12 that
+    was enough to stop a campaign that a de-noised incumbent kept running (#250).
+    Use :func:`posterior_incumbent`.  <!-- not-a-claim: measured on our own simulator -->
+
+    This is *not* symmetric with the recommender. In ``recommend_batch`` the
+    incumbent is a ranking offset and the ranking is robust to it; here it is the
+    threshold the whole decision turns on.
+    ```
     """
     mean = np.asarray(mean, float)
     scale = np.asarray(sd, float)
@@ -128,33 +189,74 @@ def stop_decision(
 ) -> StopDecision:
     """Recommend stopping when no candidate is likely to beat ``best`` by ``epsilon``.
 
-    **The combination across candidates assumes independence, and that is the
-    conservative direction.** A GP posterior is positively correlated across
-    nearby points, so the true maximum over candidates is stochastically smaller
-    than the independent maximum with the same marginals. Treating them as
-    independent therefore *overstates* the chance something is left to find, and
-    the rule says "keep going" more often than a joint calculation would. For a
-    stopping rule that is the error worth making: the cost is a wasted round, and
-    the alternative is stopping while headroom remains.
+    ``best`` must be a **de-noised** incumbent -- see :func:`posterior_incumbent`
+    and the warning on :func:`headroom`. Passing ``max(observed y)`` is the
+    documented trap, not the documented usage.
 
-    The exact calculation needs joint posterior samples, which
-    :class:`~engin_core.gp.GP` does not expose -- it returns marginals only.
+    **The combination across candidates is the maximum per-candidate probability,
+    not a product over them.** Until 2026-08-20 this computed
+    ``1 - prod(1 - p_i)``, defended in this docstring as conservative because a GP
+    posterior is positively correlated and the independent maximum is
+    stochastically larger. The direction of that argument was right and it was
+    answering the wrong objection (#251).
+
+    The problem was never the sign of the bias. It was that the bias was
+    controlled by ``len(candidates)``, an argument with no statistical content.
+    ``1 - prod(1-p) ~ 1 - exp(-sum p)``, so stopping required ``sum_i p_i`` below
+    roughly ``delta`` -- at 4000 candidates and ``delta=0.05``, a mean
+    per-candidate probability under about 1.25e-5. Measured on the bundled
+    simulator, one pool sub-sampled and nothing else changed:
+
+    ======  =============  =====
+    ``n``   p_worthwhile   stop
+    ======  =============  =====
+    8       0.000000       True
+    512     0.171560       False
+    4000    0.946322       False
+    ======  =============  =====
+
+    The largest per-candidate probability over that same pool is **0.608** -- the
+    honest answer to "is anything left to find" -- while the product reported
+    0.946 and was still climbing with pool size.
+
+    It was also inconsistent under refinement: ``P(max_i f(x_i) > c)`` converges to
+    ``P(sup_X f > c)`` as the grid densifies, but the product diverges to 1,
+    because neighbouring candidates have posterior correlation approaching 1 and
+    were counted as independent draws. Doubling the grid halved the per-point
+    probability the rule demanded.
+
+    ``max_i p_i`` is what the plain-English question means, and it gives up no
+    guarantee, because the product never carried one.
+
+    **Be precise about what it is invariant to**, because "invariant to pool size"
+    would be too strong. Duplicating candidates, or refining a grid over the same
+    region, leaves it unchanged -- those are the changes with no statistical
+    content. Adding genuinely *better* candidates still raises it, which is correct:
+    that is new information about the design space. What it no longer does is climb
+    toward 1 on candidate count alone. On the pool measured above it now reports
+    0.608 -- equal to the best candidate's own probability, and bounded by it --
+    where the product reported 0.946 and rising.
+
+    A joint calculation over sample paths -- Wilson's actual construction, via
+    Matheron's rule -- needs a joint predictive covariance that
+    :class:`~engin_core.gp.GP` does not expose; that is a larger change and belongs
+    with the regret-based work in #18.
     """
     p = headroom(mean, sd, best, epsilon=epsilon, q=q, level=level)
     if p.size == 0:
         raise ValueError("no candidates: nothing to decide about")
-    p_worthwhile = float(1.0 - np.prod(1.0 - p))
+    p_worthwhile = float(np.max(p))
     stop = p_worthwhile < delta
 
     calibrated = q is not None
     if stop:
         rationale = (
             f"no candidate is likely to beat the incumbent by more than {epsilon:g}: "
-            f"P = {p_worthwhile:.3f}, below the {delta:g} threshold"
+            f"the best candidate's P = {p_worthwhile:.3f}, below the {delta:g} threshold"
         )
     else:
         rationale = (
-            f"P = {p_worthwhile:.3f} that at least one of {p.size} candidates gains "
+            f"the best of {p.size} candidates has P = {p_worthwhile:.3f} of gaining "
             f"more than {epsilon:g}, at or above the {delta:g} threshold"
         )
     if not calibrated:
