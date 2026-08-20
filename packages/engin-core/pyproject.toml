@@ -38,6 +38,18 @@ cli = ["pyyaml>=6.0"]
 # BioSTEAM-backed techno-economics. Optional because BioSTEAM requires Python >= 3.12
 # while this package supports 3.10+, and pulls ~40 transitive dependencies including
 # numba and thermo. Keeping it out of the default install preserves the light path.
+#
+#   **On macOS x86_64 this extra does not install at all, and the marker below does
+#   not express that.** BioSTEAM needs numba, numba needs llvmlite, and llvmlite
+#   ships macOS wheels for `arm64` only -- checked against llvmlite 0.49.0 on
+#   2026-08-20, which publishes `macosx_12_0_arm64` for cp310 through cp314 and no
+#   `macosx_*_x86_64` wheel at any version. pip therefore tries to build llvmlite
+#   from source, which needs a matching LLVM toolchain and fails on a stock machine.
+#
+#   Same shape as the `bo` note below, and recorded for the same reason: the failure
+#   surfaces as a wheel build error deep in a dependency chain, which costs an
+#   afternoon to trace back to "this platform, not your setup". An Apple-silicon Mac
+#   or any Linux is fine. Found while attempting the BioSTEAM baseline for #20.
 tea = ["biosteam>=2.51; python_version >= '3.12'"]
 # The off-the-shelf Bayesian-optimization baseline (#20). Optional for a reason
 # that is sharper than "torch is heavy":
