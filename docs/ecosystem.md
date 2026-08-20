@@ -534,9 +534,13 @@ in one system object.
 for batch bioprocess TEA and scheduling, and has no open-source equal on
 equipment-occupancy or campaign scheduling. Aspen Plus is the continuous-process
 default. Both are closed and per-seat licensed, which is the gap BioSTEAM occupies.
-[DWSIM](https://github.com/DanWBR/dwsim) is the credible free Aspen-alike but is a
+[DWSIM](https://github.com/DanWBR/dwsim) was the credible free Aspen-alike but is a
 GPL-3.0 .NET desktop application reached from Python over a bridge — hostile to
-scriptable, CI-testable pipelines.
+scriptable, CI-testable pipelines — and **its repository is now archived and
+read-only**, with the last commit on the `windows` branch dated 2026-07-17. Do not
+start anything new on it. *(`archived: true` read from the repository API on
+2026-08-20; the API exposes no archive date, and the repository's `updated_at` of
+2026-08-15 is the tightest upper bound available.)*
 
 **If you pick one:** BioSTEAM, because it is the only permissively licensed,
 pip-installable option that treats TEA uncertainty as a first-class construct and
@@ -742,10 +746,13 @@ formation across a COBRApy model.
 repository ART reads from — genuinely deployable, with Docker and documented ops, but
 it has cut no releases at all, so upgrades mean tracking `trunk` by hand, and it has
 been quiet since January 2025. [JBEI/DIVA](https://github.com/JBEI/DIVA)
-(BSD-3-Clause) is the Build-side construct designer and is the most actively developed
-repository named on this page, with commits through 2026 — but it is a Java web
-platform with no releases and effectively no community, and it designs constructs
-rather than choosing which to build. *(Both checked 2026-08-18.)*
+(BSD-3-Clause) is the Build-side construct designer, with commits through 2026 — but
+its most recent is 2026-05-20 and it is a README edit, it is a Java web platform with
+no releases and effectively no community, and it designs constructs rather than
+choosing which to build. *(Both checked 2026-08-18; DIVA's activity re-checked
+2026-08-20, when this entry called it "the most actively developed repository named on
+this page" — seven repositories on this page had been pushed to within four days of
+that check.)*
 
 **Dead ends and traps.** The academic combinatorial-BO repositories that look like they
 would fill this gap have all stopped: [COMBO](https://github.com/QUVA-Lab/COMBO) (2020),
@@ -1032,10 +1039,16 @@ Apache-2.0. Antimony's readable model language over a JIT-compiled SBML simulato
 
 **Downstream.** [CADET-Core](https://github.com/cadet/CADET-Core) and
 [CADET-Process](https://github.com/fau-advanced-separations/CADET-Process) are
-best-in-class for chromatography and downstream unit operations, actively developed, and
-GPL-family. They do not simulate fermentation, but recovery is where a large share of
-cost-of-goods lives for high-value products — so for the downstream half of a $/kg model
-this is the right thing to point at.
+best-in-class for chromatography and downstream unit operations and actively developed.
+**CADET-Core is AGPL-3.0 and CADET-Process is GPL-3.0** — this entry previously said
+"GPL-family", which folds a network-copyleft term into a phrase that does not carry it.
+On a page whose warning box says licences are stated because they bite, that elision is
+the thing the box exists to prevent: AGPL §13 reaches an adopter who modifies CADET-Core
+and exposes it only as a hosted service, with no distribution involved. Read §13 before
+building on it; it is not a disqualification, and Engin does not depend on either.
+*(Licence read from `LICENSE.txt` on 2026-08-20.)* They do not simulate fermentation, but
+recovery is where a large share of cost-of-goods lives for high-value products — so for
+the downstream half of a $/kg model this is the right thing to point at.
 
 **Dead ends, and this one hurts.** [pyFOOMB](https://github.com/MicroPhen/pyFOOMB) is the
 closest thing to a purpose-built bioprocess ODE plus parameter estimation plus uncertainty
@@ -1192,7 +1205,10 @@ MIT. The dominant GNN library.
   exactly the don't-reimplement case.
 - **Con** — the optional compiled accelerator packages remain the most common install
   failure in this ecosystem, and the quality gradient across contributed layers is steep.
-  Commits continue to land but no release has been cut since late 2025.
+  Releases and commits both continue to land: 2.8.0 was published 2026-06-05, adding
+  PyTorch 2.9–2.12 and Python 3.14 support and deprecating `torch-cluster` and
+  `torch-spline-conv` in favour of `pyg-lib`. *(This bullet previously said no release
+  had been cut since late 2025; corrected 2026-08-20 from the releases API.)*
 - **Con, and Engin should say it out loud** — for ranking a few thousand candidates, a
   gradient-boosted model over descriptors is frequently the stronger baseline. Reach for a
   GNN after the simpler thing has been shown to lose, not before.
@@ -1216,8 +1232,10 @@ BSD-3. A maintained fork of Mordred computing a wide 2D and 3D descriptor block.
 :::
 
 **Dead end, and this one surprises people.** [DGL](https://github.com/dmlc/dgl) is
-effectively abandoned upstream: no release since September 2024, a single outside-contributor
-commit in the last year, and a direct "is this still supported?" issue that received no
+effectively abandoned upstream: no release since September 2024, **no commit on `master`
+at all since 2025-07-31** — this entry previously said "a single outside-contributor
+commit in the last year", and that commit is now more than twelve months old with
+nothing after it *(re-checked 2026-08-20)* — and a direct "is this still supported?" issue that received no
 maintainer response and was auto-labelled stale. NVIDIA still publishes DGL containers, which
 is why it looks alive from a distance — that is vendor packaging of a frozen codebase.
 DGL-LifeSci, which much older molecular-GNN tutorial content depends on, inherits this.
