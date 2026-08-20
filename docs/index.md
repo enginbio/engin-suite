@@ -188,6 +188,77 @@ The bundled simulator has no oxygen state, so it is exactly scale-invariant — 
 
 ::::::
 
+## How the stages fit together
+
+Each stage hands the next its **decision and its uncertainty**, so an unresolved
+choice early on widens the interval later rather than disappearing.
+
+```{raw} html
+<svg viewBox="0 0 720 208" role="img" aria-labelledby="funnel-t funnel-d"
+     style="width:100%;height:auto;max-width:44rem;margin:0.5rem 0;color:inherit">
+  <title id="funnel-t">The strain-to-scale funnel</title>
+  <desc id="funnel-d">Four stages left to right. Target: you supply it; ranking
+  candidates is proposed in issue 176 and is not built. Stage 4, host selection,
+  emits a HostDecision carrying a confidence. Stage 3, pathway ranking, emits a
+  RouteRanking with conformal bounds. Stage 1, process, emits a ProcessBrief and a
+  cost per kilogram. A band beneath widens left to right: a low-confidence host
+  multiplies the downstream half-width by two minus confidence.</desc>
+
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="11"  y="26" width="158" height="72" rx="6" stroke-dasharray="5 4" opacity="0.55"/>
+    <rect x="191" y="26" width="158" height="72" rx="6"/>
+    <rect x="371" y="26" width="158" height="72" rx="6"/>
+    <rect x="551" y="26" width="158" height="72" rx="6"/>
+  </g>
+
+  <g fill="currentColor" font-size="13" font-weight="600">
+    <text x="90"  y="50" text-anchor="middle" opacity="0.65">target</text>
+    <text x="270" y="50" text-anchor="middle">[4] host</text>
+    <text x="450" y="50" text-anchor="middle">[3] pathway</text>
+    <text x="630" y="50" text-anchor="middle">[1] process</text>
+  </g>
+
+  <g fill="currentColor" font-size="10.5" opacity="0.8">
+    <text x="90"  y="70" text-anchor="middle" opacity="0.75">you supply this</text>
+    <text x="90"  y="85" text-anchor="middle" opacity="0.75">ranking it: not built</text>
+    <text x="270" y="70" text-anchor="middle">which organism</text>
+    <text x="270" y="85" text-anchor="middle">engin-host</text>
+    <text x="450" y="70" text-anchor="middle">which route</text>
+    <text x="450" y="85" text-anchor="middle">engin-pathway</text>
+    <text x="630" y="70" text-anchor="middle">vessel, $/kg</text>
+    <text x="630" y="85" text-anchor="middle">engin-core</text>
+  </g>
+
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <path d="M169 62 H185" opacity="0.55"/><path d="M180 57 l6 5 -6 5" opacity="0.55"/>
+    <path d="M349 62 H365"/><path d="M360 57 l6 5 -6 5"/>
+    <path d="M529 62 H545"/><path d="M540 57 l6 5 -6 5"/>
+  </g>
+
+  <g fill="currentColor" font-size="9.5" opacity="0.7" font-style="italic">
+    <text x="357" y="118" text-anchor="middle">HostDecision</text>
+    <text x="537" y="118" text-anchor="middle">RouteRanking</text>
+  </g>
+
+  <path d="M191 168 L709 152 V190 L191 178 Z" fill="currentColor" opacity="0.14"/>
+  <g fill="currentColor" font-size="10.5">
+    <text x="191" y="200" opacity="0.8">uncertainty compounds &#8594;</text>
+    <text x="709" y="200" text-anchor="end" opacity="0.8">half-width &#215; (2 &#8722; confidence)</text>
+  </g>
+</svg>
+```
+
+**The dashed box is the honest part.** `target` is an input you supply — the
+config file says of it, *"labels the output; nothing computes from it."* Ranking
+candidate molecules is [proposed](https://github.com/enginbio/engin-suite/issues/176)
+and not built, so the funnel starts one stage later than a tidier diagram would
+suggest.
+
+The widening band is `inflate_uncertainty`: a host chosen with confidence 0.5
+multiplies the pathway stage's half-width by 1.5 before the process stage sees it.
+That propagated width is **not** a calibrated interval, and
+[`ProcessBrief`](api/index) says so.
+
 ## Why this exists
 
 Practitioners describe rebuilding the same foundational software at company after company, because that software is either trade secret or has never existed. Engin makes that layer public infrastructure, so a team starts where the last one finished. Everything here is free, and always will be.
