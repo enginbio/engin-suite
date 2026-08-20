@@ -577,6 +577,35 @@ sources:
       required from the base model's `predict(..., return_std=True)`. That is the
       same quantity `split_conformal_multiplier` computes.
 
+  - id: 2025-portela-conformal-dynamic-biology
+    title: >-
+      Conformal prediction for uncertainty quantification in dynamic biological
+      systems
+    authors: [Portela, Alberto, Banga, Julio R., Matabuena, Marcos]
+    year: 2025
+    venue: PLOS Computational Biology 21(5)
+    location: https://doi.org/10.1371/journal.pcbi.1013098
+    accessed: 2026-08-20
+    stability: doi
+    type: paper
+    note: >-
+      Cited by `docs/guides/forecasting.md` for the narrow claim that conformal
+      prediction is applied to biological systems at the sample sizes those
+      experiments produce. The paper evaluates two jackknife-based algorithms
+      (CUQDyn1/CUQDyn2) on nonlinear ODE models across **10 to 100 sample
+      points**, and states they are suited to the small sample sizes common in
+      biological experiments.
+
+      **Not cited as support for anything engin-core does.** The construction is
+      jackknife+/CV+ over ODE models, not split conformal over a GP, and their
+      guarantee is the 1-2alpha jackknife+ one. Two things worth carrying rather
+      than eliding: their intervals hold *"only for observed variables at observed
+      time points"* and cannot speak to unobserved states or future times; and
+      their systems are simulated dynamics, not fermentation campaigns. The guide
+      quotes the limitation alongside the claim for that reason.
+
+      Open access under CC BY, so quoting is unencumbered.
+
   - id: 2021-barber-jackknife-plus
     title: Predictive inference with the jackknife+
     authors: [Barber, Rina Foygel, Candes, Emmanuel J., Ramdas, Aaditya, Tibshirani, Ryan J.]
