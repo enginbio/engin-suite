@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "engin-pathway"
-version = "0.1.0"
+version = "0.1.1"
 description = "Manufacturability ranking of metabolic routes — stage [3] of the engin strain-to-scale suite"
 readme = "README.md"
 requires-python = ">=3.10"

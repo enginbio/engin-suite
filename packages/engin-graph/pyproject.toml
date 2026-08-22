@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "engin-graph"
-version = "0.1.0"
+version = "0.1.1"
 description = "Graph embedding + calibrated ranking over structured objects — the shared graph engine of the engin suite"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -24,7 +24,7 @@ from .rank import (
 from .schema import MONOMER_FEATURES, Monomer, Polymer
 from .simulate import PropertyModel, make_dataset, sample_polymer, true_property
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "Monomer",
