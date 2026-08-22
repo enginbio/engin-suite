@@ -111,6 +111,32 @@ regenerate `docs/references.md` and committing both — `test_committed_view_mat
 fails on a stale view, and it runs in the engin-core suite rather than in `docs.yml`,
 so a docs-only mental model misses it.
 
+### When a source is paywalled: say so, and say what it is worth
+
+**The maintainer will buy access to a source that has real leverage.** Cost is not
+the constraint people assume it is, and a claim quietly weakened because a PDF was
+gated is a worse outcome than an email asking for twenty dollars.
+
+So when a source cannot be reached:
+
+1. **Do not silently downgrade the claim.** Record what was verified, from where,
+   and what could not be — in the `sources.yaml` note, not only in a PR comment.
+   The register is where the next person looks.
+2. **Say what the missing piece would change.** "Behind a paywall" is not a
+   decision; "this would tell us whether the adverse result runs on our own
+   conformal library, which is the difference between adjacent work and a direct
+   comparison" is. Name the price if it is visible.
+3. **Ask rather than assume.** Flag it and let the maintainer decide.
+
+Two things this does *not* license. **Open access is not always reachable, and
+that is worth checking before asking** — Crossref, PubMed Central, arXiv, an
+author's institutional copy, and the publisher's own landing page often carry what
+a bot-blocked PDF endpoint will not; `2025-pham-cqr-bioprocess-robust-optimisation`
+is CC BY 4.0 and still gated at the PDF, and its bibliographic record came from
+Crossref instead. And **paying for a source does not change `D3` or `D12`**: a
+licence that forbids redistribution or derivatives still forbids them after
+purchase, which is exactly the trap the EFSA CC BY-ND row exists to flag.
+
 ## Adding a package
 New stages (e.g. engin-pathway) go under `packages/<name>/` with the same shape
 (`src/`, `tests/`, `pyproject.toml`, README, CLAUDE.md) and depend on engin-core —
