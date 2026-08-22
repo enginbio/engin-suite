@@ -231,6 +231,28 @@ Commitment #2 in `BIOSECURITY.md` requires that any capability bearing on §5 be
 
 **Status: not built.** Per the pattern `BIOSECURITY.md` §6 already uses for cultivation prediction, the conditions above are binding terms on shipping stage [0], not descriptions of code that exists. This record is what Commitment #2 requires to exist *before* that code does.
 
+**D28 — A DBTL Design stage is permitted where it selects among supplied parts, and this record is its biosecurity review.** `standing` · 2026-08-22
+Commitment #2 requires any capability bearing on `BIOSECURITY.md` §5 to be assessed before it ships, recorded here under a decision ID. This is that record for the Design stage proposed in #211 — given last cycle's measured titers, which combination of gene targets, knockdowns or promoters to build next.
+
+**No §7 trigger fired, and that is worth stating because `D27` is the other kind.** `D27` recorded that trigger 2 *had* fired for stage [0] and was an ahead-of-schedule reassessment. Neither trigger fires here. A Design stage ranks genetic modifications toward a target the **user supplied**, so it does not "identify or rank routes to a target the user did not supply". And it does not "predict biological activity, toxicity or host range" — see below, because that is the question this record exists to answer. Borrowing `D27`'s reassessment language would have claimed a heavier process than actually produced this.
+
+**The question that mattered was not the one #211 raised.** #211 asks whether selecting among a user-supplied sgRNA library counts as "designing sequences" under §2. That is real and is answered in `BIOSECURITY.md` v1.3: generating sequence the user did not supply is designing it; selecting among parts they did is not, even when the candidate space is combinatorial. Choosing eight constructs from somebody else's library is the same kind of act as choosing eight feed rates from a design space.
+
+**The larger question is what a Design stage would model.** §3's no-uplift assessment was reworded on 2026-08-18 precisely because its previous premise would have been falsified by stage [0]; the replacement is that the suite "models manufacturing economics and has no model of physiological activity". A Design stage learns **genotype → titer**, which is a model of how an organism responds to a genetic change — narrow, since the phenotype is only production, but real. If that counted as physiological activity, §3's load-bearing premise would stop being true and §5 item 5 would bite.
+
+**Assessment: a production phenotype is not physiological activity.** Titer is a manufacturing metric — how much product a process yields — not a claim about what a molecule does in an organism. §5 item 5 keeps its plain meaning: toxicity, pathogenicity, bioactivity. A model that says a knockdown raises yield discloses nothing about physiological effect that the act of measuring the yield did not already disclose, and it is silent on host range, virulence and activity. **§3's premise and conclusion both stand, and §5 is unchanged.**
+
+**Conditions on release, binding rather than aspirational.**
+
+1. **The parts library is an input, never generated.** The stage ranks combinations of sequences the user supplied. It does not propose edits, residues or constructs of its own — that is the §2 line, and crossing it makes this record void rather than amendable.
+2. **No model of the product molecule.** The response variable is titer or an equivalent production metric. A stage that learned anything about what the product *does* is a different capability needing a different review.
+3. **Intervals, not bare orderings.** Same condition `D27` carries and for the same reason: a point-estimate ranker over a combinatorial space produces confident-looking noise at an expensive decision point.
+4. **`D19`'s declined scope is untouched**, and this record does not reach it.
+
+**What this does not authorise.** Not the medical / bioactivity direction, which is #177 and undecided. Not target identification, which is `D27`'s territory and separately conditioned. Not sequence generation of any kind.
+
+**Status: not built.** As with `D27`, the conditions above are terms on shipping the stage, not descriptions of code that exists. #211 argues the capability gap is real and that the field's standard tool for it ships no source; that argument is unaffected either way, and building it remains a package of work nobody has claimed.
+
 ---
 
 ## Superseded
