@@ -575,6 +575,70 @@ sources:
       required from the base model's `predict(..., return_std=True)`. That is the
       same quantity `split_conformal_multiplier` computes.
 
+  - id: 2025-gfi-fermentation-tem-meta-analysis
+    title: >-
+      Driving down costs: Insights and recommendations from a meta-analysis of
+      techno-economic models of fermentation-derived ingredients
+    authors: [Eastham, Lucas, Bess, Amanda, Leman, Adam, McKee, Adrienne]
+    year: 2025
+    venue: The Good Food Institute, with Hawkwood Biotech (June 2025)
+    location: https://gfi.org/resource/techno-economic-insights-on-fermentation-ingredients/
+    accessed: 2026-08-22
+    stability: url
+    url_only_because: >-
+      An organisation report with no DOI. The landing page is cited rather than
+      the PDF path, since the PDF filename carries a date directory that will
+      move; the PDF is linked from it.
+    type: web
+    note: >-
+      **Cited for one thing: that fed-batch is under-represented in published
+      fermentation techno-economic models.** Verified against the PDF rather than
+      a summary, 2026-08-22. Two verbatim sentences, both in §1.2 (biomass
+      fermentation): *"Fed-batch fermentation—a widely used method to improve
+      titer, productivity, and yield—is largely missing from published models,
+      potentially leading to underestimation of economic performance"*, and
+      *"Published biomass TEMs notably lack analysis of either fed-batch (current
+      standard process) or continuous fermentation systems for aerobic yeast,
+      microalgae, and bacterial SCP."* Screening: 190 publications identified, 48
+      (78 TEMs) in scope, 35 publications (55 TEMs) quality-vetted.
+
+      **The scope is narrower than the sentence sounds, and the narrowing is the
+      report's own.** The screen selected publications for *"relevance to food
+      applications"*, and the fed-batch finding sits in the biomass-fermentation
+      section — aerobic yeast, microalgae, bacterial single-cell protein. It is
+      **not** a claim about fermentation TEA generally: the report's own Table 2
+      gives production mode as fed-batch for *both* public and private precision-
+      fermentation models, so fed-batch is not missing there. Engin's worked data
+      is erythromycin and a penicillin simulation — secondary metabolites, a
+      different point on the selling-price continuum `D13` is built around.
+      Importing food-protein figures as general fermentation evidence is the error
+      the media-share row already carries as `contested`.
+
+      **Provenance is below this register's median and the row says so.** GFI is
+      an alt-protein advocacy organisation; the report is not peer-reviewed, has
+      no external reviewer statement, and its 55-model compilation is an in-report
+      appendix rather than a downloadable dataset, so the meta-analysis is not
+      independently reproducible. The direction of the fed-batch finding — that
+      published models *underestimate* economic performance — aligns with the
+      publisher's interest. That does not make it false; it is why the row is
+      scoped to the one on-point observation and not used as a general authority.
+
+      **Not the strongest external evidence for this project's premise**, and
+      should not be cited as such: `DECISIONS.md` nominates Straathof 2011 for
+      that, which is peer-reviewed and DOI-stable. This is a supplement.
+
+      **Two things deliberately not taken from this report.** Its published
+      cost-of-production dispersion (*"less than $20/kg to $14,000/kg, with a
+      notable data gap in the $20–$200/kg range"*) reads as a strong argument for
+      shipping intervals rather than point estimates, and it is not one: the range
+      is across **four** published PF models, **two of which the report itself
+      identifies as non-peer-reviewed Intelligen white papers serving as
+      educational examples for modelling software**. Four models, half of them
+      vendor tutorials, is not a fact about the field's estimates. And GFI's
+      science pages state that open-access techno-economic models "do not exist"
+      for these applications — an absence claim contradicted by BioSTEAM, which
+      this repository depends on behind the `[tea]` extra.
+
   - id: 2025-pham-cqr-bioprocess-robust-optimisation
     title: >-
       Single-objective robust optimisation in bioprocessing with conformalised
@@ -1265,6 +1329,30 @@ claims:
       Split conformal has a finite-sample, distribution-free coverage guarantee.
     strength: supports
     reviewed: 2026-08-13
+
+  - doc: packages/engin-core/src/engin_core/simulator.py
+    tier: A
+    source_id: 2025-gfi-fermentation-tem-meta-analysis
+    claim: >-
+      Fed-batch fermentation is largely missing from published biomass-fermentation
+      techno-economic models, potentially leading to underestimation of economic
+      performance -- across a screen of 190 publications reduced to 55
+      quality-vetted models.
+    strength: supports
+    reviewed: 2026-08-22
+    note: >-
+      Supports the *choice of regime*, not the model. The finding is that the
+      surrounding literature under-models fed-batch, which is what this module
+      integrates; it says nothing about whether this particular Monod /
+      Luedeking-Piret caricature is right, and `docs/limitations.md` remains the
+      authority on that.
+
+      Scoped deliberately: biomass fermentation, screened for food applications.
+      The report's own Table 2 shows precision-fermentation models are fed-batch
+      in both public and private data, so the omission is not general. Publisher
+      is an advocacy organisation and the report is not peer-reviewed -- see the
+      source note, which carries both caveats and the two claims from this report
+      that are deliberately not used.
 
   - doc: docs/methods/conformal-calibration.md
     tier: A
