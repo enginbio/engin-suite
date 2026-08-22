@@ -5,12 +5,37 @@
 # with Sigstore through GitHub's attestation action, and attaches everything to a
 # GitHub Release.
 #
-# **This workflow does not publish to PyPI, on purpose.** Four of the six names
-# are placeholder reservations and two are unregistered (#72), and publishing
-# needs a trusted-publishing configuration that only the maintainer's account can
-# create. Adding an upload step before that exists would either fail or, worse,
-# publish under credentials nobody meant to use. Releases here are GitHub
-# releases; PyPI is a separate decision.
+# **This workflow publishes to PyPI, since #269.** The paragraph that used to sit
+# here said it deliberately did not, on the grounds that four of six names were
+# reserved and two unregistered (#72). Both halves expired: all six names have
+# been held since 2026-08-20, and trusted publishing is a task rather than a
+# decision.
+#
+# ## The three rules that shape the publish jobs, all because PyPI is permanent
+#
+#   * **A tag publishes; a dry run never does.** The `workflow_dispatch` path
+#     exists to rehearse a build, and it shares this workflow with the real thing.
+#     Every publish job is gated on `refs/tags/`, not merely on the job running.
+#   * **Prereleases go to TestPyPI, finals go to PyPI.** `v0.1.1rc1` exercises the
+#     whole pipeline against an index we can afford to burn. This pipeline has
+#     never executed against a tag, so its first run is its own first test.
+#   * **Publishing happens after the reproducibility check, never beside it.**
+#     That check is the last thing between a bad build and an upload that cannot
+#     be taken back. A version cannot be re-uploaded to PyPI even after deletion.
+#
+# Trusted publishing (OIDC) rather than a stored token, so there is no credential
+# to leak or rotate. **The publisher entries and the `testpypi` / `pypi`
+# Environments are created by the maintainer, not by this repository** (#269). If
+# one is missing the token exchange is refused and the job fails — which is the
+# right failure for an unmet prerequisite, and is why this can land before the
+# accounts exist.
+#
+# **Uploads are not atomic across six distributions.** `--skip-existing` is not
+# set here on purpose: on the real index a partial upload should stop loudly so
+# the remaining names can be retried deliberately, rather than a rerun quietly
+# treating already-published versions as success. If a run fails partway, expect
+# some distributions published and some not, and fix forward with a new version
+# rather than re-uploading.
 #
 # ## What "reproducible where practical" turned out to mean
 #
@@ -46,6 +71,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      final: ${{ steps.tagkind.outputs.final }}
     permissions:
       contents: write # create the release
       id-token: write # Sigstore OIDC
@@ -64,6 +91,27 @@ jobs:
       # The tagged commit's own timestamp, so the value is a property of the
       # source rather than of when the runner happened to start. Rebuilding the
       # same tag a year later yields the same wheels.
+      # Which index a tag is allowed to reach. **Fail-safe by construction**: a tag
+      # is `final` only if it matches vN.N.N exactly; everything else -- rc, a, b,
+      # dev, post, or anything unexpected -- is a prerelease and can only reach
+      # TestPyPI. Getting this wrong in the permissive direction publishes to an
+      # index that never forgets, so the default is the recoverable one.
+      #
+      # Not a `contains(ref_name, 'rc')` expression, which was the first version
+      # of this and was wrong: v0.1.1a1 contains no "rc" and would have been
+      # routed to PyPI as a final release.
+      - name: Classify the tag
+        id: tagkind
+        run: |
+          name="${GITHUB_REF_NAME}"
+          if [[ "${GITHUB_REF}" == refs/tags/* ]] && [[ "$name" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "final=true" >> "$GITHUB_OUTPUT"
+            echo "$name is a final release -> PyPI"
+          else
+            echo "final=false" >> "$GITHUB_OUTPUT"
+            echo "$name is not a final release -> TestPyPI at most"
+          fi
+
       - name: Pin SOURCE_DATE_EPOCH to the commit date
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
 
@@ -140,6 +188,17 @@ jobs:
             echo "Verify: \`gh attestation verify <file> --repo ${{ github.repository }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # The publish jobs download *these* bytes rather than rebuilding. Rebuilding
+      # in the publish job would upload artifacts that never went through the
+      # reproducibility check two steps above, which is the check that exists to
+      # stop exactly that.
+      - name: Upload dist for the publish jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
       - name: Publish the GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
@@ -147,4 +206,41 @@ jobs:
         run: |
           gh release create "${GITHUB_REF_NAME}" dist/* \
             --title "${GITHUB_REF_NAME}" \
-            --notes "Signed build artifacts. Wheels are reproducible from this tag; sdists are not (setuptools stamps generated metadata with build-time mtimes). Verify provenance with: gh attestation verify <file> --repo ${{ github.repository }}. Not published to PyPI -- see #72."
+            --notes "Signed build artifacts. Wheels are reproducible from this tag; sdists are not (setuptools stamps generated metadata with build-time mtimes). Verify provenance with: gh attestation verify <file> --repo ${{ github.repository }}."
+
+  # Anything that is not an exact vN.N.N rehearses the whole pipeline against an
+  # index we can afford to burn. Gated on the tag ref too, so `workflow_dispatch`
+  # never reaches here even though it shares this workflow.
+  publish-testpypi:
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v') && needs.release.outputs.final != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: testpypi
+    permissions:
+      id-token: write # the only credential; there is no stored token
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  # A final tag. Everything above has to have passed first: the double build, the
+  # digest comparison, the attestation, and the GitHub release.
+  publish-pypi:
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v') && needs.release.outputs.final == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
