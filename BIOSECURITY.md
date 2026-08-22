@@ -1,6 +1,8 @@
 # Biosecurity Policy
 
-**Version 1.2 · Effective 2026-08-18 · Next scheduled review 2027-02-07**
+**Version 1.3 · Effective 2026-08-22 · Next scheduled review 2027-02-07**
+
+*1.3 clarifies one phrase in §2 and changes nothing else. **No §7 trigger fired** — this is a Commitment #2 capability review, not a reassessment, and the distinction is stated because 1.2 was the other kind and borrowing its language would overstate the process that produced this one. §2's "or design sequences" was written to describe the three packages that existed, not to decide scope for a fourth; a proposed DBTL Design stage ([#211](https://github.com/enginbio/engin-suite/issues/211)) sits exactly on that ambiguity. The clarification: **selecting among parts the user supplied is not designing sequences; generating novel sequence is, and remains out of scope.** §3 and §5 are unchanged, including item 5. Recorded as `D28` in `DECISIONS.md`.*
 
 *1.2 is an ahead-of-schedule reassessment under §7, triggered by a proposed capability that would rank candidate targets the user did not supply (stage [0], #176). §2 and §3 are reworded so the no-uplift assessment rests on the premise that actually carries it. **The §3 conclusion is unchanged, and the §5 declined scope is unchanged** — including item 5. The assessment is recorded as `D27` in `DECISIONS.md`, per Commitment #2.*
 
@@ -38,6 +40,13 @@ Engin helps a team decide how to manufacture a molecule they have **already sele
 | `engin-core` | Forecasts titer with calibrated uncertainty from a small number of runs, recommends the next experiment, and produces a probabilistic cost-per-kilogram estimate including downstream recovery |
 
 Engin does not predict biological activity, model toxicity or pathogenicity, or design sequences.
+
+**What "design sequences" covers, clarified 2026-08-22 (v1.3).** That phrase was written to describe the three packages above, and it was doing scope work it was never asked to do. The line is:
+
+- **Generating sequence the user did not supply is designing it**, and is out of scope — de novo design, proposing residues or edits from a model of the molecule, or any output whose novelty comes from Engin rather than from its input.
+- **Selecting or ranking among parts the user supplied is not**, even when the candidate space is combinatorial and therefore larger than the list handed over. Choosing eight constructs from a library somebody else defined is the same kind of act as choosing eight feed rates from a design space — it is a recommendation over inputs, and the biology in it belongs to the user.
+
+This matters because a DBTL **Design** stage — given last cycle's titers, which combination of supplied gene targets, knockdowns or promoters to build next — falls on the permitted side of that line ([#211](https://github.com/enginbio/engin-suite/issues/211)). It is **proposed and not built**, its capability review is `D28` in `DECISIONS.md`, and the conditions there are binding terms on shipping it. The clarification permits the shape; it does not authorise the code.
 
 **Target screening is proposed and not built.** A stage [0] layer that ranks *candidate* molecules for a use type by cost and manufacturability interval is under design ([#176](https://github.com/enginbio/engin-suite/issues/176)). It would rank targets the user did not supply, which is a §7 trigger; its capability review is recorded as `D27` in `DECISIONS.md`, and the conditions there are binding terms on shipping it. Until it ships, this policy describes a suite that takes the target as an input. The medical / bioactivity direction is **not** covered by that review — it remains §5 item 5, declined.
 
