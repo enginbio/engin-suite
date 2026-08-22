@@ -116,7 +116,9 @@ The realistic failure mode for a one-maintainer project is not conflict. It is s
 
 **5.4 Names and infrastructure.** The `engin.bio` domain is held by EnginBio.
 
-**Four of the six PyPI distribution names are now registered to this project**, as placeholder reservations rather than releases — `engin-core`, `engin-graph`, `engin-host` and `engin-materials`, each a `0.0.1.dev0` stub uploaded 2026-08-14 whose description points back at this repository. **`engin-pathway` and `engin-protein` are not registered**, and neither is `enginbio`. The bare name `engin` belongs to an unrelated dependency-injection framework and is not obtainable.
+**Every `engin-*` distribution name is registered to this project**, as placeholder reservations rather than releases — each a `0.0.1.dev0` stub whose description points back at this repository. `enginbio` is not registered. The bare name `engin` belongs to an unrelated dependency-injection framework and is not obtainable.
+
+This paragraph has been wrong about the count four times, because it restated an index state that kept moving. It no longer carries a count: the names are discovered from `packages/*/pyproject.toml` and checked against the live index by `python scripts/pypi/reserve_names.py --verify`, which CI runs. If that check passes, this sentence is true; if a name is ever unclaimed, CI says so rather than this paragraph going quietly stale a fifth time.
 
 **Nothing has been *released*.** A reservation stub is not a distribution: `pip install engin-core` succeeds and gives you an empty placeholder, which is a more confusing outcome than failing outright. Install from the repository.
 

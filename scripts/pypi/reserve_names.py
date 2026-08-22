@@ -140,6 +140,11 @@ def build_one(name: str, outdir: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--upload", action="store_true", help="twine upload after checking")
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="check the live index against the names in this repo and exit; builds nothing",
+    )
     parser.add_argument("--outdir", default=str(REPO / "dist-placeholders"))
     args = parser.parse_args()
 
@@ -147,6 +152,13 @@ def main() -> int:
     if not names:
         print("No packages discovered under packages/ - refusing to guess.", file=sys.stderr)
         return 1
+
+    if args.verify:
+        # Read-only, unauthenticated, and deliberately reachable without building
+        # anything. The point is that a document claiming an index state can be
+        # checked against the index rather than re-read by a human for a fifth time.
+        print(f"Verifying {len(names)} names against PyPI:")
+        return 0 if _report(names, verify_only=True) else 1
 
     outdir = Path(args.outdir)
     if outdir.exists():
@@ -175,7 +187,7 @@ def main() -> int:
     #
     # Note the failure mode that run exposed: twine printed a 100% progress bar
     # for a fifth distribution that PyPI then rejected. **The progress bar is not
-    # a receipt** -- verify against the index, which is what --verify does.
+    # a receipt** -- verify against the index, which is what `--verify` does.
     subprocess.run(
         [sys.executable, "-m", "twine", "upload", "--skip-existing", *artifacts],
         check=True,
@@ -184,27 +196,44 @@ def main() -> int:
     return 0 if _report(names) else 1
 
 
-def _report(names: list[str]) -> bool:
-    """Check each name against PyPI itself and say which are actually claimed."""
+def _report(names: list[str], verify_only: bool = False) -> bool:
+    """Check each name against PyPI itself and say which are actually claimed.
+
+    **A 404 and an unreachable index are different answers**, and this used to
+    conflate them: an `OSError` was appended to ``missing``, so a network blip
+    read as "the name is unclaimed". That is tolerable when a human is watching
+    an upload and fatal when the result gates CI, because the check would fail
+    for a reason that has nothing to do with the thing it is checking. Only a
+    definite HTTP error now counts as unclaimed; an unreachable index is reported
+    as unknown and, under ``--verify``, does not fail the run.
+    """
     import json
     import urllib.error
     import urllib.request
 
-    held, missing = [], []
+    held, missing, unknown = [], [], []
     for name in names:
         try:
             with urllib.request.urlopen(f"https://pypi.org/pypi/{name}/json", timeout=20) as r:
                 held.append((name, json.load(r)["info"]["version"]))
-        except urllib.error.HTTPError:
+        except urllib.error.HTTPError:  # the index answered: no such project
             missing.append(name)
-        except OSError as exc:  # network trouble is not the same as unclaimed
-            print(f"  {name}: could not verify ({exc})")
-            missing.append(name)
+        except OSError as exc:  # we never got an answer
+            unknown.append((name, exc))
 
     for name, version in held:
         print(f"  claimed   {name} {version}")
     for name in missing:
         print(f"  MISSING   {name}")
+    for name, exc in unknown:
+        print(f"  unknown   {name} (could not reach the index: {exc})")
+
+    if unknown and verify_only and not missing:
+        print(
+            f"\n{len(unknown)} name(s) could not be checked. Not failing: an "
+            "unreachable index is not evidence that a name is unclaimed."
+        )
+        return True
 
     if missing:
         print(
@@ -213,7 +242,10 @@ def _report(names: list[str]) -> bool:
             f"  python {Path(__file__).relative_to(REPO)} --upload"
         )
         return False
-    print("\nAll names held. Update GOVERNANCE.md 5.4 to say so.")
+    if verify_only:
+        print(f"\nAll {len(held)} names held. The documents may say so.")
+    else:
+        print("\nAll names held. Update GOVERNANCE.md 5.4 to say so.")
     return True
 
 

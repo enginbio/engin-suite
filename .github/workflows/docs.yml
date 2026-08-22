@@ -154,3 +154,29 @@ jobs:
           echo "::error::commit the refreshed cache:"
           echo "::error::  sphinx-build -b html docs docs/_build/html && git add docs/.jupyter_cache"
 
+
+  # GOVERNANCE.md 5.4, docs/install.md and docs/index.md each describe which
+  # `engin-*` names are held on PyPI. That paragraph has been wrong four times
+  # (#269), every time because the index moved and the prose did not. This checks
+  # the live index against the names discovered from packages/*/pyproject.toml,
+  # so the two cannot silently disagree.
+  #
+  # Scheduled rather than per-PR, on the same reasoning as cache-freshness above
+  # (#166): the drift is a calendar problem, not a per-change one -- the index
+  # moves independently of pull requests. Making it a required check would also
+  # put pypi.org's availability in front of every merge, which is a bad trade for
+  # a fact that changes a few times a year.
+  #
+  # Read-only and unauthenticated. `--verify` treats an unreachable index as
+  # unknown rather than unclaimed, so an outage reports and does not fail.
+  pypi-names:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Live index matches what the documents claim
+        run: python scripts/pypi/reserve_names.py --verify
