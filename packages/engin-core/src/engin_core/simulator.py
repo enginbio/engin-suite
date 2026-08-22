@@ -6,6 +6,16 @@ design knobs (there is a real interior optimum to find). This is the
 synthetic-data engine for engin-core: it lets us build and validate the
 forecasting + recommendation loop with zero partner data.
 
+**Why fed-batch specifically, and one external datapoint for it.** A 2025
+meta-analysis of published fermentation techno-economic models reports that
+fed-batch -- *"a widely used method to improve titer, productivity, and yield"* --
+is "largely missing from published models, potentially leading to underestimation
+of economic performance". That finding is about **biomass-fermentation** models
+screened for **food** applications, not about fermentation TEA generally, and it
+is an advocacy organisation's non-peer-reviewed report; it is a datapoint that the
+regime this module integrates is under-modelled in the surrounding literature, not
+a validation of this model. See the register note. # ref: 2025-gfi-fermentation-tem-meta-analysis
+
 The mechanistic *equations* are bespoke (they are the domain model); the
 *integrator* is scipy's ``solve_ivp`` (RK45) rather than a hand-rolled RK4 --
 a solved wheel we no longer reinvent. The RHS has hard switches at ``feed_start``
