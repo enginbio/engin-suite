@@ -327,6 +327,29 @@ position than the field's and is stated rather than obscured.
 [^2019-tibshirani-covariate-shift]: Tibshirani, Foygel Barber, Candès & Ramdas, *Conformal Prediction Under Covariate Shift*, NeurIPS 32 (2019). [arXiv:1904.06019](https://arxiv.org/abs/1904.06019)
 [^2023-barber-beyond-exchangeability]: Barber, Candès, Ramdas & Tibshirani, *Conformal prediction beyond exchangeability*, Annals of Statistics 51(2) (2023). [doi:10.1214/23-aos2276](https://doi.org/10.1214/23-aos2276)
 
+```{admonition} A published comparison says the estimator underneath this should be something else
+:class: warning
+
+Everything on this page is about the *interval*. It takes the Gaussian process as
+given, and there is a peer-reviewed result saying that is the part to question.
+
+Pham, Bassett & Aickelin run conformalised quantile regression — XGBoost quantile
+learners, conformalised — as an interval-based surrogate against **Gaussian-process
+regression**, on three bioprocess problems. The first is **upstream glucose feed
+optimisation**, which is this project's own application. They report CQR
+outperforming GPR in both maximin and minimax regret, *particularly when process
+uncertainty is high*.[^2025-pham-cqr]
+
+**Engin has not run that comparison**, and this page is not the place it will be
+settled. It is recorded here rather than left for someone to find because an
+adverse in-domain result the project has acknowledged is worth more than a
+benchmark it has not built — and because the alternative is a methods page that
+reads as if the estimator choice were uncontested. It is not a refutation of split
+conformal, which that paper uses rather than disputes.
+```
+
+[^2025-pham-cqr]: Pham, Bassett & Aickelin, *Single-objective robust optimisation in bioprocessing with conformalised quantile regression as interval-based surrogate models*, Optimization Letters, online first 2025-09-24. [doi:10.1007/s11590-025-02239-9](https://doi.org/10.1007/s11590-025-02239-9)
+
 Two honest caveats, both visible in the numbers above:
 
 **The measured coverage sits above nominal, not on it.** Over-coverage means the
