@@ -22,7 +22,7 @@ from .model import CalibratedFitnessModel
 from .planner import CampaignPlanner, best_true_found, random_campaign, transfer_benefit
 from .schema import AMINO_ACIDS, Campaign, ScoredDesign, Variant
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     # schema

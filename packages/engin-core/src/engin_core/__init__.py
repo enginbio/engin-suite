@@ -57,7 +57,7 @@ from .tea import (
     recommend_batch_by_cost,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "GP",

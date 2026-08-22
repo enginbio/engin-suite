@@ -112,6 +112,65 @@ jobs:
             echo "$name is not a final release -> TestPyPI at most"
           fi
 
+      # A tag that disagrees with the packages it is tagging produces artifacts
+      # whose filenames say one version and whose sources say another -- and the
+      # index keeps whichever one you upload, forever. `python -m build` reads the
+      # version from pyproject.toml and never looks at the tag, so without this
+      # nothing in the pipeline would notice: tagging v0.1.1 against packages
+      # declaring 0.1.0 publishes six distributions named 0.1.0. See #269.
+      #
+      # **Before the build, not after.** After the build a mismatch is still caught,
+      # but the artifacts exist and a later step may already have shipped them. Here
+      # the run stops having done nothing. Same asymmetry that puts publishing after
+      # the reproducibility check.
+      #
+      # The tag may carry a PEP 440 suffix the packages do not -- v0.1.1rc1 is a dry
+      # run *of* 0.1.1 -- so the leading N.N.N is extracted with a pattern rather
+      # than trimmed with a substring test, for the reason the classifier above
+      # records: a substring test is wrong in the permissive direction.
+      #
+      # Both sources are checked, because each package states its version twice and
+      # nothing else makes them agree. A drifted __version__ ships a wheel whose
+      # filename is right and whose runtime answer is wrong. The durable fix is a
+      # dynamic version read from __init__, which deletes the second source instead
+      # of policing it; deferred deliberately so this release changes as little
+      # about the build as possible while its first run is still its own first test.
+      - name: Tag agrees with every package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          raw="${GITHUB_REF_NAME#v}"
+          if [[ ! "$raw" =~ ^([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not begin with vN.N.N"
+            exit 1
+          fi
+          base="${BASH_REMATCH[1]}"
+          echo "tag ${GITHUB_REF_NAME} -> every package must declare ${base}"
+
+          mismatched=()
+          checked=0
+          for pkg in packages/*/; do
+            [ -f "${pkg}pyproject.toml" ] || continue
+            name=$(basename "$pkg")
+            mod=${name//-/_}
+            init="${pkg}src/${mod}/__init__.py"
+            checked=$((checked + 1))
+            declared=$(sed -n 's/^version = "\(.*\)"/\1/p' "${pkg}pyproject.toml" | head -1)
+            runtime=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$init" | head -1)
+            [ "$declared" = "$base" ] || mismatched+=("$name pyproject=${declared:-unreadable}")
+            [ "$runtime" = "$base" ] || mismatched+=("$name __version__=${runtime:-unreadable}")
+          done
+
+          if [ "$checked" -eq 0 ]; then
+            echo "::error::discovered no packages under packages/ -- layout changed"
+            exit 1
+          fi
+          if [ ${#mismatched[@]} -gt 0 ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match: ${mismatched[*]}"
+            echo "Bump every package to ${base}, or retag. Do not publish artifacts the tag misnames."
+            exit 1
+          fi
+          echo "all $checked packages declare ${base}"
+
       - name: Pin SOURCE_DATE_EPOCH to the commit date
         run: echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
 

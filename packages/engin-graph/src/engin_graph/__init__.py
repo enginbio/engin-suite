@@ -22,7 +22,7 @@ from .featurize import (
 from .metrics import best_of_k_regret, mean_regret, spearman
 from .rank import ConformalRankingHead, GraphRanker
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "GraphLike",

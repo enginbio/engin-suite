@@ -14,7 +14,7 @@ from .memo import render_memo
 from .schema import Host, HostQuery, HostScore, KnowledgeBase
 from .scoring import prob_meets, score
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "Host",
