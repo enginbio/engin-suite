@@ -2,11 +2,9 @@
 
 ```{warning}
 **Engin has not been released to PyPI, and `pip install engin-core` is worse than
-a clean failure.** Four names — `engin-core`, `engin-graph`, `engin-host` and
-`engin-materials` — are registered as **placeholder reservations**, so that
-command *succeeds* and installs a `0.0.1.dev0` stub containing nothing.
-`engin-pathway` and `engin-protein` are not registered at all and will fail
-outright.
+a clean failure.** Every `engin-*` name is registered as a **placeholder
+reservation**, so the command *succeeds* and installs a `0.0.1.dev0` stub
+containing nothing. There is no name that fails cleanly.
 
 Install from source until this page says otherwise.
 ```

@@ -313,8 +313,8 @@ Cases where a simpler baseline wins are published in the same table as the wins.
 ## Install
 
 **Not released on PyPI** — and `pip install engin-core` will *appear* to work.
-Four names are registered as empty placeholder reservations, so that command
-installs a stub containing nothing. See [Install](install). From source:
+Every `engin-*` name is registered as an empty placeholder reservation, so that
+command installs a stub containing nothing. See [Install](install). From source:
 
 ```bash
 git clone https://github.com/enginbio/engin-suite
