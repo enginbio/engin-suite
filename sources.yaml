@@ -575,6 +575,81 @@ sources:
       required from the base model's `predict(..., return_std=True)`. That is the
       same quantity `split_conformal_multiplier` computes.
 
+  - id: 2025-pham-cqr-bioprocess-robust-optimisation
+    title: >-
+      Single-objective robust optimisation in bioprocessing with conformalised
+      quantile regression as interval-based surrogate models
+    authors: [Pham, Tien Dung, Bassett, Robert, Aickelin, Uwe]
+    year: 2025
+    venue: Optimization Letters (online first, 2025-09-24)
+    location: https://doi.org/10.1007/s11590-025-02239-9
+    accessed: 2026-08-21
+    stability: doi
+    type: paper
+    note: >-
+      **The nearest published work to what engin-core does, and it reports the
+      comparison going against us** (#266). Three bioprocess case studies —
+      upstream glucose feed optimisation, univariate downstream affinity
+      chromatography, multivariate cation-exchange chromatography — in which
+      conformalised quantile regression surrogates outperform Gaussian-process
+      regression in both maximin and minimax regret, *particularly when process
+      uncertainty is high*. Case study 1 is engin-core's own application, and
+      GPR is engin-core's estimator.
+
+      **Engin has not run this comparison.** The row is `contested` rather than
+      `contradicts` for that reason: it is an adverse in-domain result about the
+      *estimator*, not a refutation of split conformal, which the paper uses
+      rather than disputes. Running CQR against the GP on our own simulator and
+      publishing whichever way it falls is #20 territory and is not done.
+
+      **Verified independently rather than transcribed.** Crossref confirms the
+      title, the three authors, Optimization Letters, published online
+      2025-09-24, CC BY 4.0 (both `tdm` and `vor`), 67 references, and **no
+      volume, issue or page numbers** — it is online-first, so any citation
+      asserting them is unsupported. The case studies and the CQR-over-GPR
+      conclusion are the paper's own abstract.
+
+      **Two details this row deliberately does not assert**, because the
+      publisher gated the full text and they could not be checked at source: that
+      the conformalisation is done with MAPIE's `MapieRegressor` (which would put
+      the result on engin-core's own conformal library), and that Bassett is at
+      CSL Innovation. Both are reported in #266 and both are plausible; neither
+      is carried here as a claim. If someone reaches the PDF, they are worth
+      adding.
+
+  - id: 2026-stricker-hitl-bayesopt-bioprocess
+    title: >-
+      A Human-in-the-Loop Bayesian Optimization Framework for Constraint-Aware
+      Bioprocess Development
+    authors: [Stricker, Samuel, Wirnsperger, Claus, Butté, Alessandro, Helleckes, Laura, Guillén Gosálbez, Gonzalo, del Rio Chanona, Antonio, Mercangöz, Mehmet]
+    year: 2026
+    venue: arXiv (preprint, submitted 2026-06-17)
+    location: https://arxiv.org/abs/2606.19230
+    accessed: 2026-08-21
+    stability: url
+    url_only_because: >-
+      Preprint with no journal version found. arXiv identifiers are stable.
+    type: preprint
+    note: >-
+      Recorded for the *market* reading in #266 rather than for a method: GP
+      surrogates with analytic probabilistic constraint satisfaction on an
+      eight-dimensional fed-batch CHO simulator — architecturally close to this
+      project — **with no released implementation**.
+
+      Checked on 2026-08-21: the Autonomous Industrial Systems Lab GitHub
+      organisation has 21 public repositories and none corresponds to this paper.
+      The nearest name matches are summer-school teaching repos. #266 reported 18
+      repositories on the same day; the count moves, the finding does not.
+
+      Together with `2025-pham-cqr-bioprocess-robust-optimisation` this is the
+      evidence for a narrow and checkable positioning claim — the methods are in
+      the literature and the implementations are not — which is a different and
+      more defensible claim than novelty.
+
+      Submission date is arXiv's own (2026-06-17); #266 says 2026-06-18. Not
+      worth resolving, but the register should carry the source's version.
+      Affiliations are not on the abstract page and are not asserted here.
+
   - id: 2025-portela-conformal-dynamic-biology
     title: >-
       Conformal prediction for uncertainty quantification in dynamic biological
@@ -1190,6 +1265,26 @@ claims:
       Split conformal has a finite-sample, distribution-free coverage guarantee.
     strength: supports
     reviewed: 2026-08-13
+
+  - doc: docs/methods/conformal-calibration.md
+    tier: A
+    source_id: 2025-pham-cqr-bioprocess-robust-optimisation
+    claim: >-
+      Conformalised quantile regression surrogates outperform Gaussian-process
+      regression in maximin and minimax regret across three bioprocess case
+      studies -- the first of which is upstream glucose feed optimisation --
+      particularly when process uncertainty is high.
+    strength: contested
+    reviewed: 2026-08-21
+    note: >-
+      `contested`, not `contradicts`. It is an adverse in-domain result about the
+      **estimator** engin-core builds its interval on top of, not about split
+      conformal, which the paper uses rather than disputes. Engin has not run the
+      comparison; #20 is where it would be run and #266 is where it was surfaced.
+
+      Recorded on the methods page rather than only here because that page takes
+      the GP as given, and a reader would otherwise finish it believing the
+      estimator choice is uncontested in the literature.
 
   # -- Low-N honesty (#144). The calibration sets this project's target user can
   # afford are small, and until now nothing said what that costs.
