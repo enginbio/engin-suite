@@ -237,8 +237,28 @@ def conformal_coverage_interval(
 
     Worked numbers at the default 90%, which are the argument for this function
     existing: n=9 (the floor) gives roughly [0.72, 0.99] -- a "90%" interval
-    whose true coverage could be 72%. n=50 gives [0.83, 0.96]. n=406, the
-    industrial set the quickstart uses, gives [0.876, 0.925].
+    whose true coverage could be 72%. n=50 gives [0.83, 0.96]. **n=81 -- the
+    calibration set the quickstart's industrial run actually gets -- gives
+    [0.844, 0.950].**
+
+    **That last figure said n=406 until 2026-08-23, and 406 is the wrong number
+    (#276).** 406 is the count of *batches* in the dataset;
+    ``examples/quickstart_real_data.py`` splits it 60/20/20, so the calibration
+    set is ``int(0.8n) - int(0.6n) = 81`` -- at n=405 after the 72h cutoff it is
+    81 as well. The published band was [0.876, 0.925], which understates the
+    spread by a factor of 2.2 (max deviation from nominal 0.025 against 0.056).
+
+    The correction makes this function's own argument stronger rather than
+    weaker: 81 points is a live example of a calibration set being expensive,
+    where 406 read as reassurance. It also crosses a threshold that matters --
+    at 0.056 the deviation exceeds ``split_conformal_multiplier``'s default
+    ``warn_below_slack=0.05``, so the real industrial run trips the warning that
+    the published number implied it cleared.
+
+    ``n_cal`` is a *choice*, not a property of the dataset. 50/30/20 on the same
+    406 batches gives n_cal=121 and [0.854, 0.942]; whether that is worth fitting
+    the GP on 203 rather than 243 batches is an empirical question nobody here
+    has asked.
 
     # implements D8; ref: 2012-vovk-conditional-validity
     # ref: 2021-angelopoulos-gentle-intro
