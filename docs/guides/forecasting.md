@@ -143,7 +143,9 @@ coverages:
 ```{code-cell} python
 from engin_core.gp import conformal_coverage_interval
 
-for n_cal in (9, 20, 50, 406):
+# 81 is not a round number: it is what the industrial dataset's 406 batches
+# actually yield as a calibration set under the quickstart's 60/20/20 split.
+for n_cal in (9, 20, 50, 81):
     lo_c, mean_c, hi_c = conformal_coverage_interval(n_cal, level=NOMINAL)
     print(f"n={n_cal:>3}: realised coverage lands in {lo_c:.2f}-{hi_c:.2f} (central 90%)")
 ```
@@ -153,6 +155,21 @@ points you are drawing one sample from a broad distribution -- which is exactly
 what the warning in section 2 was telling you. This is the
 strongest practical argument for spending runs on calibration, and it is why the
 number is reported rather than hidden.
+
+**The bottom row is the uncomfortable one.** 81 is not a small campaign — it is
+what this project's *best* dataset yields after the split, and its band is still
+0.844–0.950. Spending more of a fixed dataset on calibration tightens it (50/30/20
+would give 121 points) at the cost of fitting the model on less. Nobody here has
+measured that trade.
+
+```{note}
+**Corrected 2026-08-23 (#276).** This loop ended at `n_cal=406` when the page was
+written, which presented the dataset's *batch* count as a calibration-set size and
+printed a reassuring 0.88–0.92. I took 406 from
+[Conformal calibration](../methods/conformal-calibration.md), which had the same
+error; it is now fixed in both, along with `gp.py`, the register, and a test that
+was pinning it.
+```
 
 ## 4. When the guarantee stops applying
 

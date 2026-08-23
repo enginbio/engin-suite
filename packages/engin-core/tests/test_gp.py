@@ -161,8 +161,30 @@ def test_coverage_interval_narrows_with_n_and_documents_the_headline_numbers():
     assert conformal_coverage_interval(9)[0] == pytest.approx(0.72, abs=0.01)
     lo50, _, hi50 = conformal_coverage_interval(50)
     assert (lo50, hi50) == (pytest.approx(0.83, abs=0.01), pytest.approx(0.96, abs=0.01))
-    lo406, _, hi406 = conformal_coverage_interval(406)
-    assert (lo406, hi406) == (pytest.approx(0.876, abs=0.001), pytest.approx(0.925, abs=0.001))
+
+    # n=81, not 406 (#276). 406 is the batch count; the quickstart splits
+    # 60/20/20, so the industrial run calibrates on int(0.8n) - int(0.6n) = 81.
+    # This test's name promises it documents the headline numbers, and it was
+    # pinning the wrong one -- which is why the error survived in five places.
+    lo81, _, hi81 = conformal_coverage_interval(81)
+    assert (lo81, hi81) == (pytest.approx(0.844, abs=0.001), pytest.approx(0.950, abs=0.001))
+
+
+def test_the_industrial_split_really_does_give_81_calibration_points():
+    """Pins the arithmetic the corrected headline number rests on (#276).
+
+    The band above is only the right band if the split really yields 81. Both
+    ``examples/quickstart_real_data.py`` and ``benchmarks/real_data_coverage.py``
+    use an identical 60/20/20, and the dataset is 406 batches -- 405 at the 72h
+    cutoff. Asserting the arithmetic rather than the prose is what stops the two
+    drifting apart again.
+    """
+    for n in (406, 405):
+        assert int(0.8 * n) - int(0.6 * n) == 81
+
+    # And that 81 crosses the warning threshold the published 406 implied it cleared.
+    lo, _, hi = conformal_coverage_interval(81)
+    assert max(abs(lo - 0.90), abs(hi - 0.90)) > 0.05
 
 
 def test_coverage_interval_is_undefined_below_the_floor():

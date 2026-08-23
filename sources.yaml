@@ -1382,16 +1382,31 @@ claims:
     source_id: 2012-vovk-conditional-validity
     claim: >-
       The coverage band a calibration set buys, computed from Beta(n + 1 - l, l):
-      roughly 0.72-0.99 at the n = 9 floor, tightening to 0.876-0.925 at the 406
-      points of the industrial dataset. The nominal level is the distribution's
-      mean, not the coverage a given calibration set delivers.
+      roughly 0.72-0.99 at the n = 9 floor, tightening to 0.844-0.950 at the 81
+      calibration points the industrial dataset's 60/20/20 split yields. The
+      nominal level is the distribution's mean, not the coverage a given
+      calibration set delivers.
     strength: supports
-    reviewed: 2026-08-17
+    reviewed: 2026-08-23
     note: >-
       The figures are recomputed by the page's own code cell from the cited
       distribution rather than transcribed, so the page cannot drift from the
       result it cites. `test_coverage_interval_narrows_with_n_and_documents_the_headline_numbers`
       pins the same three numbers in the test suite.
+
+      **Corrected 2026-08-23 (#276): 0.876-0.925 at n=406 was wrong, and the
+      sentence above is exactly why it survived.** 406 is the batch count; the
+      quickstart's 60/20/20 split calibrates on 81. Recomputation protects
+      against a stale *result* and does nothing about a wrong *argument* — the
+      cell computed the right band for the wrong `n`, and the test pinned the
+      same wrong `n`, so both mechanisms agreed with each other and neither
+      touched the error. Same shape as the jupyter-cache distinction between an
+      accurate hit and a stale one: a check that re-runs the computation cannot
+      see a bad input.
+
+      `test_the_industrial_split_really_does_give_81_calibration_points` now
+      asserts the arithmetic itself, which is the part the recomputation was
+      never checking.
 
   - doc: packages/engin-core/src/engin_core/gp.py
     tier: A

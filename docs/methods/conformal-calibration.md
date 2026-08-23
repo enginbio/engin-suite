@@ -295,11 +295,30 @@ fallback used to be silent.** It now warns, which is the substance of #144.
 **Even above the floor, small is expensive.** At the floor itself a "90%"
 interval has a true coverage somewhere around 0.72 to
 0.99,[^2012-vovk-conditional-validity] which is close to no statement at all.
-The industrial set used in the
-[quickstart](../quickstart.md) has 406 calibration points and earns a genuinely
-tight band. A first fermentation campaign has neither, and that gap is the honest
-reason this page's numbers should not be read as transferring to a new user's
-first dozen runs.
+
+**And "small" includes the industrial run.** The dataset the
+[quickstart](../quickstart.md) uses has 406 *batches*, but it splits them
+60/20/20 — so the calibration set is 81 points, and the band that buys is
+**[0.844, 0.950]**. That is a max deviation from nominal of 0.056: above
+`split_conformal_multiplier`'s default `warn_below_slack` of 0.05, so the real
+industrial run trips the coverage-spread warning.
+
+```{note}
+**Corrected 2026-08-23 (#276).** This paragraph read *"has 406 calibration points
+and earns a genuinely tight band"*, and the [0.876, 0.925] that follows from 406
+appeared in `gp.py`'s docstring, in `sources.yaml`, in the rendered
+`references.md`, in `docs/guides/forecasting.md`, and was **pinned by a test whose
+name promised it documented the headline numbers**. 406 counts batches, not
+calibration points.
+
+The correction makes the paragraph's own argument stronger. The point was that
+small calibration sets are expensive; at 406 that read as reassurance, and at 81
+it is a live example — on this project's own best dataset.
+```
+
+A first fermentation campaign has neither the batches nor the split, and that gap
+is the honest reason this page's numbers should not be read as transferring to a
+new user's first dozen runs.
 
 Note the spread is quoted on **coverage**, not on the multiplier $q$ itself. The
 result is about coverage; converting it into an interval on $q$ would need a

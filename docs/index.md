@@ -285,7 +285,7 @@ Titer captures one of three cost centres, and which one dominates depends on the
 :::
 
 :::{grid-item-card} Composes, doesn't replace
-MAPIE cross-checks the conformal intervals; BioSTEAM backs techno-economics as an optional extra. BayBE and COBRApy are *not* dependencies — they are why parts of the roadmap stay unbuilt (`D9`). Your data stays in xarray and pandas. The [ecosystem map](ecosystem) says where to go for everything Engin deliberately doesn't build.
+MAPIE cross-checks the conformal intervals; BioSTEAM backs techno-economics and BayBE the optimizer baseline, both as optional extras. COBRApy is *not* a dependency — it is why parts of the roadmap stay unbuilt (`D9`). Your data stays in xarray and pandas. The [ecosystem map](ecosystem) says where to go for everything Engin deliberately doesn't build.
 :::
 
 ::::
@@ -301,7 +301,9 @@ A benchmark suite that always favours its author is worthless, and we would rath
 
 The commitment is that every claim is benchmarked against the simpler thing it says it beats — plain DoE/RSM for optimization, BioSTEAM for techno-economics, step-count heuristics for pathway ranking, "just use *E. coli*" for host selection.
 
-**Two of those are implemented today** — RSM for optimization, and step-count for pathway ranking. BioSTEAM and "just use *E. coli*" are not built. That sentence used to be written as though all four were, and then as though three were; naming them rather than counting them is so the next drift shows up in the diff instead of hiding inside a number. [Benchmarks](benchmarks) marks which is which, because a page promising honest baselines is the last place to overstate what has been run.
+**Three of those are implemented today** — RSM for optimization, step-count for pathway ranking, and "just use *E. coli*" for host selection. Only BioSTEAM is unbuilt, and it is blocked on a packaging problem rather than on effort: `llvmlite` ships no macOS x86_64 wheel, so the `[tea]` extra will not install there. [Benchmarks](benchmarks) marks which is which, because a page promising honest baselines is the last place to overstate what has been run.
+
+*Corrected 2026-08-23 (#277): this said "two" until the "just use E. coli" baseline landed. The sentence it replaced argued that naming the baselines rather than counting them was how the next drift would show up in a diff — and then drifted, inside the count. The count is kept because it is the useful part; what changed is that [Benchmarks](benchmarks) is now the single place the statuses live.*
 
 **The first real baseline beat us, twice.** A textbook response surface proposes better designs than Engin's GP with expected improvement on 18 of 20 seeds — and its OLS prediction interval lands closer to nominal coverage than our conformal one, 17% narrower. <!-- not-a-claim: measured on our own simulator; see the benchmarks page --> Both results are at the top of the [benchmarks](benchmarks) page rather than in a footnote, with what they do and don't settle.
 
