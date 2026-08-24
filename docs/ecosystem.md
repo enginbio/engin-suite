@@ -40,7 +40,7 @@ in 2021, and that finding is worth as much as the recommendation.
 
 ## What is in here
 
-Ten capability areas. Each card names what Engin does about that capability and the
+Eleven capability areas. Each card names what Engin does about that capability and the
 one implementation to reach for if you only take one — the detail sits under the link.
 
 ::::{grid} 1 1 2 3
@@ -116,6 +116,15 @@ one implementation to reach for if you only take one — the detail sits under t
 **Engin:** builds a small one, reluctantly
 
 **Reach for:** BASICO
+:::
+
+:::{grid-item-card} Downstream processing & recovery
+:link: eco-dsp
+:link-type: ref
+
+**Engin:** does not build
+
+**Reach for:** CADET, with a licence warning
 :::
 
 :::{grid-item-card} Bioprocess data standards
@@ -1090,18 +1099,11 @@ von Lieres & Oldiges, *PLOS Computational Biology* 18(3) (2022),
 *(Licences, releases and last-push dates read from the repositories on 2026-08-21.)*
 :::
 
-**Downstream.** [CADET-Core](https://github.com/cadet/CADET-Core) and
-[CADET-Process](https://github.com/fau-advanced-separations/CADET-Process) are
-best-in-class for chromatography and downstream unit operations and actively developed.
-**CADET-Core is AGPL-3.0 and CADET-Process is GPL-3.0** — this entry previously said
-"GPL-family", which folds a network-copyleft term into a phrase that does not carry it.
-On a page whose warning box says licences are stated because they bite, that elision is
-the thing the box exists to prevent: AGPL §13 reaches an adopter who modifies CADET-Core
-and exposes it only as a hosted service, with no distribution involved. Read §13 before
-building on it; it is not a disqualification, and Engin does not depend on either.
-*(Licence read from `LICENSE.txt` on 2026-08-20.)* They do not simulate fermentation, but
-recovery is where a large share of cost-of-goods lives for high-value products — so for
-the downstream half of a $/kg model this is the right thing to point at.
+**Downstream has its own slot now.** This paragraph used to carry CADET here.
+Recovery turned out to need more room than a paragraph — the licences move, the
+permissive option does not cover protein recovery at all, and *selecting* a train is
+a different capability from simulating one. See **Downstream processing and product
+recovery**, below.
 
 **Dead ends, and this one hurts less than it did.** [pyFOOMB](https://github.com/MicroPhen/pyFOOMB)
 bundles a bioprocess ODE model with parameter estimation and uncertainty in one package,
@@ -1121,6 +1123,149 @@ attempt — and BioSTEAM alongside it for the economics half, because they solve
 problems. Say the quiet part: `estim8` is the better-targeted estimator of the two, and
 AGPL-3.0 is why it is not the recommendation for a permissively licensed tree. If your own
 project has no such constraint, reverse that.
+
+---
+
+(eco-dsp)=
+
+## Downstream processing and product recovery
+
+*Funnel stage: the second half of `engin_core.tea` — everything between the broth and
+the saleable kilogram.*
+
+**Engin's position: does not build, and prices the outcome rather than the route.**
+`ParametricCostModel` reaches downstream cost through titer and a purity multiplier;
+`BioSteamCostModel` will run a flowsheet the caller supplies, and its docstring says
+why it presumes none. `D9` says compose rather than reimplement unit-operation
+models, and the projects below are what there is to compose with. Their licences are
+the whole problem, and the thing you would most want — *choosing* a recovery train
+rather than simulating one you already chose — is not available from anybody.
+
+:::{dropdown} CADET-Core — AGPL-3.0 today, GPL-3.0 in the current stable release
+:animate: fade-in-slide-down
+
+[cadet/CADET-Core](https://github.com/cadet/CADET-Core)
+
+The reference solver for chromatography and downstream unit operations, C++ with a
+Python interface, from Forschungszentrum Jülich.
+
+- **Pro** — general rate model with real transport and binding physics, not a
+  shortcut correlation. If the question is what a column actually does, this is the
+  answer and there is no permissive equivalent.
+- **Pro** — plainly alive: commits through August 2026, and a v6 line in development.
+- **Con, and read this before pinning anything** — **the licence changed under it.**
+  Commit
+  [`3a6a9eb`](https://github.com/cadet/CADET-Core/commit/3a6a9ebb803e17ca89cdebd548c3fc6a2ea1272a),
+  *"Update license to AGPL (#696)"*, landed on 2026-06-08. `LICENSE.txt` on `master`
+  today opens "GNU AFFERO GENERAL PUBLIC LICENSE". At the tag `v5.1.1` — released
+  2026-03-18, and still the newest **stable** release — the same file opens "GNU
+  GENERAL PUBLIC LICENSE". So a reader who pinned stable is on GPL-3.0 and a reader
+  tracking `master` is on AGPL-3.0, and nothing in the release notes announces the
+  difference. AGPL §13 reaches an adopter who modifies CADET-Core and exposes it only
+  as a hosted service, with no distribution involved; GPL-3.0 does not. *(Both files
+  read at their respective refs on 2026-08-24; the previous version of this page
+  stated AGPL flatly and treated it as a longstanding fact.)*
+- **Con** — a C++ simulator, not a bioprocess library. Standing up a case means
+  building or fetching binaries and writing the model configuration; there is no
+  `pip install` that gets you a costed recovery step.
+:::
+
+:::{dropdown} CADET-Process — GPL-3.0
+:animate: fade-in-slide-down
+
+[fau-advanced-separations/CADET-Process](https://github.com/fau-advanced-separations/CADET-Process)
+
+GPL-3.0. The Python modelling and optimization layer over CADET-Core: an
+object-oriented model builder, cyclic-stationarity evaluation, fractionation
+optimization, and performance indicators.
+
+- **Pro** — it removes the worst of CADET-Core's configuration burden and adds the
+  parts a process engineer wants — yield, purity and productivity as first-class
+  outputs rather than post-processing.
+- **Pro** — maintained on a real cadence, latest release v0.12.0 on 2026-05-05.
+  *(Checked 2026-08-24.)*
+- **Con, and it is the one that matters for this slot** — **the user constructs the
+  flow sheet.** Optimization covers physico-chemical model parameters, event timings
+  and fractionation *within* that structure. It will not tell you whether to lyse or
+  secrete, whether to run one polishing step or two, or in what order. See its own
+  [user guide](https://cadet-process.readthedocs.io/).
+- **Con** — GPL-3.0, so for an Apache-2.0 project with commercial users this is a
+  subprocess boundary at best, never a dependency.
+:::
+
+:::{dropdown} BioSTEAM's separations units — NCSA
+:animate: fade-in-slide-down
+
+[BioSTEAMDevelopmentGroup/biosteam](https://github.com/BioSTEAMDevelopmentGroup/biosteam)
+
+The same project the techno-economics slot recommends, listed again because its
+separations library is what a reader will reach for after being told BioSTEAM is the
+permissive option — and it is the wrong shape for this job.
+
+- **Pro** — permissive and Apache-2.0-compatible, which nothing else in this slot is,
+  and the units carry costing correlations rather than only physics. For a bulk
+  chemical recovered by distillation, evaporation or extraction it is genuinely the
+  answer.
+- **Con, and it is disqualifying for protein recovery** — listing `biosteam/units` on
+  2026-08-24 gives `adsorption`, `distillation`, `liquid_liquid_extraction`,
+  `solids_separation`, `_clarifier`, `_multi_effect_evaporator`, `drying`,
+  `_batch_crystallizer`, `molecular_sieve`, `_flash`, `_vibrating_screen` and
+  `size_reduction`. **There is no chromatography module, no cell-disruption module
+  and no tangential-flow-filtration module.** The nearest neighbour to a capture step
+  is a single-component adsorption column.
+- **Con** — the library is biorefinery-shaped by design and by provenance. Reading it
+  as a general bioseparations toolkit is a category error this page has previously
+  invited.
+:::
+
+**Dead ends, and this one is unusual: the method is not dead, the code never
+existed.** Recovery-train *selection* has been solved in the literature, twice, and
+neither result is installable. Wu, Yenkie and Maravelias take fermentation broth
+characteristics and formulate the choice of separation technologies as a
+superstructure MINLP with binary activation variables — including a companion
+treatment of intracellular products with cell disruption — and state that "the model
+has been developed in GAMS 25.1.1 environment and solved using BARON", two commercial
+products, with nothing released
+([*BMC Chem. Eng.* 1:21, 2019](https://doi.org/10.1186/s42480-019-0022-8)). Keulen et
+al. do the biopharma equivalent, selecting chromatography mode and buffer-exchange
+method over a superstructure of thirty-nine flowsheets, deterministic, with data
+available "from the corresponding author upon reasonable request"
+([*Biotechnol. Prog.* 41(2):e3514, 2025](https://doi.org/10.1002/btpr.3514)).
+Newer entrants do not close it either:
+[BioProcessNexus](https://github.com/mmedl94/bioprocessnexus) trains surrogates of
+proprietary-TEA output for a process you have already fixed, and CADET-Hub is a
+JupyterHub environment unifying existing CADET simulators. Recording this because the
+cost of surveying this field is mostly the afternoon spent discovering that the
+obvious-looking capability exists only behind a solver licence.
+
+**The absence claim, and what backs it (`D15`, `D23`).** Searched 2026-08-24: GitHub
+and PyPI for bioseparation, downstream process synthesis, purification train
+selection and separation-network superstructures; CADET-Core, CADET-Process, BioSTEAM
+and Bioindustrial-Park, IDAES-PSE, PharmaPy, QSDsan; the Maravelias separation-network
+line; and 2025–2026 releases in the slot. **No open-source implementation, permissive
+or copyleft, was found that takes a broth specification and returns a ranked recovery
+train.** Rejected near-misses and why: CADET-Process optimizes within a fixed
+structure; BioSTEAM has no bioseparation units; IDAES-PSE is an equation-oriented
+framework whose model library targets energy systems; PharmaPy is
+API-and-crystallization shaped. Note that the closed incumbents do not fill this
+either — SuperPro Designer and BioSolve Process are costing tools in which the
+engineer specifies the train — so this is not a case of open source lagging a
+commercial product. If you know of a counterexample, that correction is worth more to
+this page than any entry on it.
+
+**If you pick one:** CADET-Process, because it is the only thing here that will give
+you a defensible number for a chromatographic step — but pin CADET-Core deliberately
+and know which licence your pin carries, and do not expect either to choose the train
+for you. If your product is a bulk chemical rather than a protein, BioSTEAM instead,
+and the licence problem disappears.
+
+References: Wu, Yenkie & Maravelias, *Synthesis and analysis of separation processes
+for extracellular chemicals generated from microbial conversions*, BMC Chemical
+Engineering (2019),
+[10.1186/s42480-019-0022-8](https://doi.org/10.1186/s42480-019-0022-8);
+Keulen, Apostolidi, Geldhof, Le Bussy, Pabst & Ottens, *Comparing in silico flowsheet
+optimization strategies in biopharmaceutical downstream processes*, Biotechnology
+Progress (2025), [10.1002/btpr.3514](https://doi.org/10.1002/btpr.3514).
 
 ---
 
