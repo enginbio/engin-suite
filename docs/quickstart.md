@@ -188,10 +188,15 @@ R² and a width.
 ```
 
 That is a genuine limitation of this baseline rather than of the dataset —
-adding early potency to the features roughly doubles R², and the dataset's own
-authors report considerably better prediction using an architecture built for the
-purpose. Engin's *calibration* transfers to real data; its *modelling*, pointed
-naively at a task it was not designed for, does not.
+adding early potency to the features roughly doubles R². Engin's *calibration*
+transfers to real data; its *modelling*, pointed naively at a task it was not
+designed for, does not.
+
+This page used to add that the dataset's authors report considerably better
+prediction. They solve a different problem — forecasting the target from its own
+recent history — and publish no R², so there was no comparison behind the
+sentence. See [Calibration on real production
+data](methods/real-data-calibration.md) (#275).
 
 ## If you would rather not write Python
 
