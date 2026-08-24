@@ -81,6 +81,10 @@ def main():
     # ---- 5. Recommend the next DoE batch (active learning) ----
     best_prior = float(y_obs.max())
     Xnext, m_next, sd_next, ei = recommend_batch(gp, best_prior, k=8, seed=3)
+    # recommend_batch returns the *epistemic* sd (it ranks designs, and observation
+    # noise is constant under ranking). The memo quotes an interval on an assay
+    # result, so it needs the total predictive sd. #282.
+    _, sd_next_total = gp.predict(Xnext, include_noise=True)
     phys_next = unit_to_physical(Xnext)
     y_next_true = simulate_unit(Xnext)  # self-validation
     best_new = float(y_next_true.max())
@@ -191,6 +195,8 @@ def main():
         phys_next,
         m_next,
         sd_next,
+        sd_next_total,
+        z90,
         costs,
         cost_params,
     )
@@ -219,6 +225,8 @@ def write_memo(
     phys_next,
     m_next,
     sd_next,
+    sd_next_total,
+    z90,
     costs,
     cost_params,
 ):
@@ -242,14 +250,31 @@ def write_memo(
     L.append(f"- RMSE **{rmse:.1f} g/L**, R² **{ss:.2f}**\n")
     L.append(f"- 90% predictive-interval coverage **{cover:.0%}** (target ~90%)\n")
     L.append("\n## What actually drives titer\n")
-    for j in order:
-        L.append(f"- **{sim.KNOB_NAMES[j]}** — {imp[j] * 100:.0f}% relative sensitivity\n")
+    L.append(
+        "_Ordering is the reliable part. The **share** is a single-campaign estimate "
+        "and moves a lot between campaigns of the same process -- on the bundled "
+        "simulator the top knob ranges 30-56% across 12 runs, and ranks 2-5 can "
+        "reorder. The share is also convention-dependent (1/l here, variance/l^2 "
+        "elsewhere), though the ordering is not. Treat it as a rough weight, not a "
+        "measurement._\n\n"
+    )
+    for rank, j in enumerate(order, 1):
+        L.append(f"- **{sim.KNOB_NAMES[j]}** — rank {rank}, share ~{imp[j] * 100:.0f}%\n")
     L.append("\n## Recommended next DoE batch (highest expected improvement)\n")
+    L.append(
+        "_Intervals are the calibrated `mean ± q90 * sd`, on the total predictive "
+        "sd. **They under-cover here on purpose-selected designs**: measured over 12 "
+        "campaigns this construction covers 0.95 on random designs and 0.81 on these, "
+        "because expected improvement picks exactly the points where the model is "
+        "optimistic or unsure, which is where exchangeability with the calibration "
+        "set breaks. Read them as the widest honest statement available, not as 90%."
+        "_\n\n"
+    )
     L.append("| # | " + " | ".join(sim.KNOB_NAMES) + " | pred titer (g/L) |\n")
     L.append("|---|" + "|".join(["---"] * (len(sim.KNOB_NAMES) + 1)) + "|\n")
     for i in range(len(m_next)):
         row = " | ".join(f"{v:.2f}" for v in phys_next[i])
-        L.append(f"| {i + 1} | {row} | {m_next[i]:.1f} ± {1.645 * sd_next[i]:.1f} |\n")
+        L.append(f"| {i + 1} | {row} | {m_next[i]:.1f} ± {z90 * sd_next_total[i]:.1f} |\n")
     L.append("\n## Bottom line\n")
     L.append(f"- Best titer in the existing {n}-run DoE: **{best_prior:.1f} g/L**.\n")
     L.append(
