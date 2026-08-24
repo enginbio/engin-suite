@@ -43,7 +43,11 @@ from __future__ import annotations
 import numpy as np
 
 from engin_core.datasets import fetch
-from engin_core.gp import fit_gp, split_conformal_multiplier
+from engin_core.gp import (
+    conformal_coverage_interval,
+    fit_gp,
+    split_conformal_multiplier,
+)
 
 NOMINAL = 0.90
 TARGET = "hx"
@@ -93,11 +97,27 @@ def build(df, cutoff_h: int, include_potency: bool):
 
 
 def evaluate(X, y):
-    """Split-conformal coverage, interval width and R^2, averaged over seeds."""
+    """Split-conformal coverage, interval width, R^2 and the band n_cal buys.
+
+    The band is reported **per row** rather than once for the whole table (#276).
+    Two reasons, and the second is why it is computed here rather than quoted:
+
+    * The nominal level is the *mean* of a Beta distribution, not the coverage a
+      given calibration set delivers. A coverage figure printed to three decimals
+      beside no band invites reading precision that a calibration set of this size
+      does not buy.
+    * ``n_cal`` is not a constant across these rows. It is
+      ``int(0.8n) - int(0.6n)`` on whatever survives the ``isfinite`` filter below,
+      and each (features, cutoff) combination drops a different number of
+      incomplete batches. Printing one band for the table would be the same class
+      of error as the 406-versus-81 confusion this issue reported.
+    """
     finite = np.isfinite(X).all(axis=1) & np.isfinite(y)
     X, y = X[finite], y[finite]
 
     coverage, width, r2 = [], [], []
+    n_cal = int(0.8 * len(X)) - int(0.6 * len(X))
+    band_lo, _, band_hi = conformal_coverage_interval(n_cal, level=NOMINAL)
     for seed in SEEDS:
         rng = np.random.default_rng(seed)
         # A uniformly random split of a time-ordered production record. This
@@ -122,29 +142,53 @@ def evaluate(X, y):
 
         gp = fit_gp(U[train], y[train], seed=seed)
         mc, sdc = gp.predict(U[calib], include_noise=True)
-        q = split_conformal_multiplier(y[calib], mc, sdc, level=NOMINAL)
+        # warn_below_slack=None because this script now *reports* the spread rather
+        # than warning about it: the band is a column, per row, computed from the
+        # same function the warning cites. Before #276 this fired six identical
+        # warnings per run onto stderr while the table published coverage to three
+        # decimals and mentioned none of it -- the information was being emitted in
+        # the one place nobody reading the results would look.
+        q = split_conformal_multiplier(y[calib], mc, sdc, level=NOMINAL, warn_below_slack=None)
 
         mean, sd = gp.predict(U[test], include_noise=True)
         residual = np.abs(mean - y[test])
         coverage.append(np.mean(residual <= q * sd))
         width.append(np.mean(2 * q * sd))
         r2.append(1 - np.sum((mean - y[test]) ** 2) / np.sum((y[test] - y[test].mean()) ** 2))
-    return len(X), float(np.mean(coverage)), float(np.mean(width)), float(np.mean(r2))
+    return (
+        len(X),
+        n_cal,
+        float(np.mean(coverage)),
+        float(np.mean(width)),
+        float(np.mean(r2)),
+        (band_lo, band_hi),
+    )
 
 
 def main() -> None:
     df = load_frame()
     print(f"erythromycin-efp: {df['batch_id'].nunique()} batches, {len(df):,} hourly rows")
     print(f"nominal coverage {NOMINAL}, {len(list(SEEDS))} seeds\n")
-    print(f"  {'features':<22}{'cutoff':>7}{'n':>6}{'coverage':>10}{'width':>10}{'R2':>8}")
+    print(
+        f"  {'features':<22}{'cutoff':>7}{'n':>6}{'n_cal':>7}"
+        f"{'coverage':>10}{'band it buys':>16}{'width':>9}{'R2':>8}"
+    )
     for include_potency in (False, True):
         label = "process + early hx" if include_potency else "process only"
         for cutoff in CUTOFFS:
-            n, cov, w, r2 = evaluate(*build(df, cutoff, include_potency))
-            print(f"  {label:<22}{cutoff:>6}h{n:>6}{cov:>10.3f}{w:>10.1f}{r2:>8.3f}")
+            n, n_cal, cov, w, r2, (b_lo, b_hi) = evaluate(*build(df, cutoff, include_potency))
+            band = f"[{b_lo:.3f}, {b_hi:.3f}]"
+            print(
+                f"  {label:<22}{cutoff:>6}h{n:>6}{n_cal:>7}"
+                f"{cov:>10.3f}{band:>16}{w:>9.1f}{r2:>8.3f}"
+            )
     print(
         "\nRead coverage and R2 together: a model that predicts nothing can still be\n"
-        "perfectly calibrated, and on this task that is close to what happens."
+        "perfectly calibrated, and on this task that is close to what happens.\n"
+        "\nAnd read each coverage against the band on its own row, not against 0.90:\n"
+        "that band is where a correctly calibrated method lands 90% of the time with\n"
+        "this many calibration points. A row inside its band is not evidence of\n"
+        "anything having gone right or wrong."
     )
 
 
