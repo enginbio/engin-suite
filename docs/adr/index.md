@@ -25,6 +25,7 @@ outside reader cannot resolve is worse than no citation:
 0009-vendor-profiles-are-a-convention-gap
 0010-regulatory-status-is-two-facts-not-a-scalar
 0011-a-fixed-pool-seed-is-a-campaign-trap
+0012-target-market-selects-the-regulator-not-the-score
 ```
 
 The unported numbers — 0001, 0003, 0005 through 0008 — covered repository layout and process
