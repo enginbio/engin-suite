@@ -34,16 +34,37 @@ test: features to a scalar, with a calibrated interval.
 
 ## The result
 
-| features | cutoff | n | coverage | width | R² |
-|---|---|---|---|---|---|
-| process only | 24 h | 406 | 0.917 | 1569 | 0.023 |
-| process only | 48 h | 406 | 0.893 | 1480 | 0.025 |
-| process only | 72 h | 405 | 0.877 | 1337 | 0.104 |
-| process + early potency | 24 h | 406 | 0.910 | 1505 | 0.059 |
-| process + early potency | 48 h | 406 | 0.912 | 1521 | 0.113 |
-| process + early potency | 72 h | 405 | 0.899 | 1299 | **0.223** |
+| features | cutoff | n | n_cal | coverage | band it buys | width | R² |
+|---|---|---|---|---|---|---|---|
+| process only | 24 h | 406 | 81 | 0.917 | [0.844, 0.950] | 1569 | 0.023 |
+| process only | 48 h | 406 | 81 | 0.893 | [0.844, 0.950] | 1480 | 0.025 |
+| process only | 72 h | 405 | 81 | 0.877 | [0.844, 0.950] | 1337 | 0.104 |
+| process + early potency | 24 h | 406 | 81 | 0.910 | [0.844, 0.950] | 1505 | 0.059 |
+| process + early potency | 48 h | 406 | 81 | 0.912 | [0.844, 0.950] | 1521 | 0.113 |
+| process + early potency | 72 h | 405 | 81 | 0.899 | [0.844, 0.950] | 1299 | **0.223** |
 
 Nominal coverage is 0.90, averaged over five seeds.
+
+```{important}
+**Read each coverage against the band on its own row, not against 0.90** (#276).
+That band is where a correctly calibrated method lands 90% of the time with this
+many calibration points — so **every row above is inside it**, and the spread from
+0.877 to 0.917 is not evidence that any configuration calibrates better than
+another.
+
+**`n` is batches; `n_cal` is calibration points, and they are not the same
+number.** The split is 60/20/20, so 406 batches buy 81 calibration points. This
+page said "406 calibration points" until 2026-08-23 and published the much tighter
+band that follows from it.
+
+`n_cal` is computed per row rather than once, because it is
+`int(0.8n) − int(0.6n)` on whatever survives the `isfinite` filter and each
+configuration drops a different number of incomplete batches. On this dataset it
+lands on 81 every time — including the 72 h rows where `n` is 405 — so the column
+is constant here. That was checked rather than assumed, and printing it per row is
+what keeps a future configuration that drops more batches from inheriting a band
+that is no longer its own.
+```
 
 ```{note}
 **Regenerated 2026-08-16 after fixing a leak, and the fix cut both ways.** The
