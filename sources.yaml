@@ -484,6 +484,58 @@ sources:
   # Two rows for one body of work on purpose: the article and the data it
   # summarises carry *different licences*, and only one of them can be built on.
 
+  - id: 2026-efsa-qps-topic-page
+    title: Qualified presumption of safety (QPS)
+    authors: [European Food Safety Authority]
+    year: 2026
+    venue: efsa.europa.eu
+    location: https://www.efsa.europa.eu/en/topics/topic/qualified-presumption-safety-qps
+    accessed: 2026-08-23
+    stability: url
+    url_only_because: >-
+      An authority's statement about its own remit, published only as a web page.
+      No DOI exists for it.
+    type: web
+    note: >-
+      Cited by ADR 0012 for the **enumeration of what QPS reaches**, verbatim:
+      "EFSA assesses the safety of microorganisms in the applications it receives
+      for market authorisation of feed additives, food additives, food enzymes,
+      food flavourings, novel food, and plant protection products."
+
+      **Note what this is and is not.** It defines the remit *positively* — what
+      EFSA assesses. EFSA publishes no list of applications QPS excludes, so the
+      claim that technical enzymes, medicines and cosmetics are outside is an
+      inference from this sentence plus their separate regulatory pathways, not a
+      quotation. ADR 0012 says so in its own words rather than implying otherwise.
+
+      Plant protection products are the load-bearing row: they are neither food
+      nor feed, and they are in scope — which is why ADR 0010 and #22's shorthand
+      "QPS is about food and feed" is nearly right and is not the boundary.
+
+  - id: 2026-amfep-technical-enzyme-regulation
+    title: Regulatory aspects on technical enzymes
+    authors: [AMFEP — Association of Manufacturers and Formulators of Enzyme Products]
+    year: 2026
+    venue: amfep.org
+    location: https://amfep.org/about-enzymes/regulatory/technical-enzymes-regulations/
+    accessed: 2026-08-23
+    stability: url
+    url_only_because: An industry association's guidance page; no DOI.
+    type: web
+    note: >-
+      Cited by ADR 0012 for the pathway technical enzymes actually follow: **REACH
+      (Reg. 1907/2006)** above one tonne per year, with CLP (1272/2008) and BPR
+      (528/2012) alongside. Verbatim: enzymes for "technical applications such as
+      detergents, textile processing, biofuels, pulp & paper processing" must be
+      registered under REACH "before they can be manufactured and/or imported into
+      the EU in a volume above 1 ton per year."
+
+      **An industry association is not a regulator**, and the row is scoped
+      accordingly: it is cited for which instrument applies, which is checkable
+      against the regulation itself, and not for any interpretation of it. AMFEP
+      maintains separate regulatory pages for technical, food and feed enzymes —
+      consistent with the boundary ADR 0012 draws, and not a statement of it.
+
   - id: 2026-efsa-qps-list
     title: >-
       Updated list of QPS-recommended microorganisms for safety risk assessments
