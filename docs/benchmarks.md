@@ -389,8 +389,13 @@ the opponent upward is the only direction that is safe to tune in.
 The single-round numbers above stay exactly as they were. They were not wrong,
 and a result that later gets more context is not a result that gets edited.
 
-Nothing here has been compared to BayBE or to BioSTEAM on any data, and none of
-these comparisons has been run on real data.
+Nothing here has been compared to BioSTEAM on any data, and none of these
+comparisons has been run on real data.
+
+*Corrected 2026-08-23 (#279): this said "compared to BayBE or to BioSTEAM" while
+the BayBE comparison sits in the baselines table and the headline results table on
+this same page. BioSTEAM is genuinely unbuilt, and blocked on packaging rather than
+effort — `llvmlite` ships no macOS x86_64 wheel.*
 
 **Correcting this cost the page its best-sounding paragraph, which is the right
 trade.** A benchmarks page that overstates its own coverage is worse than one
@@ -467,7 +472,19 @@ against a download that failed verification is worse than not benchmarking.
 |---|---|---|---|
 | `erythromycin-efp` | CC-BY-4.0 | 3 | 406 industrial fed-batch production batches, hourly, with a product-potency target |
 | `cho-k1-cultivations` | CC-BY-4.0 | 3 | 24 CHO-K1 cultivations, batch and fed-batch, 38 inline + 10 offline variables |
+| `jbei-isoprenol-dbtl6` | BSD-3-Clause-LBNL | 3 | final cycle of a six-round ML-guided CRISPRi campaign in *P. putida*; absolute isoprenol titer in mg/L |
+| `jbei-flaviolin-media` | BSD-3-Clause-LBNL | 3 | five DBTL cycles of medium optimization in *P. putida*; 16 components varied against an OD340 response |
 | `indpensim` | CC-BY-NC-ND-4.0 | 2 | the worked example of the licence problem — **fetch refuses it** |
+
+```{note}
+**Corrected 2026-08-23 (#280).** This table listed three of the five registered
+datasets. The two missing were the JBEI campaigns — and they are the two
+[Limitations](limitations.md) already cites as narrowing the tier-4 absence claim,
+so the omission hid work this project had done rather than work it had not.
+
+`test_the_registry_and_the_published_table_agree` now fails when the two diverge.
+Nothing checked it before, which is why three-of-five survived.
+```
 
 Adding an entry means checking the licence against the publisher and recording a
 checksum that is either the publisher's own or verified against it. An unverified

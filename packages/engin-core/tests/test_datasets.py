@@ -10,6 +10,7 @@ being tested.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -248,3 +249,42 @@ def test_cache_dir_is_overridable_and_outside_the_repo(monkeypatch, tmp_path):
     resolved = cache_dir().resolve()
     repo = Path(__file__).resolve().parents[3]
     assert repo not in resolved.parents, "fetched data must never land inside the repository"
+
+
+def test_the_registry_and_the_published_table_agree():
+    """`docs/benchmarks.md` must list exactly the registered datasets (#280).
+
+    The published table listed three of five for as long as five existed, and the
+    two it omitted were the JBEI campaigns `docs/limitations.md` cites as narrowing
+    the tier-4 absence claim -- so the page understated the project's own evidence.
+
+    Nothing checked it. `render.py` regenerates `references.md` from the register,
+    and `check_claims.py` verifies citations resolve, but this table is hand-written
+    prose about code and had no equivalent. A page whose subject is what has and has
+    not been measured is a bad place to keep a stale list.
+    """
+    docs = Path(__file__).resolve().parents[3] / "docs" / "benchmarks.md"
+    if not docs.exists():  # pragma: no cover - the suite also runs from a wheel
+        pytest.skip("docs/ not present in this checkout")
+
+    section = docs.read_text().split("## What is registered", 1)
+    assert len(section) == 2, "benchmarks.md lost its 'What is registered' section"
+    # the table ends at the first blank line after the rows
+    listed = set(re.findall(r"^\| `([a-z0-9-]+)` \|", section[1], re.M))
+
+    assert listed == set(REGISTRY), (
+        f"registry and published table disagree.\n"
+        f"  in REGISTRY, not documented: {sorted(set(REGISTRY) - listed)}\n"
+        f"  documented, not in REGISTRY: {sorted(listed - set(REGISTRY))}"
+    )
+
+
+def test_the_published_table_states_each_dataset_s_real_tier():
+    """A wrong tier is worse than a missing row: D12 is graded on it."""
+    docs = Path(__file__).resolve().parents[3] / "docs" / "benchmarks.md"
+    if not docs.exists():  # pragma: no cover
+        pytest.skip("docs/ not present in this checkout")
+
+    section = docs.read_text().split("## What is registered", 1)[1]
+    for name, tier in re.findall(r"^\| `([a-z0-9-]+)` \| [^|]+ \| (\d) \|", section, re.M):
+        assert int(tier) == REGISTRY[name].tier, f"{name}: table says tier {tier}"
