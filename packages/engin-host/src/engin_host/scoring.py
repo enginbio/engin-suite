@@ -68,6 +68,10 @@ def score(kb: KnowledgeBase, query: HostQuery, top_k: int = 3) -> list[HostScore
                 flags=flags,
                 feasible=not flags,
                 provenance="illustrative" if unsourced else "sourced",
+                # Carried through for the memo to print. Deliberately absent from
+                # every expression above: ADR 0010 sequences display before scoring,
+                # and ranking on QPS needs a target market first (#22).
+                qps=host.qps,
                 unsourced=unsourced,
             )
         )

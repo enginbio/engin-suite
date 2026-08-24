@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from engin_host import Host, HostQuery, KnowledgeBase, default_kb
+from engin_host import Host, HostQuery, KnowledgeBase, QpsRecord, default_kb
 
 
 def test_default_kb_is_valid():
@@ -136,3 +136,49 @@ def test_memo_derives_its_basis_line_rather_than_hardcoding_it():
     memo = render_memo("t", score(kb, HostQuery(weights={"a": 1.0, "b": 1.0})))
     assert "All capability values behind these scores are sourced" in memo
     assert "illustrative" not in memo
+
+
+# --------------------------------------------- EFSA QPS status (ADR 0010, #146)
+
+
+def test_a_qps_status_that_is_a_claim_about_the_world_needs_a_source():
+    """`listed` and `excluded` are D23 claims; `out_of_scope` is a scope fact."""
+    with pytest.raises(ValidationError, match="sources.yaml id"):
+        QpsRecord(status="listed", taxonomic_unit="Bacillus subtilis")
+    with pytest.raises(ValidationError, match="sources.yaml id"):
+        QpsRecord(status="excluded", taxonomic_unit="Escherichia coli")
+
+    # out_of_scope is the one that may stand alone: nobody assessed it.
+    assert QpsRecord(status="out_of_scope").source is None
+
+
+def test_out_of_scope_cannot_carry_qualifications():
+    """A qualification is something EFSA attached; unassessed means there is none."""
+    with pytest.raises(ValidationError, match="never assessed"):
+        QpsRecord(status="out_of_scope", qualifications=["should not harbour ..."])
+
+
+def test_an_empty_qualification_list_is_a_fact_not_a_gap():
+    """K. phaffii is listed with no qualification, and that is worth distinguishing."""
+    rec = QpsRecord(
+        status="listed", taxonomic_unit="Komagataella phaffii", source="2026-efsa-qps-list"
+    )
+    assert rec.qualifications == []
+
+
+def test_the_shipped_kb_carries_a_verified_status_for_every_host():
+    """Every host has one, and every claim-bearing one cites the register."""
+    from engin_host.kb import default_kb
+
+    for h in default_kb().hosts:
+        assert h.qps is not None, f"{h.name} has no QPS record"
+        if h.qps.status != "out_of_scope":
+            assert h.qps.source == "2026-efsa-qps-list"
+            assert h.qps.taxonomic_unit
+
+
+def test_gras_is_gone_from_the_capability_list():
+    """ADR 0010 retired it; a query weighting it should now be an error, not a score."""
+    from engin_host.kb import CAPABILITIES
+
+    assert "gras" not in CAPABILITIES

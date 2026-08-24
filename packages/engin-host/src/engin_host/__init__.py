@@ -11,7 +11,7 @@ from __future__ import annotations
 from .handoff import decision_confidence, to_decision
 from .kb import CAPABILITIES, default_kb
 from .memo import render_memo
-from .schema import Host, HostQuery, HostScore, KnowledgeBase
+from .schema import Host, HostQuery, HostScore, KnowledgeBase, QpsRecord, QpsStatus
 from .scoring import prob_meets, score
 
 __version__ = "0.1.1"
@@ -21,6 +21,8 @@ __all__ = [
     "KnowledgeBase",
     "HostQuery",
     "HostScore",
+    "QpsRecord",
+    "QpsStatus",
     "default_kb",
     "CAPABILITIES",
     "score",

@@ -10,10 +10,15 @@ Every cell is ``provenance="illustrative"`` by default (see
 :class:`~engin_host.schema.Host`), so the status now travels with the number
 rather than living only in this docstring.
 
-**One capability resists sourcing for a reason worth knowing before anyone
-tries: ``gras``.** It looks like the easy one -- a regulatory-status question
-with a citable answer -- and it is not, because GRAS is not a property of an
-organism. Checked against FDA on 2026-08-16:
+**``gras`` was a capability here until 2026-08-23 and is now retired** (ADR 0010,
+#146). Regulatory status is carried instead by ``Host.qps`` -- EFSA QPS at species
+level, printed by ``render_memo`` and ignored by ``scoring``. The reasoning is
+preserved below because it is why the column could not simply be sourced, and it
+is the argument anyone proposing to re-add a regulatory *score* has to answer.
+
+It looked like the easy one -- a regulatory-status question with a citable answer
+-- and it is not, because GRAS is not a property of an organism. Checked against
+FDA on 2026-08-16:
 
 - A GRAS conclusion attaches to a **substance under specific conditions of
   use**, not to a production organism. The inventory reads *"pepsin A from
@@ -35,7 +40,7 @@ Recorded on #146 and #22.
 
 from __future__ import annotations
 
-from .schema import Host, KnowledgeBase
+from .schema import Host, KnowledgeBase, QpsRecord
 
 # `gras` is not sourceable as written, and the follow-up found out why. #188
 # established that a GRAS conclusion attaches to a substance under specific
@@ -68,28 +73,92 @@ CAPABILITIES: list[str] = [
     "tools",
     "scaleup",
     "cost",
-    "gras",
     "smallmol",
     "protein",
 ]
 
 # host -> capability values (illustrative; higher = better/more-capable)
 _CAPS: dict[str, list[float]] = {
-    "E. coli": [0.30, 0.05, 0.80, 0.95, 0.98, 0.90, 0.90, 0.50, 0.80, 0.80],
-    "S. cerevisiae": [0.50, 0.40, 0.75, 0.70, 0.90, 0.85, 0.85, 0.95, 0.85, 0.70],
-    "P. pastoris": [0.85, 0.50, 0.85, 0.60, 0.75, 0.80, 0.80, 0.70, 0.60, 0.85],
-    "B. subtilis": [0.90, 0.10, 0.70, 0.85, 0.70, 0.75, 0.85, 0.85, 0.60, 0.70],
-    "CHO (mammalian)": [0.80, 0.95, 0.50, 0.20, 0.60, 0.70, 0.30, 0.30, 0.20, 0.95],
-    "Cell-free (TXTL)": [0.20, 0.20, 0.30, 0.98, 0.60, 0.30, 0.20, 0.40, 0.50, 0.60],
+    "E. coli": [0.30, 0.05, 0.80, 0.95, 0.98, 0.90, 0.90, 0.80, 0.80],
+    "S. cerevisiae": [0.50, 0.40, 0.75, 0.70, 0.90, 0.85, 0.85, 0.85, 0.70],
+    "P. pastoris": [0.85, 0.50, 0.85, 0.60, 0.75, 0.80, 0.80, 0.60, 0.85],
+    "B. subtilis": [0.90, 0.10, 0.70, 0.85, 0.70, 0.75, 0.85, 0.60, 0.70],
+    "CHO (mammalian)": [0.80, 0.95, 0.50, 0.20, 0.60, 0.70, 0.30, 0.20, 0.95],
+    "Cell-free (TXTL)": [0.20, 0.20, 0.30, 0.98, 0.60, 0.30, 0.20, 0.50, 0.60],
 }
 # confidence in each cell (0..1); lower for less-characterized hosts / harder caps
 _CONF: dict[str, list[float]] = {
-    "E. coli": [0.90, 0.90, 0.80, 0.90, 0.95, 0.90, 0.90, 0.80, 0.85, 0.85],
-    "S. cerevisiae": [0.85, 0.70, 0.80, 0.85, 0.90, 0.85, 0.85, 0.90, 0.85, 0.80],
-    "P. pastoris": [0.80, 0.60, 0.75, 0.80, 0.70, 0.75, 0.75, 0.65, 0.60, 0.80],
-    "B. subtilis": [0.80, 0.70, 0.70, 0.80, 0.70, 0.70, 0.75, 0.75, 0.60, 0.70],
-    "CHO (mammalian)": [0.80, 0.90, 0.70, 0.80, 0.70, 0.70, 0.70, 0.70, 0.60, 0.90],
-    "Cell-free (TXTL)": [0.60, 0.50, 0.60, 0.80, 0.60, 0.50, 0.55, 0.50, 0.50, 0.60],
+    "E. coli": [0.90, 0.90, 0.80, 0.90, 0.95, 0.90, 0.90, 0.85, 0.85],
+    "S. cerevisiae": [0.85, 0.70, 0.80, 0.85, 0.90, 0.85, 0.85, 0.85, 0.80],
+    "P. pastoris": [0.80, 0.60, 0.75, 0.80, 0.70, 0.75, 0.75, 0.60, 0.80],
+    "B. subtilis": [0.80, 0.70, 0.70, 0.80, 0.70, 0.70, 0.75, 0.60, 0.70],
+    "CHO (mammalian)": [0.80, 0.90, 0.70, 0.80, 0.70, 0.70, 0.70, 0.60, 0.90],
+    "Cell-free (TXTL)": [0.60, 0.50, 0.60, 0.80, 0.60, 0.50, 0.55, 0.50, 0.60],
+}
+
+
+#: EFSA QPS status per host (ADR 0010). Read from the CC BY 4.0 Knowledge Junction
+#: list -- "Appendix E, Updated list of QPS recommended biological agents, PS 24" --
+#: not from the EFSA Journal article, which is CC BY-ND and from which a machine-
+#: readable table would be a derivative work. Qualifications are verbatim.
+#: Verified against the source 2026-08-23.  # ref: 2026-efsa-qps-list
+_QPS: dict[str, QpsRecord] = {
+    "E. coli": QpsRecord(
+        status="excluded",
+        taxonomic_unit="Escherichia coli",
+        source="2026-efsa-qps-list",
+        note=(
+            "On the list's 'Excluded from QPS' sheet: 'Many strains of E. coli are "
+            "pathogens for humans and animals. ... The Panel decided to exclude this "
+            "species from future QPS evaluations.' Assessed and refused, which is a "
+            "different thing from never having been in scope -- and note what it does "
+            "NOT mean: QPS is about intentional addition to food or feed, so this says "
+            "nothing about E. coli as a chassis for an enzyme or a pharmaceutical "
+            "intermediate, which is most of what it is used for."
+        ),
+    ),
+    "S. cerevisiae": QpsRecord(
+        status="listed",
+        taxonomic_unit="Saccharomyces cerevisiae",
+        qualifications=[
+            "When used as active agents (viable cells): Absence of resistance to "
+            "antimycotics used for medical treatment of yeast infections in cases where "
+            "viable cells are added to the food or feed chain."
+        ],
+        source="2026-efsa-qps-list",
+    ),
+    "P. pastoris": QpsRecord(
+        status="listed",
+        taxonomic_unit="Komagataella phaffii",
+        source="2026-efsa-qps-list",
+        note=(
+            "Listed with no qualification, which is why `qualifications` is empty rather "
+            "than absent -- the empty list is the fact. Filed under the current name; "
+            "'P. pastoris' is this KB's colloquial label for the same species."
+        ),
+    ),
+    "B. subtilis": QpsRecord(
+        status="listed",
+        taxonomic_unit="Bacillus subtilis",
+        qualifications=[
+            "The strains should not harbour any acquired antimicrobial resistance genes "
+            "to clinically relevant antimicrobials."
+        ],
+        source="2026-efsa-qps-list",
+    ),
+    "CHO (mammalian)": QpsRecord(
+        status="out_of_scope",
+        note=(
+            "QPS covers microorganisms intentionally added to food or feed. A mammalian "
+            "cell line is not one, so there is no status to report -- which is the "
+            "distinction the retired `gras` scalar destroyed by scoring CHO 0.30 below "
+            "E. coli's 0.50."
+        ),
+    ),
+    "Cell-free (TXTL)": QpsRecord(
+        status="out_of_scope",
+        note="A cell-free extract is not an organism, so the scheme does not reach it.",
+    ),
 }
 
 
@@ -100,6 +169,7 @@ def default_kb() -> KnowledgeBase:
             name=name,
             caps=dict(zip(CAPABILITIES, _CAPS[name], strict=True)),
             conf=dict(zip(CAPABILITIES, _CONF[name], strict=True)),
+            qps=_QPS[name],
         )
         for name in _CAPS
     ]
