@@ -16,8 +16,17 @@ Real-data validation has landed, so the numbers that matter lead:
 | | synthetic (tier 1) | **real, 406 industrial batches (tier 3)** |
 |---|---|---|
 | R² | 0.96 | **0.10** |
-| split-conformal coverage | 0.96 | **0.877** |
+| split-conformal coverage | 0.96 | **0.877**, against a band of [0.844, 0.950] |
 | what it establishes | the loop runs | the calibration holds on held-out batches |
+
+**Read 0.877 against the band beside it, not against 0.90.** The real column is
+calibrated on 81 points — 406 is the batch count, and a 60/20/20 split spends most
+of them on training — and [0.844, 0.950] is where a correctly calibrated method
+lands 90% of the time on a calibration set that size.
+<!-- ref: 2012-vovk-conditional-validity -->
+0.877 is inside it. The
+[real-data page](methods/real-data-calibration.md) carries all six configurations
+and their bands.
 
 **This table takes two provenance lines, because it combines two runs** — the
 synthetic column from `benchmarks/benchmark.py`, the real column from

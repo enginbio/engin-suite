@@ -72,8 +72,27 @@ benchmark used to scale features by `X.min(0)`/`X.max(0)` taken over the *whole*
 dataset before splitting, which leaks the calibration and test range into the
 fit. It now scales from the training split only.
 
-Coverage got **worse**, which is the direction a leakage fix should move it:
-the worst deviation from nominal was 1.4 points and is now 2.3.
+**Coverage did not detectably move.** The six cells are paired — same seeds, same
+permutations, same splits before and after, because `rng.permutation` is the first
+draw from a fresh generator and the fix did not touch it — so the comparison to
+make is the per-cell difference:
+
+| cell | before | after | Δ |
+|---|---|---|---|
+| process only, 24 h | 0.890 | 0.917 | **+2.7 pp** |
+| process only, 48 h | 0.893 | 0.893 | 0.0 pp |
+| process only, 72 h | 0.886 | 0.877 | −0.9 pp |
+| process + early potency, 24 h | 0.907 | 0.910 | +0.3 pp |
+| process + early potency, 48 h | 0.905 | 0.912 | +0.7 pp |
+| process + early potency, 72 h | 0.909 | 0.899 | −1.0 pp |
+
+Mean Δ = **+0.3 pp**, 95% CI **[−1.1, +1.7]**, paired *t* = 0.54 on 5 df, *p* =
+0.61. Three cells up, one flat, two down; a sign test and a Wilcoxon signed-rank
+both give *p* = 1.0. Mean coverage went 0.898 → 0.901.
+
+So the honest summary is that **the leak was real and worth fixing, and its effect
+on coverage is too small for six cells to resolve** — if anything coverage moved
+*up*, and the largest single move was over-coverage.
 
 R² got **better**, and one value changed sign — process-only at 24 h was
 **−0.030** and is now **+0.023**. That is the more suspicious direction, so it
@@ -88,6 +107,35 @@ would settle it.
 What does not change is the finding this page exists for. Process-only R² stays
 near zero, the best figure is 0.223, and the intervals are still wide enough to
 cover a near-mean predictor.
+```
+
+```{note}
+**Corrected 2026-08-24 (#276).** The paragraph above used to read: *"Coverage got
+**worse**, which is the direction a leakage fix should move it: the worst deviation
+from nominal was 1.4 points and is now 2.3."* Both numbers are arithmetically right
+and the inference from them is not.
+
+**The statistic was unpaired, on paired data.** `max` over six cells of
+|coverage − 0.90| compares each cell to a constant, so none of the shared
+randomness cancels — and then `max` discards whatever pairing survived. Running the
+paired comparison the design actually supports reverses the direction: coverage
+moved *up* by 0.3 pp, at *p* = 0.61.
+
+**It also read a coincidence as a mechanism.** With 81 calibration points, one
+cell's five-seed mean coverage has a standard deviation of about **2.1 pp**
+(40,000 replicates over exchangeable ranks, reproducing from the split sizes
+alone). Against that, 1.4 pp and 2.3 pp are both ordinary distances from nominal,
+and the move between them is well inside noise. What the page presented as a
+methodological signature was the yardstick being too short to see.
+
+**One claim from the scan is not reproduced here.** #276 puts the pre-fix
+max-deviation at the 1st percentile of its null — *P* = 0.011. That figure holds
+only if the six cells are independent, and they are not: they share the batches,
+the seeds and the permutations. Simulating both ends of the dependence range gives
+*P* = 0.013 for independent cells and *P* = 0.47 for perfectly correlated ones, and
+the truth is somewhere between. **"A 1st-percentile fluke" is therefore not a
+claim this page makes** — which changes nothing above, because the paired
+statistic never needed it.
 ```
 
 ### How the split is made, because it decides what the number means
