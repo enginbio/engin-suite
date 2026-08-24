@@ -455,6 +455,12 @@ reference implementation, has been dormant since 2021; crepes is the natural mig
 target. [Amazon Fortuna](https://github.com/awslabs/fortuna) was archived by AWS in
 April 2025 — anyone arriving from an old AWS blog post should be redirected.
 
+**Bayesian is the other answer, and it is not on this page's shelf.** A reader asking
+*"why distribution-free rather than Bayesian?"* should know that the maintained
+bioprocess-specific Bayesian stack is `calibr8` / `murefi` / `estim8`, under
+[mechanistic simulation](eco-sim). It is AGPL-3.0, which is why it is filed there as a
+thing to read rather than a thing to depend on.
+
 **If you pick one:** MAPIE, and add crepes the moment you need a predictive
 distribution rather than an interval.
 
@@ -981,10 +987,17 @@ credible process model — see [Limitations](limitations).
 
 ```{note}
 **There is no dominant, actively maintained, open-source fermentation digital twin.**
-The purpose-built candidates are dead; the live candidates are generic ODE engines or
-flowsheet simulators that happen to contain bioreactor units. Recent digital-twin work
-in this field publishes papers, not maintained packages. That absence is a real finding
-and is stated here rather than papered over (`D15`).
+The live candidates are generic ODE engines or flowsheet simulators that happen to
+contain bioreactor units. Recent digital-twin work in this field publishes papers, not
+maintained packages. That absence is a real finding and is stated here rather than
+papered over (`D15`).
+
+**Narrowed 2026-08-21, because "the purpose-built candidates are dead" had stopped being
+true.** It is now false as written: `estim8` below is purpose-built for bioprocess models,
+carries a JOSS paper published this month, and is releasing. The absence claim survives
+only in its narrow form — nobody ships a maintained *fermentation model*. `estim8` ships
+an estimator and expects you to bring the model. That is a different sentence, and `D15`
+and `D23` both say an absence claim has to be the narrow one.
 
 **The nearest miss, named because `D15` requires it.** [BiRD](https://github.com/NREL/BioReactorDesign)
 (BSD-3-Clause) is purpose-built for bioreactors, actively developed — commits through
@@ -1037,6 +1050,46 @@ Apache-2.0. Antimony's readable model language over a JIT-compiled SBML simulato
   judges BioSTEAM: from commits and PyPI, not from the releases page.
 :::
 
+:::{dropdown} estim8 / calibr8 / murefi — AGPL-3.0
+:animate: fade-in-slide-down
+
+[JuBiotech/estim8](https://github.com/JuBiotech/estim8),
+[JuBiotech/calibr8](https://github.com/JuBiotech/calibr8),
+[JuBiotech/murefi](https://github.com/JuBiotech/murefi)
+
+AGPL-3.0, all three. A purpose-built bioprocess estimation stack from Forschungszentrum
+Jülich: `estim8` estimates parameters of dynamic (bio)process models through the FMI
+standard and ships uncertainty quantification; `calibr8` builds the likelihood-based
+calibration model for the measurement layer; `murefi` fits multiple replicates under one
+Bayesian model. Same group as `bletl` and `detl`, which this page already names under
+[bioprocess data standards](eco-standards).
+
+- **Pro** — this is the maintained answer to *"why conformal rather than Bayesian?"* in
+  this exact domain, and Engin owes a reader that answer. It is not a generic UQ library
+  pointed at biology: `estim8`'s own repository topics are `bioprocess-modeling`,
+  `fmi-standard`, `parameter-estimation`.
+- **Pro** — peer-reviewed and citable rather than a preprint drop. `estim8` has a JOSS
+  paper; `calibr8` has a PLOS Computational Biology one.
+- **Pro** — tagged releases, all recent: `estim8` v0.1.6 (2026-07-13), `calibr8` v7.3.0
+  (2026-05-18), `murefi` v5.4.1 (2026-04-15).
+- **Con, and it decides the matter for reuse here** — AGPL-3.0 on all three, read from
+  each repository's `LICENSE` file on the date below. Engin is Apache-2.0 and its users
+  are commercial; §13 reaches an adopter who modifies one of these and exposes it only as
+  a hosted service. Read the code and cite the method; do not vendor it.
+- **Con** — `estim8` brings no model. It consumes an FMU compiled elsewhere, so the real
+  entry cost is an OpenModelica-or-equivalent toolchain rather than `pip install`. If what
+  you wanted was a fermentation model, this is not where it is.
+- **Con** — `estim8` is pre-1.0 and `murefi` is thinly used; `calibr8`'s recent commit
+  stream is dependency bumps merged by a single maintainer rather than feature work.
+  Judge the group as the unit of health, not any one repository.
+
+Reference: Latour, Strohmeier, Osthege, Wiechert & Noack, *JOSS* 11(124):10147 (2026),
+[10.21105/joss.10147](https://doi.org/10.21105/joss.10147); Helleckes, Osthege, Wiechert,
+von Lieres & Oldiges, *PLOS Computational Biology* 18(3) (2022),
+[10.1371/journal.pcbi.1009223](https://doi.org/10.1371/journal.pcbi.1009223).
+*(Licences, releases and last-push dates read from the repositories on 2026-08-21.)*
+:::
+
 **Downstream.** [CADET-Core](https://github.com/cadet/CADET-Core) and
 [CADET-Process](https://github.com/fau-advanced-separations/CADET-Process) are
 best-in-class for chromatography and downstream unit operations and actively developed.
@@ -1050,10 +1103,14 @@ building on it; it is not a disqualification, and Engin does not depend on eithe
 recovery is where a large share of cost-of-goods lives for high-value products — so for
 the downstream half of a $/kg model this is the right thing to point at.
 
-**Dead ends, and this one hurts.** [pyFOOMB](https://github.com/MicroPhen/pyFOOMB) is the
-closest thing to a purpose-built bioprocess ODE plus parameter estimation plus uncertainty
-framework that has ever existed, and it has not moved since February 2021. Cite the paper
-for design ideas; do not send users to install it.
+**Dead ends, and this one hurts less than it did.** [pyFOOMB](https://github.com/MicroPhen/pyFOOMB)
+bundles a bioprocess ODE model with parameter estimation and uncertainty in one package,
+and it has not moved since February 2021. Cite the paper for design ideas; do not send
+users to install it. **The superlative this entry carried — "the closest thing … that has
+ever existed" — is withdrawn**: `estim8` above now covers the estimation-and-uncertainty
+half of that description, is releasing, and was peer-reviewed this month. What pyFOOMB
+still has and `estim8` does not is the model in the same package.
+*(Corrected 2026-08-21.)*
 [PenSimPy](https://github.com/smpl-env/PenSimPy) has been dormant since 2021 and needs a
 C++ extension built from source; the valuable artifact there is the IndPenSim dataset and
 benchmark, not the Python port. [dfba](https://gitlab.com/davidtourigny/dynamic-fba)
@@ -1061,7 +1118,9 @@ remains the reference dynamic-FBA implementation and has not released since 2020
 
 **If you pick one:** BASICO, for the parameter estimation Engin's own simulator does not
 attempt — and BioSTEAM alongside it for the economics half, because they solve different
-problems.
+problems. Say the quiet part: `estim8` is the better-targeted estimator of the two, and
+AGPL-3.0 is why it is not the recommendation for a permissively licensed tree. If your own
+project has no such constraint, reverse that.
 
 ---
 
