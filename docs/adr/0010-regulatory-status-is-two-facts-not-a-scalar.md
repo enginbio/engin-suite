@@ -1,6 +1,7 @@
 # 0010 — Regulatory status is two facts in two jurisdictions, not a scalar
 
-**Status:** Accepted (2026-08-17)
+**Status:** Accepted (2026-08-17) · **display half implemented 2026-08-23** (#146); scoring
+deferred to [#22](https://github.com/enginbio/engin-suite/issues/22)
 
 ## Context
 

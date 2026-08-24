@@ -34,6 +34,27 @@ def render_memo(title: str, ranked: list[HostScore]) -> str:
             f"| {r} | {d.host} | {d.score:.2f} ± {d.band90:.2f} | {drivers} | {flags} "
             f"| {d.provenance} |\n"
         )
+    # Regulatory status: printed, never scored (ADR 0010). It is a separate block
+    # rather than a table column because the three states are not comparable and a
+    # column invites reading them as one.
+    if any(d.qps for d in ranked):
+        L.append("\n## EFSA QPS status (displayed, not scored)\n\n")
+        L.append(
+            "_QPS covers microorganisms **intentionally added to food or feed**. It does "
+            "not speak to an enzyme, a pharmaceutical intermediate or a material, which "
+            "is what most of these hosts are used for. `excluded` means assessed and "
+            "refused; `out_of_scope` means the scheme never reached it. The two are not "
+            "points on one scale, and neither affects the ranking above._\n\n"
+        )
+        for d in ranked:
+            q = d.qps
+            if q is None:
+                continue
+            unit = f" ({q.taxonomic_unit})" if q.taxonomic_unit else ""
+            L.append(f"- **{d.host}**{unit} — `{q.status}`\n")
+            for qual in q.qualifications:
+                L.append(f"  - qualification: {qual}\n")
+
     best = ranked[0]
     L.append(
         f"\n**Recommendation:** {best.host} (score {best.score:.2f} ± {best.band90:.2f}). "

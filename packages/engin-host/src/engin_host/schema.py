@@ -14,6 +14,58 @@ import numpy as np
 from numpy.typing import NDArray
 from pydantic import BaseModel, Field, model_validator
 
+QpsStatus = Literal["listed", "excluded", "out_of_scope"]
+"""EFSA's Qualified Presumption of Safety status for a species (ADR 0010).
+
+Three states, and they are **not points on one axis** -- which is the whole reason
+the `gras` scalar this replaces was retired rather than sourced:
+
+``listed``
+    QPS-recommended for the taxonomic unit, usually with a qualification.
+``excluded``
+    Assessed and refused. *E. coli* is here.
+``out_of_scope``
+    The scheme never covered it. A mammalian cell line is not a microorganism
+    intentionally added to food or feed.
+
+Ordering "assessed and refused" above "never in scope" is what the old numeric
+column did -- *E. coli* 0.50 against CHO 0.30 -- and it is not a quantity. This is
+displayed and **never scored**: QPS is about food and feed, and a detergent enzyme
+falls under no part of it. Ranking on it needs a target-market input first (#22).
+"""
+
+
+class QpsRecord(BaseModel):
+    """A host's QPS status, the unit it attaches to, and its qualifications.
+
+    ``taxonomic_unit`` is carried separately from the host's display name because
+    the status attaches to the *species*, and the KB's names are colloquial --
+    "P. pastoris" is *Komagataella phaffii* on the list.
+    """
+
+    status: QpsStatus
+    taxonomic_unit: str | None = None
+    qualifications: list[str] = Field(
+        default_factory=list,
+        description="verbatim from the source; empty is meaningful (listed, unqualified)",
+    )
+    source: str | None = Field(
+        None, description="sources.yaml id; required unless status is out_of_scope"
+    )
+    note: str = ""
+
+    @model_validator(mode="after")
+    def _check(self) -> QpsRecord:
+        if self.status != "out_of_scope" and not self.source:
+            raise ValueError(
+                "a QPS status of 'listed' or 'excluded' is a claim about the world "
+                "and needs a sources.yaml id (D23); only 'out_of_scope' may omit it"
+            )
+        if self.status == "out_of_scope" and self.qualifications:
+            raise ValueError("'out_of_scope' means the scheme never assessed it: no qualifications")
+        return self
+
+
 Provenance = Literal["illustrative", "sourced"]
 """Where a capability value came from.
 
@@ -55,6 +107,10 @@ class Host(BaseModel):
     sources: dict[str, str] = Field(
         default_factory=dict,
         description="capability -> sources.yaml id; required where provenance is 'sourced'",
+    )
+    qps: QpsRecord | None = Field(
+        None,
+        description="EFSA QPS status (ADR 0010). Displayed, never scored -- see QpsStatus.",
     )
 
     def provenance_of(self, capability: str) -> Provenance:
@@ -157,6 +213,13 @@ class HostScore(BaseModel):
     flags: list[str]  # hard-constraint violations
     feasible: bool
     provenance: Provenance = "illustrative"
+    qps: QpsRecord | None = Field(
+        None,
+        description=(
+            "EFSA QPS status, carried for display. It does NOT enter `score` -- "
+            "see QpsStatus and ADR 0010."
+        ),
+    )
     unsourced: list[str] = Field(
         default_factory=list,
         description="weighted capabilities behind this score that are not sourced",

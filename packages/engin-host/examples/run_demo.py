@@ -29,14 +29,14 @@ QUERIES = {
             speed=0.3,
             cost=0.4,
             tools=0.4,
-            gras=0.1,
         ),
         hard=dict(glyco=0.6),
     ),
+    # Named for the *use case*, not for a regulatory score. QPS status is printed
+    # in the memo and does not enter this query -- ADR 0010, and #22 for ranking.
     "Food-grade small molecule via fermentation, cost-sensitive & fast": HostQuery(
         weights=dict(
             smallmol=1.0,
-            gras=1.0,
             cost=0.9,
             titer=0.7,
             speed=0.7,
@@ -45,7 +45,6 @@ QUERIES = {
             secretion=0.1,
             protein=0.2,
         ),
-        hard=dict(gras=0.7),
     ),
 }
 
