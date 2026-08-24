@@ -190,6 +190,18 @@ def one_seed(seed: int, d: int = 5):
     cover_tot = float(np.mean(ar <= GAUSS_90 * sd_tot))  # Gaussian, no guarantee
     cover_conf = float(np.mean(ar <= q90 * sd_tot))  # split-conformal, honest
 
+    # Stratified by predicted titer (#281). The marginal number above is what
+    # split conformal guarantees; it says nothing about any subgroup, and the
+    # subgroup that matters here is the high-titer end, because that is where the
+    # recommender spends its batches. The generator's noise sd scales with titer
+    # (`add_noise`, rel=0.05) while `fit_gp` fits one scalar WhiteKernel, so the
+    # predicted sd cannot track it -- measured across the design the model's total
+    # sd varies ~0.97x top-vs-bottom against a true assay sd varying ~2.5x.
+    hit = ar <= q90 * sd_tot
+    thirds = np.array_split(np.argsort(m_te), 3)
+    cover_conf_low = float(np.mean(hit[thirds[0]]))
+    cover_conf_high = float(np.mean(hit[thirds[2]]))
+
     # The RSM baseline sees exactly what the GP saw -- same training split, same
     # noisy observations -- so the comparison is of methods, not of information.
     rsm = fit_rsm(U[tr], y_obs[tr])
@@ -224,6 +236,8 @@ def one_seed(seed: int, d: int = 5):
         cover_epi=cover_epi,
         cover_tot=cover_tot,
         cover_conf=cover_conf,
+        cover_conf_low=cover_conf_low,
+        cover_conf_high=cover_conf_high,
         q90=q90,
         lift_ei=lift_ei,
         lift_rand=lift_rand,
@@ -305,6 +319,15 @@ def synthetic(seeds=None, check: bool = False) -> None:
     print(f"  split-conformal          {avg('cover_conf'):5.2f}   <- honest")
     print(
         f"  RSM prediction interval  {avg('cover_rsm'):5.2f}   <- OLS, assumes its model is right"
+    )
+    print("\nsplit-conformal, by tertile of predicted titer (#281):")
+    print(f"  low third                {avg('cover_conf_low'):5.2f}")
+    print(
+        f"  high third               {avg('cover_conf_high'):5.2f}   <- where the recommender aims"
+    )
+    print(
+        f"  spread                   {avg('cover_conf_high') - avg('cover_conf_low'):+5.2f}"
+        "   <- one scalar WhiteKernel against titer-scaled noise"
     )
     print(f"  conformal q90            {avg('q90'):5.2f}   (vs Gaussian {GAUSS_90})")
     print(

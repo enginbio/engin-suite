@@ -1302,10 +1302,36 @@ claims:
     tier: A
     source_id: 2025-sun-master-efp
     claim: >-
-      The dataset's authors report considerably better prediction than this
-      baseline using an architecture built for the purpose.
-    strength: partially supports
-    reviewed: 2026-08-11
+      The dataset's authors solve a different prediction problem -- forecasting the
+      target 12 steps ahead from 48 steps of its own recent history -- and report
+      no R², so their results are not comparable with this baseline's.
+    strength: contradicts
+    reviewed: 2026-08-23
+    note: >-
+      **Replaces a claim this row previously carried as `partially supports`
+      (#275):** "the dataset's authors report considerably better prediction than
+      this baseline using an architecture built for the purpose." There is no
+      comparison behind it.
+
+      Established from the authors' released code, since the paper could not be
+      read. `run_EFP.py` defaults: `task_name=long_term_forecast`, `target=hx`,
+      `features=M`, `seq_len=48`, `label_len=24`, `pred_len=12`, `enc_in=24`,
+      `dec_in=1`, `c_out=1` — a time-series forecast of the target from its own
+      history plus covariates. Engin's baseline predicts a batch outcome from
+      process inputs. `utils/metrics.py` implements RSE, CORR, MAE, MSE, RMSE,
+      MAPE, MSPE, SMAPE and MASE, and **no R²**, so there is not even a shared
+      number to be better on.
+
+      **The primary source was not read, and that is the honest limit of this
+      correction.** Neurocomputing 657 is paywalled; Crossref, OpenAlex and
+      Semantic Scholar hold the record with a null abstract. The code shows what
+      the code does; if the paper reports a comparison the code does not
+      implement, this row is wrong and would need revising. Flagged on #275 as a
+      candidate for purchase under the paywalled-sources rule in `CLAUDE.md` —
+      buying it would settle the question properly.
+
+      Kept rather than deleted, per the convention for corrected claims: the
+      value is the record that the earlier sentence was published and withdrawn.
 
   - doc: packages/engin-core/src/engin_core/gp.py
     tier: A

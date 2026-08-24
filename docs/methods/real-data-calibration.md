@@ -128,9 +128,26 @@ demonstrated on production data, which is a stronger place to demonstrate it.
 
 The low R² is a statement about **this baseline**, not about the data. Adding
 early potency to the features roughly doubles R² while coverage stays near
-nominal, so the signal is there and window means are a poor way to reach it. The
-authors who published this dataset report considerably better prediction using a
-time-series architecture built for the purpose.
+nominal, so the signal is there and window means are a poor way to reach it.
+
+```{note}
+**Corrected 2026-08-23 (#275).** This paragraph used to end: *"The authors who
+published this dataset report considerably better prediction using a time-series
+architecture built for the purpose."* That was a comparison, and there is no
+comparison to make.
+
+Their released code (`run_EFP.py`, `utils/metrics.py`) forecasts the target from
+**48 hours of its own recent history, 12 hours ahead**. Engin's baseline predicts
+a batch's outcome from process inputs. Those are different tasks, and the
+repository computes **no R²** at all — its metrics are RSE, CORR, MAE, MSE, RMSE,
+MAPE, MSPE, SMAPE and MASE. So "considerably better" had nothing to be better
+*than*, on any shared number.
+
+**And the paper itself has not been read here.** Neurocomputing 657 is paywalled;
+Crossref, OpenAlex and Semantic Scholar all hold the record with a null abstract.
+The correction rests on the authors' released code, which shows what that code
+does and cannot rule out the paper reporting something else.
+```
 
 The honest summary is that Engin's *calibration* transfers to real data and its
 *modelling*, pointed naively at a task it was not designed for, does not.

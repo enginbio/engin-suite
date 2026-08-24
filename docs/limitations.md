@@ -36,6 +36,44 @@ not establish:
 
 Current status is recorded in [Benchmarks](benchmarks.md).
 
+## Coverage is not flat across the design, and it is thinnest where we aim
+
+Split conformal guarantees **marginal** coverage — over the whole test set, not
+over any subgroup picked out afterwards. On the bundled simulator that guarantee
+is met and the subgroups still separate:
+
+| tertile of predicted titer | split-conformal coverage |
+|---|---|
+| low | ~1.00 |
+| **high — where the recommender spends batches** | **~0.88** |
+
+`benchmarks/benchmark.py` now prints these alongside the marginal number, so the
+spread is a published figure rather than an argument.
+
+**The cause is the noise model, not the conformal step.** The generator this
+project measures itself with has an assay sd that scales with titer
+(`add_noise(y, rel=0.05, abs_=0.4)`), while `fit_gp` fits a single scalar
+`WhiteKernel`. Measured across the design, the model's *predicted* total sd varies
+about **0.97×** top-to-bottom against a true assay sd varying about **2.5×** <!-- not-a-claim: measured on our own simulator by benchmarks/benchmark.py --> — the
+only part of `predict` that moves with `x` is the epistemic term, which tracks
+design density, not assay magnitude. An sd-normalized conformal score cannot
+rescue a denominator with the wrong shape; one scalar `q` chosen to hit the
+marginal quantile must land between the strata.
+
+**What this is and is not.** It is a statement about this project's own simulator
+and its own noise generator, in the region its own recommender targets. It is
+**not** evidence that real campaigns under-cover by twelve points — the real-data
+path has not been stratified this way, and should be before anything is claimed
+about plants. Recorded under `D12`: a tier-1 result the tier-1 row did not
+previously mention.
+
+The fix is a mean-dependent noise model, which is a modelling change with its own
+evidence burden and is not made here. Binning the intervals by predicted titer
+(Mondrian / conditional conformal) would make the published number look right
+while leaving a misspecified model feeding wrong per-point sd to the recommender,
+so it is deliberately *not* the route. Tracked in
+[#281](https://github.com/enginbio/engin-suite/issues/281).
+
 ## Known constraints
 
 - **No public corpus of *process-condition* design-of-experiments data with absolute titers exists**, which limits tier 4. **Corrected 2026-08-10:** this sentence used to do more work than it could carry. Real, industrial, in-domain microbial process data *does* exist publicly and permissively — the [erythromycin fermentation dataset](https://doi.org/10.5281/zenodo.14619074) is 406 production batches sampled hourly, CC-BY-4.0, with a product-potency target. What it is not is *designed* variation: process conditions were recorded, not varied to explore a design space. So tier 4 remains open and tier 3 does not, and the earlier phrasing implied a scarcity that was broader than the facts.
