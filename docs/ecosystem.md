@@ -225,8 +225,16 @@ practitioners.
 - **Pro** — every domain object is JSON-serializable, which is what makes a campaign
   definition storable and replayable across weeks-long rounds rather than living in a
   notebook.
-- **Con** — torch and BoTorch, same as BayBE, so it does not relieve the dependency
-  objection that sends readers to ProcessOptimizer.
+- **Con** — torch and BoTorch, but *undeclared* rather than unconditional, which is
+  worse for an auditor than BayBE's honest pin. Core dependencies are numpy, pandas,
+  pydantic, scipy, typing-extensions and formulaic; torch comes through the
+  `optimization` extra. Yet `bofire/strategies/doe/objective.py` does a bare
+  `import torch` and `doe/design.py` imports it unconditionally, so the D-optimal
+  designer raises `ImportError` on a core install rather than degrading. This con used
+  to read "same as BayBE" and end "so it does not relieve the dependency objection that
+  sends readers to ProcessOptimizer", which implied there was somewhere to send them.
+  There is not: ProcessOptimizer pulls torch too, see below. *(Read from PyPI metadata
+  for 0.5.0 and from `main` on 2026-08-25.)*
 - **Con** — the maintainer base is concentrated in a small number of industrial
   sponsors, and the feature surface is wide enough that parts of it are thinly
   exercised outside the authors' own use cases.
@@ -245,24 +253,56 @@ standard three-clause text; GitHub's classifier reports `NOASSERTION`, which is 
 detection artefact of the `.md` extension and the `a./b./c.` enumeration rather than
 a licensing question. A scikit-optimize fork retuned for noisy physical processes.
 
-- **Pro** — no torch. scipy and numpy only, installs in seconds, plausible inside a
-  regulated or air-gapped environment where the alternatives are not.
 - **Pro** — ships D-optimal classical designs alongside the optimizer, so screening
   design and sequential optimization live in one dependency.
+- **Con, and it is the one this page had backwards** — **torch is a hard runtime
+  dependency.** `pyproject.toml` lists it unconditionally in `[project] dependencies`,
+  alongside numpy, matplotlib, scipy, bokeh, `scikit-learn>=0.24.2`, six, deap, pyYAML
+  and patsy. It is not an extra and there is no torch-free install path. It was added
+  on 2025-06-27 in a commit whose message reads "fix: Added dependency of pytorch, used
+  in model system"
+  ([51b2c7f](https://github.com/novonordisk-research/ProcessOptimizer/commit/51b2c7fa4f68600f01cac96f1959da35bc6babda)),
+  which is after the `1.1.1` release and before every release since, and it is still
+  there on `develop` today. *(Checked 2026-08-25.)*
 - **Con** — inherits scikit-optimize's ageing internals and its scikit-learn version
   fragility, and there is still no fully-Bayesian option.
-- **Con** — the GitHub releases tab lags PyPI, so judge this one from PyPI and from
-  commits rather than from the releases page.
-- **Con, and it is now the binding one** — the release cadence has stalled. `v1.1.0`
-  was published on 2025-02-19 and is still the latest tag; the `develop` branch has
-  not moved since 2026-02-10. What sits unreleased on `develop` is not trivial:
-  a DRSC constraint-handling algorithm merged in [#367](https://github.com/novonordisk-research/ProcessOptimizer/pull/367)
-  and the drop of Python 3.9 support. So the constraint capability this page sends
-  readers to BoFire for partly exists here, and you cannot `pip install` it. Pin a
-  commit or wait. *(Checked 2026-08-17.)*
+- **Con** — **none of the repository's version signals agrees with the others**,
+  so you cannot tell from it what a `pip install` gets you, and the releases tab is
+  the least reliable of them. The latest git tag is
+  `v1.1.0`. The latest PyPI release is `1.1.2`, published 2026-02-13. The repository's
+  own `CHANGELOG.md` heads that same `1.1.2` section "[unpublished]", and heads a
+  further `1.1.3` section the same way. Meanwhile `develop` has not moved since
+  2026-02-10. The DRSC constraint-handling algorithm merged in
+  [#367](https://github.com/novonordisk-research/ProcessOptimizer/pull/367) — the
+  constraint capability this page otherwise sends readers to BoFire for — sits under
+  the `1.1.3` heading. Whether its code nevertheless shipped inside `1.1.2`, cut three
+  days after the merge and plausibly from the same tree, **could not be verified from
+  the repository**, which is the con: judge this one from PyPI, and expect the
+  changelog to disagree with what you installed. *(Checked 2026-08-25.)*
 
 Reference: Bertelsen et al., *Journal of Chemical Information and Modeling* 65(4)
 (2025), [10.1021/acs.jcim.4c02240](https://doi.org/10.1021/acs.jcim.4c02240).
+
+```{note}
+**Corrected 2026-08-25, and the delay is the part worth recording.** This entry led
+with "**Pro** — no torch. scipy and numpy only, installs in seconds, plausible inside
+a regulated or air-gapped environment where the alternatives are not." Every clause of
+that was false, and the whole slot was routed on it.
+
+The finding is not new to this repository. It was reported on
+[#191](https://github.com/enginbio/engin-suite/pull/191#issuecomment-5324018365) on
+2026-08-18, from PyPI metadata for `1.1.2`, and deliberately left for whoever edited
+this file next because another pull request had it open. It then reached
+`packages/engin-core/pyproject.toml` and `packages/engin-core/benchmarks/baybe_baseline.py`,
+both of which have said since that ProcessOptimizer "pulls torch too — see #191". This
+page, which is the only one of the three a reader sees, kept the opposite claim through
+eight subsequent edits to it.
+
+`D13` states the rule this broke: fixing the canonical document is not fixing the
+claim, so grep the tree for the phrase. `scripts/evidence/check_corrections.py` runs
+that rule in CI — but it extracts retracted spans from `DECISIONS.md` only, and this
+retraction lived in a pull-request comment. Nothing was watching the difference.
+```
 :::
 
 **Classical DoE.** [pydoe](https://github.com/pydoe/pydoe) (BSD-3) is the maintained
@@ -334,8 +374,18 @@ it — a *baseline to beat*, not a frame to sit in — and it is Apache-2.0, so 
 comparison carries no licence question when someone builds it.
 :::
 
-**If you pick one:** BayBE, unless the torch dependency is disqualifying, in which
-case ProcessOptimizer. Pick BoFire instead of BayBE when the binding difficulty is
+**If you pick one:** BayBE. **If torch is disqualifying, this slot has no answer** —
+but not for the same reason in every case, and the difference matters if you are
+auditing an install. BayBE, Ax and ProcessOptimizer declare torch or BoTorch
+unconditionally in `[project] dependencies`. **BoFire does not**: `pip install bofire`
+pulls only numpy, pandas, pydantic, scipy, typing-extensions and formulaic, and torch
+arrives through the `optimization` extra. That install is torch-free and it is also
+unusable for this slot's purpose — `bofire/strategies/doe/objective.py` does a bare
+`import torch` and takes `hessian` and `jacobian` from `torch.autograd.functional`, and
+`doe/design.py` imports that module unconditionally, so the D-optimal designer raises
+`ImportError` on a core install. The dependency is real and undeclared rather than
+absent. Either way there is no escape hatch to route you to, and saying so is more use
+than a redirect that does not help. Pick BoFire instead of BayBE when the binding difficulty is
 *constraints on the design itself* — a media mixture that must sum, a component that
 can only appear with another — because that is the case it is built for and the one
 where BayBE's constraint support runs out first.
@@ -648,7 +698,12 @@ dependency in a Python stack, and it is bacteria and archaea only.
 :::
 
 **Reaction thermodynamics.** [eQuilibrator](https://gitlab.com/equilibrator/equilibrator-api)
-(MIT, on GitLab) is the right answer for ΔG′° estimation and is actively developed. The
+(MIT, on GitLab) is the right answer for ΔG′° estimation, and it is alive but slow:
+`0.7.0` (2026-04-16) is the first release since `0.6.0` (2024-01-28). This page called
+it "actively developed" until 2026-08-25, which is a fair description of a project that
+still ships and a misleading one for one release in the last two years — the distinction
+this page exists to draw. `engin-pathway`'s `[thermo]` extra depends on it, so that
+cadence is Engin's problem too. *(Checked 2026-08-25.)* The
 real cost is setup: the initial data download is large and slow, which is hostile to CI
 and containers. [pyTFA](https://github.com/EPFL-LCSB/pytfa) is a trap — the repository
 sees occasional commits but the published package is four years old and will not install
