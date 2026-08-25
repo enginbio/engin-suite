@@ -603,6 +603,32 @@ sources:
       stands; re-check on the quarterly liveness sweep.
     type: dataset
 
+  - id: 2026-nsf-pesose-solicitation
+    title: >-
+      NSF 26-506: Pathways to Enable Secure Open-Source Ecosystems (PESOSE)
+    authors: [National Science Foundation]
+    year: 2026
+    venue: NSF program solicitation
+    location: https://www.nsf.gov/funding/opportunities/pesose-pathways-enable-secure-open-source-ecosystems/nsf26-506/solicitation
+    accessed: 2026-08-25
+    stability: url
+    url_only_because: >-
+      A funding solicitation has no DOI. The pointer is the solicitation number
+      NSF 26-506, which is stable and citable even when the page moves -- and the
+      number matters here because the programme was **renamed and renumbered**
+      (it is now *Secure* rather than *Sustainable*), so a title-only reference
+      would resolve to a different call.
+    type: standard
+    note: >-
+      Backs `D24`'s cost paragraph. Fetched and read on 2026-08-25 rather than
+      taken from #123, because it is the fact that changes what waiting costs.
+      The binding sentence is in Section V.A, Other Supplementary Documents:
+      "A minimum of three and up to five letters of collaboration from
+      third-party users and/or contributors of the open-source product must be
+      uploaded. These letters must be from current users or contributors (who
+      are not directly related to the proposing team) of the open-source
+      product." It applies to every track, including Track 1.
+
   - id: 2026-mapie-std-conformity-score
     title: "MAPIE 1.5.0: StdConformityScore"
     authors: [MAPIE contributors]
