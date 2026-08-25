@@ -45,7 +45,9 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import urllib.request
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -104,7 +106,7 @@ class DatasetFile(BaseModel):
     bytes have not changed since *they* downloaded it, which is a weaker claim
     dressed as a stronger algorithm. Zenodo publishes md5, so md5 is often the
     checkable one — and demanding sha256 would force every registrant to
-    download the whole artefact (2.5 GB, in one case here) to record a digest
+    download the whole artefact (227 MB, for the largest here) to record a digest
     nobody else can check them against.
 
     Record both where both are known.
@@ -490,11 +492,60 @@ def _digests(path: Path) -> tuple[str, str]:
     return sha.hexdigest(), md5.hexdigest()
 
 
+#: Matching ``engin_pathway.rhea``: a third party is entitled to know who is calling,
+#: and a stalled server must not hang the caller forever. ``urlretrieve`` supplied
+#: neither -- it takes no timeout at all, so it inherited ``socket.getdefaulttimeout()``,
+#: which is ``None``.
+_TIMEOUT_SECONDS = 30.0
+_USER_AGENT = "engin-core (https://github.com/enginbio/engin-suite)"
+
+
+def _mismatch(spec: DatasetFile, sha: str, md5: str) -> str | None:
+    """Describe how ``sha``/``md5`` disagree with ``spec``, or ``None`` if they do not."""
+    for algorithm, expected, observed in (
+        ("sha256", spec.sha256, sha),
+        ("md5", spec.md5, md5),
+    ):
+        if expected is not None and expected != observed:
+            return f"{algorithm} mismatch\n  expected {expected}\n  observed {observed}"
+    return None
+
+
+def _download(url: str, path: Path) -> Path:
+    """Stream ``url`` to a sibling temp file and return it, *unmoved*.
+
+    This used to be :func:`urllib.request.urlretrieve`, which opens the final
+    destination directly and streams into it. An interrupted transfer therefore
+    left a truncated file at exactly the path :func:`fetch` short-circuits on --
+    and nothing removed it, because the cleanup sat on the digest-mismatch branch
+    downstream of the exception (#296).
+
+    Returning the temp path unmoved lets the caller verify before publishing the
+    name, so a file that fails its checksum never exists under the real name at
+    all rather than being deleted after the fact.
+    """
+    request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
+    tmp = path.with_name(f"{path.name}.part-{os.getpid()}")
+    try:
+        with (
+            urllib.request.urlopen(  # noqa: S310 - registry URLs only
+                request, timeout=_TIMEOUT_SECONDS
+            ) as response,
+            tmp.open("wb") as handle,
+        ):
+            shutil.copyfileobj(response, handle)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+    return tmp
+
+
 def fetch(
     name: str,
     dest: Path | None = None,
     *,
     accept_noncommercial: bool = False,
+    verify_cache: bool = True,
     force: bool = False,
 ) -> list[Path]:
     """Download a dataset and write a provenance manifest beside each file.
@@ -507,6 +558,19 @@ def fetch(
 
     Raises :class:`ValueError` when no verified download URL is recorded, rather
     than guessing one.
+
+    **A cached file is checked against the registry before it is returned**, and
+    a download is verified before it is given its real name. Until #296 neither
+    was true: verification ran only on the download branch, and it ran *after*
+    :func:`urllib.request.urlretrieve` had already streamed into the destination
+    path — so an interrupted transfer left a truncated file exactly where the
+    next call short-circuits, and every later call returned it unchecked.
+
+    Set ``verify_cache=False`` to skip the re-read when you know the cache is
+    good and the file is large enough for the hash to cost real time; the
+    registry's largest artefact is 227 MB. The default is to check, because the
+    failure it prevents is silent — a CSV truncated mid-file parses cleanly and
+    simply yields fewer rows.
     """
     ds = _get(name)
     if not ds.license.usable_by_downstream and not accept_noncommercial:
@@ -535,10 +599,36 @@ def fetch(
         filename = spec.filename or spec.url.rsplit("/", 1)[-1] or f"{name}.dat"
         path = target / filename
         if path.exists() and not force:
-            written.append(path)
-            continue
-        urllib.request.urlretrieve(spec.url, path)  # noqa: S310 - registry URLs only
-        sha, md5 = _digests(path)
+            if not verify_cache:
+                written.append(path)
+                continue
+            problem = _mismatch(spec, *_digests(path))
+            if problem is None:
+                written.append(path)
+                continue
+            # A bad cache is a miss, not a publisher error: the usual causes are an
+            # interrupted download and a revised registry digest, and both are fixed
+            # by fetching again. Say so rather than failing the caller's run.
+            warnings.warn(
+                f"cached {path} does not match the registry and is being re-downloaded"
+                f" -- {problem}",
+                UserWarning,
+                stacklevel=2,
+            )
+
+        staged = _download(spec.url, path)
+        sha, md5 = _digests(staged)
+        problem = _mismatch(spec, sha, md5)
+        if problem is not None:
+            staged.unlink(missing_ok=True)
+            raise OSError(
+                f"{problem.splitlines()[0]} for {spec.url}\n"
+                + "\n".join(problem.splitlines()[1:])
+                + "\nThe download was discarded and nothing was written. Either the "
+                "source changed or the transfer was corrupted; do not benchmark "
+                "against it until this is resolved."
+            )
+        staged.replace(path)
         record = ProvenanceRecord(
             dataset=ds.name,
             url=spec.url,
@@ -552,18 +642,6 @@ def fetch(
             license_spdx=ds.license.spdx,
             citation=ds.citation,
         )
-        for algorithm, expected, observed in (
-            ("sha256", spec.sha256, sha),
-            ("md5", spec.md5, md5),
-        ):
-            if expected is not None and expected != observed:
-                path.unlink(missing_ok=True)
-                raise OSError(
-                    f"{algorithm} mismatch for {spec.url}\n"
-                    f"  expected {expected}\n  observed {observed}\n"
-                    "The file was removed. Either the source changed or the download was "
-                    "corrupted; do not benchmark against it until this is resolved."
-                )
         manifest = path.with_suffix(path.suffix + ".provenance.json")
         manifest.write_text(record.model_dump_json(indent=2) + "\n")
         written.append(path)

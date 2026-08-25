@@ -9,6 +9,7 @@ being tested.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -177,6 +178,64 @@ def test_second_fetch_is_a_no_op_unless_forced(local_dataset, tmp_path):
     stamp = first.stat().st_mtime_ns
     (again,) = fetch("local-fixture", dest=dest)
     assert again.stat().st_mtime_ns == stamp
+
+
+def test_a_corrupt_cached_file_is_not_returned_as_verified(local_dataset, tmp_path):
+    """The cache-hit branch must check the digest, not just the path (#296).
+
+    ``urlretrieve`` streamed into the destination path itself, so an interrupted
+    download left a truncated file exactly where the next call short-circuits.
+    """
+    _ds, digest = local_dataset
+    dest = tmp_path / "out"
+    dest.mkdir()
+    truncated = dest / "runs.csv"
+    truncated.write_text("run_id,tit")  # a real prefix of the real payload
+
+    (path,) = fetch("local-fixture", dest=dest)
+
+    observed = hashlib.sha256(path.read_bytes()).hexdigest()
+    assert observed == digest, "fetch returned a file that does not match the registry"
+
+
+def test_a_stale_cache_is_replaced_rather_than_raising(local_dataset, tmp_path):
+    """A bad cache is a miss, not a publisher error -- so re-download, do not raise."""
+    _ds, digest = local_dataset
+    dest = tmp_path / "out"
+    dest.mkdir()
+    (dest / "runs.csv").write_text("entirely different bytes")
+
+    (path,) = fetch("local-fixture", dest=dest)
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
+
+
+def test_an_interrupted_download_leaves_nothing_at_the_destination(
+    local_dataset, tmp_path, monkeypatch
+):
+    """A partial transfer must not be reachable under the real name (#296)."""
+    import engin_core.datasets as datasets_module
+
+    def die(*_args, **_kwargs):
+        raise TimeoutError("connection dropped mid-stream")
+
+    monkeypatch.setattr(datasets_module.shutil, "copyfileobj", die)
+
+    dest = tmp_path / "out"
+    with pytest.raises(TimeoutError):
+        fetch("local-fixture", dest=dest)
+
+    assert not (dest / "runs.csv").exists(), "a partial download must not survive"
+    assert list(dest.glob("*")) == [], f"temp files left behind: {list(dest.glob('*'))}"
+
+
+def test_verify_cache_can_be_switched_off(local_dataset, tmp_path):
+    """The digest re-read is the default, not a mandate -- 227 MB is a real cost."""
+    dest = tmp_path / "out"
+    dest.mkdir()
+    (dest / "runs.csv").write_text("wrong")
+
+    (path,) = fetch("local-fixture", dest=dest, verify_cache=False)
+    assert path.read_text() == "wrong", "verify_cache=False must skip the check"
 
 
 def test_manifest_for_explains_an_unknown_file(tmp_path):
