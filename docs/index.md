@@ -49,7 +49,7 @@ design/host-selection
 adr/index
 ```
 
-**Open tooling for bioprocess forecasting and scale-up economics.**
+**Open tooling for bioprocess forecasting and production-scale costing.**
 
 Turn a handful of fermentation runs into a titer forecast with honest uncertainty, a recommendation for what to run next, and a probabilistic cost-per-kilogram read that accounts for recovery.<sup>\*</sup>
 
@@ -61,6 +61,14 @@ working pharmaceutical plant, and they cover at close to their nominal rate. The
 forecasts they wrap are close to uninformative on that data. Both halves are
 published, because the first without the second would be the more flattering and
 the less true account.
+
+**The costing is priced at production scale; the fermentation model is not.**
+`engin_core.tea` carries plant capital and its recovery, sourced rather than
+invented. The simulator underneath it has no oxygen state, so titer comes out
+scale-invariant — which means this suite can tell you what a process costs at a
+given scale and **cannot** tell you whether the biology survives being taken
+there. That line used to read "scale-up economics", which invited exactly the
+opposite reading.
 
 Everything else — the next-batch recommender, the optimization comparisons,
 pathway ranking — comes from a mechanistic simulator, not from real fermentation
