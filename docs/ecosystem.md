@@ -425,6 +425,26 @@ BSD-3. The scikit-learn-contrib conformal library.
   weighting non-conformity scores by the GP posterior standard deviation. The
   published version named in that docstring is behind a paywall this page could not
   read, so it is reported as MAPIE's citation rather than as one checked here.
+- **Pro** — `mapie.exchangeability_testing` tests the assumption the rest of the
+  library rests on, instead of assuming it. It arrived in **1.4.0 (2026-04-30)** and
+  exports `FixedDatasetExchangeabilityTest`, `PValuePermutationTest`, `PermutationTest`,
+  `SequentialMonteCarloTest`, `OnlineExchangeabilityTest`, `OnlineMartingaleTest` and
+  `RiskMonitoring`. The fixed-dataset default statistic is
+  `MaxSplitMeanDifferenceTestStatistic` — a CUSUM on the conformity scores maximized
+  over every split point, against a permutation null — so it needs no guess about when
+  a shift began, and it reads the data in the order you hand it: `_prepare_estimator`
+  refuses the cross-conformal estimators outright, "because they mix the data".
+  This is the slot's most useful recent addition for anyone holding time-ordered
+  process history, which is most people in this field.
+  *(Read from `mapie/exchangeability_testing/` and `HISTORY.md` on `master`, and from
+  the PyPI release dates, on 2026-08-28.)*
+- **Con** — it tests exchangeability without offering the repair. MAPIE ships **no**
+  non-exchangeable weighted conformal — NexCP, Barber et al. 2023 — so a test that
+  fires leaves you shopping. Searched 2026-08-28: grepping the 1.5.0 source tree for
+  `nexcp`, `non_exchangeable`, `nonexchangeable`, `recency` and `weighted_quantile`
+  returns nothing outside prose in `doc/`, and a GitHub code search for `NexCP` inside
+  the repository returns no hits. `TimeSeriesRegressor` covers ACI and EnbPI, which
+  adapt online and are a different family from reweighting a fixed calibration set.
 - **Con** — the v1 API is a rewrite; most tutorials on the internet target the dead
   v0 classes. The newer conditional-conformal features require torch, so
   "lightweight" holds only on the classical path.
@@ -460,11 +480,18 @@ test object, not an interval at one confidence level.
 - **Pro** — Mondrian and difficulty-normalized variants give conditional coverage
   per stratum, which is what you need when a calibration set mixes shake-flask and
   bioreactor runs; and conformal test martingales give an actual alarm for
-  exchangeability drift.
+  exchangeability drift. **Pin `crepes>=0.9.0` for that second one** — the
+  `crepes.martingales` module (`SimpleJumper`, `SleeperStayer`, `SleeperDrifter`,
+  `CompositeMartingale`, over `semi_online_p_values`) arrived in 0.9.0 on 2025-10-08,
+  and this entry claimed the capability with no version attached before that was
+  checked. Latest is 0.9.1, 2026-06-12.
 - **Con** — single-maintainer, pre-1.0, and willing to change default behaviour
   between point releases. Narrower than MAPIE: no time series, no risk control.
 
 Reference: Boström, *Proceedings of COPA* (PMLR 230:236-249, 2024).
+
+*(Licence, versions and module contents read from the repository and PyPI on
+2026-08-28.)*
 :::
 
 :::{dropdown} TorchCP — LGPL-3.0 / GPL-3.0 — copyleft
@@ -485,6 +512,46 @@ not a shrug.
   refreshed in roughly ten months while commits continue to land. There is no tagged
   point you can pin to and reason about; you are pinning to a PyPI upload or to a
   commit hash.
+:::
+
+**Conformal when the calibration set is time-ordered.** Split conformal's guarantee is
+marginal *and* exchangeable, and a production record is neither shuffled nor stationary.
+Two families answer that: adapt online as errors arrive (ACI, AgACI, EnbPI), which MAPIE
+ships; or reweight the calibration quantile toward recent residuals (NexCP), which it
+does not. Only one maintained, permissively licensed, published package was found with
+the second.
+
+:::{dropdown} tsbootstrap — MIT
+:animate: fade-in-slide-down
+
+[astrogilda/tsbootstrap](https://github.com/astrogilda/tsbootstrap)
+
+MIT (root `LICENSE`, "Copyright (c) 2023 Sankalp Gilda"). A time-series bootstrap
+library that carries a small conformal layer under `src/tsbootstrap/uq/`.
+
+- **Pro** — `nexcp_quantile` in `uq/adaptive.py` is the only NexCP implementation this
+  search found in a maintained, permissively licensed package on PyPI. Alongside it
+  `uq/adaptive.py` has `aci_halfwidths` and `agaci_bounds`, `uq/conformal.py` has
+  `EnbPIEnsemble` and `enbpi_intervals`, and `uq/calibrators.py` exposes them as `NexCP`,
+  `ACI`, `AgACI`, `SlidingWindow` and `Static`. Verified by importing 0.7.1, not by
+  reading the README.
+- **Pro** — released and moving: PyPI 0.7.1 on 2026-07-15, last commit on the default
+  branch 2026-08-27.
+- **Con, and it is the one to read before adopting** — `nexcp_quantile` is the
+  fixed-weight estimator, not the paper's method. It weights score `i` by
+  `decay ** (n - 1 - i)` and returns the smallest score whose weighted CDF reaches
+  `1 - alpha`. Its own docstring states that at `decay = 1` this is "the ordinary
+  empirical quantile" — so it is the *empirical* quantile it degenerates to, not the
+  finite-sample conformal one at the `ceil((n + 1) * (1 - alpha))`-th order statistic,
+  and there is no point mass at infinity. At a calibration set the size of Engin's it
+  is the anti-conservative side of the difference. Barber et al.'s coverage-gap bound,
+  which is the reason to want NexCP at all, is not implemented.
+- **Con** — conformal is a side room here, not the product. The main surface is block
+  bootstraps, and the conformal layer has no publication or benchmark of its own to
+  point at.
+
+*(Licence, version, commit date and module contents read from the repository, from
+PyPI, and by importing the installed package, on 2026-08-28.)*
 :::
 
 **Also worth knowing.** [puncc](https://github.com/deel-ai/puncc) is MIT with a
@@ -514,6 +581,19 @@ reference implementation, has been dormant since 2021; crepes is the natural mig
 target. [Amazon Fortuna](https://github.com/awslabs/fortuna) was archived by AWS in
 April 2025 — anyone arriving from an old AWS blog post should be redirected.
 
+**The time-ordered corner is mostly dead ends**, and each one looks like the answer from
+a search result. [salesforce/online_conformal](https://github.com/salesforce/online_conformal)
+is Apache-2.0 and **archived**, frozen at a last push of 2025-05-01 with no PyPI upload
+since March 2023. [aangelopoulos/conformal-time-series](https://github.com/aangelopoulos/conformal-time-series),
+the reference code for conformal PID control, is MIT and has not been touched since
+2023-11-30. And three of the implementations the literature sends you to —
+[DtACI](https://github.com/isgibbs/DtACI), [SPCI-code](https://github.com/hamrel-cxu/SPCI-code)
+and [AdaptiveConformal](https://github.com/isgibbs/AdaptiveConformal) — carry **no LICENSE
+file of any kind** at their repository root. This page treats a missing licence as
+disqualifying when it finds one in a package it would otherwise recommend, so it treats
+these the same way: read them, don't depend on them. *(Root listings and archive status
+checked 2026-08-28.)*
+
 **Bayesian is the other answer, and it is not on this page's shelf.** A reader asking
 *"why distribution-free rather than Bayesian?"* should know that the maintained
 bioprocess-specific Bayesian stack is `calibr8` / `murefi` / `estim8`, under
@@ -521,7 +601,10 @@ bioprocess-specific Bayesian stack is `calibr8` / `murefi` / `estim8`, under
 thing to read rather than a thing to depend on.
 
 **If you pick one:** MAPIE, and add crepes the moment you need a predictive
-distribution rather than an interval.
+distribution rather than an interval. Reach for anything in the time-ordered paragraph
+only *after* an exchangeability test has actually fired — the adaptive and reweighted
+methods buy robustness by giving up the clean finite-sample statement, and paying that
+on a suspicion rather than a measurement is a bad trade.
 
 ---
 
