@@ -26,10 +26,42 @@ recorded anywhere and so cannot be regenerated: the benchmark runs ``fit_gp`` as
 shipped, which scores *below* that column. Treat the GP column as an anecdote and the
 ordering as the claim.
 
-So the estimator here is **ridge with a bagged ensemble for spread** — which is the
-*expected* choice in this regime rather than a lucky one. Hsu et al. (2022) assess
-protein fitness predictors systematically and find that "a simple baseline approach we
-introduce is competitive with and often outperforms more sophisticated methods"; and
+So the estimator here is **ridge with a bagged ensemble for spread** — a defensible
+choice, and the honest case for it is narrower than the one this docstring used to
+make.
+
+**Corrected 2026-08-29 (#302): the sentence quoted here was not in the paper.** It
+read: *"a simple baseline approach we introduce is competitive with and often
+outperforms more sophisticated methods."* The abstract of Hsu et al. (2022) says:
+*"we propose a simple **combination** approach that is competitive with, and **on
+average** outperforms more sophisticated methods. Our approach uses ridge regression
+on site-specific amino acid features **combined with one probability density feature
+from modeling the evolutionary data**."* Dropping "combination" is what turned a
+sentence about ridge-plus-an-evolutionary-prior into an endorsement of the plain ridge
+that ships here. Verified against the publisher record via Europe PMC.
+
+**What Hsu actually supports, stated at the right strength.** The paper does name
+plain one-hot regression as a neglected baseline: *"even a simple linear regression
+using one-hot amino acid encoding performed quite well. This baseline has sometimes
+been neglected in comparisons of vastly more complicated methods."* That is about the
+un-augmented model — the augmented approach is introduced two sentences earlier as
+their own *new* baseline, and a new baseline cannot be one that has "sometimes been
+neglected".
+
+**But the regime is wrong for us, and that is the part that bites.** Both endorsements
+are scoped to larger data: "in the relatively larger data settings" and "among the top
+performers in the **80-20 split** setting". Across their low-N sweep the finding
+inverts — *"No matter which density model we augmented, the augmented version of the
+model always improved the performance, regardless of the training data set size."* A
+60-variant campaign sits in that sweep, not in the 80-20 setting.
+
+**So Hsu supports the estimator class and not this configuration of it.** What would
+answer the paper on its own terms is an evolutionary density feature alongside the
+one-hot block, which this package does not ship and which is a dependency decision
+rather than a citation fix — tracked on #302. Until then the honest claim is that
+ridge on one-hot features is a real baseline this literature takes seriously, and that
+the strongest evidence at *this* sample size points at the augmented variant.
+
 "low-N" in this literature means tens of assayed variants — Biswas et al. (2021) build
 a usable landscape from as few as 24 — which puts a 60-variant campaign squarely
 inside it.

@@ -75,8 +75,14 @@ The ones most likely to be mistaken for defects:
 
   This is a fact about *that kernel*, not about Gaussian processes. Purpose-built GP approaches for
   protein fitness exist — a zero-shot predictor as the prior mean with a dedicated substitution
-  kernel — and have not been evaluated here. Ridge on one-hot features is a well-established strong
-  few-shot baseline, so `engin-protein` using it is defensible; treating it as the ceiling is not.
+  kernel — and have not been evaluated here. Ridge on one-hot features is a baseline this
+  literature takes seriously — Hsu et al. (2022) call it one that "has sometimes been neglected in
+  comparisons of vastly more complicated methods" — so `engin-protein` using it is defensible;
+  treating it as the ceiling is not. **Read the strength before leaning on it (#302):** that
+  endorsement is scoped to their larger-data settings, and across the low-N sweep that brackets a
+  60-variant campaign the paper reports the *augmented* variant winning at every training size.
+  `model.py`'s docstring carries the full reading; this line used to assert the claim with no
+  citation, two lines from a passage that cites nothing.
 
 ## Where things are written down
 
