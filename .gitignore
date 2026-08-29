@@ -39,3 +39,7 @@ docs/_build/
 # docs/.jupyter_cache is deliberately NOT ignored. It is committed so Read the
 # Docs renders example outputs without executing them (D20), and CI refreshes it
 # on every push to main. See the nb_execution_mode comment in docs/conf.py.
+
+# Autosummary stubs, regenerated on every build (autosummary_generate = True).
+# Committing them means a stale signature can outlive the code it describes.
+docs/api/generated/

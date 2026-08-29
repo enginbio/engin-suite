@@ -75,17 +75,18 @@ class ProcessBrief(BaseModel):
     The chosen route, its expected manufacturability, and the uncertainty carried
     down the whole funnel (upstream host + pathway). ``provenance`` records the chain.
 
-    ```{warning}
-    ``uncertainty`` is a **propagated width, not a conformal one.** It is the pathway
-    stage's calibrated half-width multiplied by :func:`inflate_uncertainty`'s
-    ``2 - confidence`` factor, which is a heuristic with no coverage guarantee behind
-    it. The product inherits the weaker of the two: it is wider than a calibrated
-    interval by construction, and nothing here has checked what it covers.
+    .. warning::
 
-    Use it to plan conservatively, not to state a coverage claim. "Calibrated" is
-    reserved in this project for intervals whose coverage has been measured — the
-    same distinction ``engin_core.tea.cost_summary`` draws for its cost interval.
-    ```
+       ``uncertainty`` is a **propagated width, not a conformal one.** It is the
+       pathway stage's calibrated half-width multiplied by
+       :func:`inflate_uncertainty`'s ``2 - confidence`` factor, which is a heuristic
+       with no coverage guarantee behind it. The product inherits the weaker of the
+       two: it is wider than a calibrated interval by construction, and nothing here
+       has checked what it covers.
+
+       Use it to plan conservatively, not to state a coverage claim. "Calibrated" is
+       reserved in this project for intervals whose coverage has been measured — the
+       same distinction ``engin_core.tea.cost_summary`` draws for its cost interval.
     """
 
     route_id: str

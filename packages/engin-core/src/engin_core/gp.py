@@ -64,10 +64,14 @@ class GP:
 
     Attributes
     ----------
-    X : training inputs (unit-cube design points).
-    ell : ARD lengthscales (per design knob) -- the sensitivity readout.
-    ymean, ystd : target mean/scale (physical g/L).
-    q90 : conformal interval multiplier, set by a calibration step (else None).
+    X : numpy.ndarray
+        Training inputs (unit-cube design points).
+    ell : numpy.ndarray
+        ARD lengthscales (per design knob) -- the sensitivity readout.
+    ymean, ystd : float
+        Target mean/scale (physical g/L).
+    q90 : float or None
+        Conformal interval multiplier, set by a calibration step (else None).
     """
 
     def __init__(

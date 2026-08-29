@@ -19,7 +19,8 @@ def to_ranking(
 ) -> RouteRanking:
     """Distil ``routes`` scored by ``ranker`` into the stage [3] handoff object.
 
-    Requires a calibrated ranker — :meth:`PathwayRanker.half_width` raises otherwise, and
+    Requires a calibrated ranker — :meth:`engin_graph.GraphRanker.half_width`, which
+    ``PathwayRanker`` inherits, raises otherwise, and
     that is the intended failure. A ranking crossing a stage boundary without an interval
     is exactly what the handoff vocabulary exists to prevent.
 

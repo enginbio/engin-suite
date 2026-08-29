@@ -131,7 +131,7 @@ def design_context(
     simulation is what keeps the cost denominated in the user's own reactor.
 
     **The fed volume is capped at ``config.vmax``**, because that is what
-    :func:`~engin_core.simulator.simulate` does — feeding stops once the vessel is
+    :func:`~engin_core.simulate` does — feeding stops once the vessel is
     full. *(Corrected 2026-08-15: this previously integrated the feed over the whole
     run with no cap, so for aggressive-feed designs it reported a volume the vessel
     could not hold — 3.700 L against a 2.5 L working volume at the extreme, on 15 of
@@ -354,7 +354,7 @@ class CostParameters(BaseModel):
     the module docstring: it is nearly invisible at this simulator's scale."""
 
     reactor_usd_per_L_h: float = Field(0.045, gt=0)
-    """Vessel occupancy: capital recovery, utilities, labour. The *rate* lever."""
+    """Vessel occupancy — capital recovery, utilities, labour. The *rate* lever."""
 
     downstream_base_usd_per_kg: float = Field(46.0, gt=0)
     """Recovery cost at the reference titer. The *titer* lever."""
@@ -382,7 +382,7 @@ class CostParameters(BaseModel):
     purity_multiplier_override: float | None = Field(None, gt=0)
     """Use this multiplier instead of the Straathof-derived one. The escape hatch
     for product classes the default does not cover -- affinity-purified proteins
-    sit an order of magnitude higher. See :func:`purity_dsp_multiplier`."""
+    sit an order of magnitude higher. See ``purity_dsp_multiplier``."""
 
     @property
     def purity_multiplier(self) -> float:
