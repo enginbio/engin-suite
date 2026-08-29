@@ -595,6 +595,44 @@ in one system object.
   the same.
 :::
 
+:::{dropdown} OpenPyTEA — MIT
+:animate: fade-in-slide-down
+
+[pbtamarona/OpenPyTEA](https://github.com/pbtamarona/OpenPyTEA)
+
+MIT. Equipment cost correlations, plant CAPEX/OPEX, cash flow and Monte Carlo
+uncertainty — the *costing* half of a TEA, with no process simulation underneath it.
+
+- **Pro** — the closest open analogue to what `engin_core.tea` hand-rolls: a
+  correlation database with CEPCI inflation adjustment, a capital and operating
+  build-up, levelized cost of production, and Monte Carlo propagation over the lot.
+  Under `D9` it is the entry in this slot that most deserves reading before Engin's
+  own cost model is extended again.
+- **Pro** — the lightest install in this section by a distance: matplotlib, numpy,
+  pandas, scienceplots, scipy, seaborn, tqdm, jinja2. No solver fetch, no torch, no
+  .NET bridge. *(Read from `pyproject.toml` on `main`, 2026-08-26.)*
+- **Pro** — peer-reviewed, and the paper is about the software rather than an
+  application of it, so the assumptions are the thing being reviewed.
+- **Con** — **it is not a simulator and does not claim to be.** Its own README places
+  it downstream of one: the user supplies equipment sizing and simulation results.
+  No unit-operation models, no mass or energy balances, no thermodynamics. It cannot
+  produce a titer, a stream, or a recovery yield, so it does not touch the coupling
+  that is Engin's actual contribution.
+- **Con** — the cost database is general chemical and energy plant, not bioprocess.
+  Of 417 correlations across 34 categories, exactly two are fermentation-specific — a
+  fermenter and an inoculum tank, both Turton Table A.1 carbon-steel *purchased*-cost
+  curves, and the fermenter curve is stated only over a small vessel range.
+  Centrifuges are covered; chromatography and homogenization are not, so a
+  bioseparation train has nowhere to live. *(Counted from
+  `src/openpytea/data/cost_correlations.csv` at `main`, 2026-08-26.)*
+- **Con** — one dominant author with two minor contributors, first commit May 2025,
+  and a FastAPI + React GUI already in the tree — surface growing faster than the
+  maintainer count. Judge it as a young single-author project, because it is one.
+
+Reference: Tamarona, Vlugt & Ramdin, *SoftwareX* 35:102816 (2026),
+[10.1016/j.softx.2026.102816](https://doi.org/10.1016/j.softx.2026.102816).
+:::
+
 **Not open, but name them honestly.** SuperPro Designer remains the industry default
 for batch bioprocess TEA and scheduling, and has no open-source equal on
 equipment-occupancy or campaign scheduling. Aspen Plus is the continuous-process
@@ -609,7 +647,10 @@ start anything new on it. *(`archived: true` read from the repository API on
 
 **If you pick one:** BioSTEAM, because it is the only permissively licensed,
 pip-installable option that treats TEA uncertainty as a first-class construct and
-ships fermentation models to start from.
+ships fermentation models to start from. OpenPyTEA now satisfies the first three of
+those and not the fourth, which is the distinction to hold on to: it is the better
+read if what you want is a transparent costing layer, and it is not a substitute if
+you need the flowsheet.
 
 ---
 
@@ -878,6 +919,15 @@ successor to Pickaxe and NetGen.
   The API is not stable; pin the exact version.
 - **Con** — small maintainer surface (one lab), no tagged releases and no changelog, so
   you cannot diff behaviour between versions from the repository alone.
+- **Con** — **and it has stopped moving.** The last commit on `main` is 2026-02-04,
+  and the newest published artifact is `0.5.7a1` from that same day; the repository has
+  never cut a GitHub release at all. The two commits before it are 2026-01-29 and
+  2025-06-13, so long quiet stretches are this project's normal rather than a new
+  development — but a pre-alpha with an unstable API and no upstream movement in six
+  months is a different recommendation from a pre-alpha under active development, and
+  this entry read as the second. *(Commit list and an empty release list read from the
+  GitHub API on 2026-08-26; version and date from PyPI the same day. Not a dead end:
+  the January burst was substantive, and nothing here says it will not resume.)*
 
 Reference: Zhang et al., *Digital Discovery* (2025),
 [10.1039/d5dd00229j](https://doi.org/10.1039/d5dd00229j).
@@ -934,7 +984,10 @@ excellent and is a login-gated web service with no stated terms of use; treat it
 manual lookup, not a dependency. The Selenzyme enzyme-selection ecosystem is fragmented,
 with the maintained forks archived.
 
-**If you pick one:** DORAnet, with the pre-alpha caveat stated loudly. RetroPath2.0 if
+**If you pick one:** DORAnet — still, because every alternative in this slot fails on
+licence, on Python version, or on KNIME — but with both caveats stated loudly now. Pin
+`0.5.7a1` exactly, budget for fixing your own bugs rather than waiting upstream, and
+re-check the repository before you build anything load-bearing on it. RetroPath2.0 if
 you need the publication-defensible answer and can eat KNIME.
 
 ---
