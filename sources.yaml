@@ -1868,16 +1868,41 @@ claims:
     tier: A
     source_id: 2022-hsu-protein-fitness-baselines
     claim: >-
-      Simple regression baselines are competitive with, and often outperform,
-      more sophisticated models for protein fitness prediction — so ridge beating
-      the GP here is the expected regime rather than an accident.
-    strength: supports
-    reviewed: 2026-08-13
+      Ridge on one-hot amino-acid features is a baseline this literature takes
+      seriously rather than a shortcut — but the paper's endorsement of the
+      *un-augmented* form is scoped to larger data than engin-protein's regime.
+    strength: partially supports
+    reviewed: 2026-08-29
     note: >-
-      The abstract states it directly: "a simple baseline approach we introduce
-      is competitive with and often outperforms more sophisticated methods." This
-      is what turns ADR 0006 from "we tried two things" into a design rule, which
-      is what #89 asked for.
+      **Downgraded from `supports` on 2026-08-29 (#302), and the previous note was
+      false about its own source.** It read: 'The abstract states it directly: "a
+      simple baseline approach we introduce is competitive with and often
+      outperforms more sophisticated methods."' That sentence is not in the paper.
+      The abstract says "we propose a simple COMBINATION approach that is
+      competitive with, and ON AVERAGE outperforms more sophisticated methods. Our
+      approach uses ridge regression on site-specific amino acid features combined
+      with one probability density feature from modeling the evolutionary data."
+      Checked against the publisher record via Europe PMC, not from memory; an
+      exact-phrase test finds "simple combination approach" present and "a simple
+      baseline approach we introduce" absent. Dropping "combination" is what made
+      the quote read as an endorsement of the plain ridge that ships.
+      What the paper does support, at the right strength: it names plain one-hot
+      regression as a neglected baseline -- "even a simple linear regression using
+      one-hot amino acid encoding performed quite well. This baseline has sometimes
+      been neglected" -- and that sentence is about the un-augmented model, since
+      the augmented approach is introduced two sentences earlier as the authors'
+      own NEW baseline and a new baseline cannot have been neglected. (#302 read
+      this the other way; the paragraph does not support that reading.)
+      The regime is the real problem. Both endorsements are scoped -- "in the
+      relatively larger data settings", "among the top performers in the 80-20
+      split setting" -- while across the low-N sweep that brackets a 60-variant
+      campaign the finding inverts: "No matter which density model we augmented,
+      the augmented version of the model always improved the performance,
+      regardless of the training data set size." Discussion quotes verified against
+      the bioRxiv full text.
+      So this source supports the estimator class and not this configuration of it,
+      which is `partially supports` rather than `supports`. #89 closed on the
+      stronger reading.
 
   - doc: packages/engin-protein/src/engin_protein/model.py
     tier: A
