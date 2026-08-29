@@ -36,21 +36,20 @@ test: features to a scalar, with a calibrated interval.
 
 | features | cutoff | n | n_cal | coverage | band it buys | width | R² |
 |---|---|---|---|---|---|---|---|
-| process only | 24 h | 406 | 81 | 0.917 | [0.844, 0.950] | 1569 | 0.023 |
-| process only | 48 h | 406 | 81 | 0.893 | [0.844, 0.950] | 1480 | 0.025 |
-| process only | 72 h | 405 | 81 | 0.877 | [0.844, 0.950] | 1337 | 0.104 |
-| process + early potency | 24 h | 406 | 81 | 0.910 | [0.844, 0.950] | 1505 | 0.059 |
-| process + early potency | 48 h | 406 | 81 | 0.912 | [0.844, 0.950] | 1521 | 0.113 |
-| process + early potency | 72 h | 405 | 81 | 0.899 | [0.844, 0.950] | 1299 | **0.223** |
+| process only | 24 h | 406 | 81 | 0.917 | [0.868, 0.934] | 1569 | 0.023 |
+| process only | 48 h | 406 | 81 | 0.893 | [0.868, 0.934] | 1480 | 0.025 |
+| process only | 72 h | 405 | 81 | 0.877 | [0.867, 0.936] | 1337 | 0.104 |
+| process + early potency | 24 h | 406 | 81 | 0.910 | [0.868, 0.934] | 1505 | 0.059 |
+| process + early potency | 48 h | 406 | 81 | 0.912 | [0.868, 0.934] | 1521 | 0.113 |
+| process + early potency | 72 h | 405 | 81 | 0.899 | [0.867, 0.936] | 1299 | **0.223** |
 
 Nominal coverage is 0.90, averaged over five seeds.
 
 ```{important}
 **Read each coverage against the band on its own row, not against 0.90** (#276).
-That band is where a correctly calibrated method lands 90% of the time with this
-many calibration points — so **every row above is inside it**, and the spread from
-0.877 to 0.917 is not evidence that any configuration calibrates better than
-another.
+That band is where a correctly calibrated method lands 90% of the time — so **every
+row above is inside it**, and the spread from 0.877 to 0.917 is not evidence that any
+configuration calibrates better than another.
 
 **`n` is batches; `n_cal` is calibration points, and they are not the same
 number.** The split is 60/20/20, so 406 batches buy 81 calibration points. This
@@ -61,9 +60,43 @@ band that follows from it.
 `int(0.8n) − int(0.6n)` on whatever survives the `isfinite` filter and each
 configuration drops a different number of incomplete batches. On this dataset it
 lands on 81 every time — including the 72 h rows where `n` is 405 — so the column
-is constant here. That was checked rather than assumed, and printing it per row is
-what keeps a future configuration that drops more batches from inheriting a band
-that is no longer its own.
+is constant here. That was checked rather than assumed.
+```
+
+```{note}
+**Corrected 2026-08-29 (#306): the band was right about the wrong quantity.**
+Until today this column read `[0.844, 0.950]` on every row, taken from
+`conformal_coverage_interval`. That function is correct and its docstring is
+explicit about what it describes — the coverage of **one fitted model against an
+infinite test set**, conditional on its calibration set.
+
+**The number beside it is not that.** Each row is the *mean over five re-splits* of
+one dataset, each scored on ~82 held-out batches. Those differ in two directions at
+once: averaging five re-splits shrinks the calibration-draw spread, and a finite
+test set adds binomial spread the Beta ignores. Simulated at the realised split
+sizes over 40,000 replicates:
+
+| statistic | sd | its own central 90% | share inside the old `[0.844, 0.950]` |
+|---|---|---|---|
+| one seed | 0.046 | [0.817, 0.963] | 0.70 |
+| **the five-seed mean actually printed** | **0.021** | **[0.868, 0.934]** | **0.99** |
+
+So the old band was a **99% acceptance region wearing a 90% label**, and a
+five-seed mean of 0.850 — a real miscalibration — would have passed it. That is
+roughly a 1.6× loss of sensitivity in the one measurement standing between this
+project and a false "the calibration holds" on real production data.
+
+**The conclusion survives, with much less room than it looked.** All six rows are
+still inside the corrected band, but the worst of them clears the lower edge by
+**1.1 pp** rather than the 3.3 pp the old band implied.
+
+**This page had the right number forty lines below the wrong one.** The #276 note
+above already said the five-seed mean has a standard deviation of about 2.1 pp —
+computed by the same simulation, by the same author, in the same week — while the
+table kept the Beta. The band now comes from
+`engin_core.gp.resampled_coverage_interval`, which describes the statistic a
+benchmark actually reports, so the reporting site no longer has to reach for the
+nearest available function.
 ```
 
 ```{note}

@@ -39,6 +39,7 @@ fermentation campaign lands in is exactly the one where this matters.
 from __future__ import annotations
 
 import warnings
+from functools import lru_cache
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -276,6 +277,76 @@ def conformal_coverage_interval(
         return (float("nan"), float("nan"), float("nan"))
     dist = beta(n + 1 - ell, ell)
     return (float(dist.ppf(delta / 2.0)), float(dist.mean()), float(dist.ppf(1.0 - delta / 2.0)))
+
+
+@lru_cache(maxsize=32)
+def resampled_coverage_interval(
+    n_total: int,
+    n_cal: int,
+    n_test: int,
+    *,
+    n_seeds: int = 1,
+    level: float = 0.90,
+    delta: float = 0.10,
+    replicates: int = 20_000,
+    seed: int = 0,
+) -> tuple[float, float, float]:
+    """``(lower, mean, upper)`` on the coverage a *benchmark* reports, not a fit.
+
+    :func:`conformal_coverage_interval` answers a different question, and reaching
+    for it here is a mistake this repository has now made twice (#276, #306). It
+    gives the spread of coverage **conditional on one calibration set, against an
+    infinite test set** -- the right reference for a single deployed model.
+
+    A benchmark that re-splits one dataset over several seeds and publishes the
+    *mean* is reporting something else, and it differs in two directions at once:
+
+    * averaging ``n_seeds`` re-splits **shrinks** the calibration-draw spread, and
+    * scoring on a finite ``n_test`` **adds** binomial spread the Beta ignores.
+
+    At the erythromycin split (406 points, 243/81/82, five seeds) the two come
+    apart badly: the Beta band is ``[0.844, 0.950]`` and contains **99%** of the
+    five-seed mean, so it is a 99% acceptance region wearing a 90% label, and a
+    genuinely miscalibrated 0.850 passes it.
+
+    The seeds share one dataset, so their coverages are correlated and no closed
+    form applies. This simulates the whole procedure over exchangeable ranks --
+    which is all that is needed, since split conformal depends on the scores only
+    through their order. ``seed`` makes it reproducible and the result is cached,
+    because a benchmark calls it once per row with repeating arguments.
+
+    Set ``n_seeds=1`` to describe a single split; the result then agrees with the
+    exact Beta-Binomial, which is what ``test_resampled_matches_the_analytic_case``
+    checks.
+    """
+    if not 0.0 < level < 1.0:
+        raise ValueError(f"level must be in (0, 1), got {level}")
+    if n_cal < 1 or n_test < 1 or n_seeds < 1:
+        raise ValueError("n_cal, n_test and n_seeds must all be >= 1")
+    if n_cal + n_test > n_total:
+        raise ValueError(
+            f"n_cal + n_test = {n_cal + n_test} exceeds n_total = {n_total}; "
+            "the splits must fit inside the dataset"
+        )
+    alpha = 1.0 - level
+    ell = int(np.floor((n_cal + 1) * alpha + _FP_SLACK))
+    if ell < 1:
+        return (float("nan"), float("nan"), float("nan"))
+
+    rng = np.random.default_rng(seed)
+    k = int(np.ceil((n_cal + 1) * level))  # the order statistic the multiplier uses
+    means = np.empty(replicates)
+    for r in range(replicates):
+        scores = rng.random(n_total)
+        total = 0.0
+        for _ in range(n_seeds):
+            idx = rng.permutation(n_total)
+            cal = scores[idx[:n_cal]]
+            test = scores[idx[n_cal : n_cal + n_test]]
+            total += float(np.mean(test <= np.partition(cal, k - 1)[k - 1]))
+        means[r] = total / n_seeds
+    lo, hi = np.quantile(means, [delta / 2.0, 1.0 - delta / 2.0])
+    return (float(lo), float(means.mean()), float(hi))
 
 
 def split_conformal_multiplier(

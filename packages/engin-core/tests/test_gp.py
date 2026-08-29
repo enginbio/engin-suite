@@ -13,6 +13,7 @@ from engin_core import (
     fit_gp,
     mapie_split_interval,
     prob_at_least,
+    resampled_coverage_interval,
     simulate_unit,
     smallest_calibration_set,
     split_conformal_multiplier,
@@ -221,3 +222,62 @@ def test_fit_gp_points_somewhere_real_when_there_is_no_calibration_split():
     doc = fit_gp.__doc__
     assert "CrossConformalRegressor" in doc
     from mapie.regression import CrossConformalRegressor  # noqa: F401
+
+
+# ------------------------------------------------- the band a benchmark should print
+
+
+def test_resampled_matches_the_analytic_case():
+    """With one seed the simulation has a closed form, so check it against one.
+
+    Coverage conditional on the calibration set is ``Beta(n+1-l, l)``; scored on a
+    finite test set it becomes Beta-Binomial. The simulator must reproduce that, or
+    nothing it says about the multi-seed case is trustworthy either.
+    """
+    from scipy.stats import beta as beta_dist
+    from scipy.stats import binom
+
+    n_cal, n_test, level = 81, 82, 0.90
+    lo, _mean, hi = resampled_coverage_interval(
+        406, n_cal, n_test, n_seeds=1, level=level, replicates=20_000, seed=1
+    )
+
+    ell = int(np.floor((n_cal + 1) * (1 - level) + 1e-9))
+    rng = np.random.default_rng(7)
+    c = beta_dist(n_cal + 1 - ell, ell).rvs(200_000, random_state=rng)
+    draws = binom.rvs(n_test, c, random_state=rng) / n_test
+    a_lo, a_hi = np.quantile(draws, [0.05, 0.95])
+
+    assert lo == pytest.approx(a_lo, abs=0.005)
+    assert hi == pytest.approx(a_hi, abs=0.005)
+
+
+def test_averaging_seeds_narrows_the_band_and_the_beta_does_not_know():
+    """The #306 defect, as a test: the Beta is the wrong reference for a seed mean.
+
+    Averaging re-splits shrinks the calibration-draw spread, so a band computed
+    from ``conformal_coverage_interval`` is far too wide for the statistic the
+    benchmark actually publishes -- it accepted ~99% of it while claiming 90%.
+    """
+    one = resampled_coverage_interval(406, 81, 82, n_seeds=1, replicates=8_000, seed=2)
+    five = resampled_coverage_interval(406, 81, 82, n_seeds=5, replicates=8_000, seed=2)
+    beta_lo, _, beta_hi = conformal_coverage_interval(81, level=0.90)
+
+    assert (five[2] - five[0]) < (one[2] - one[0]), "averaging seeds must narrow the band"
+    # Measured ratio is ~0.67; asserting against 0.85 leaves room for Monte Carlo
+    # noise rather than sitting on the boundary, which is how #293 happened.
+    assert (five[2] - five[0]) < 0.85 * (beta_hi - beta_lo), (
+        "the five-seed band must be markedly tighter than the Beta the benchmark used"
+    )
+    # and the Beta is not a stand-in for the single-split case either: it ignores
+    # the finite test set, so it is too *narrow* there.
+    assert (one[2] - one[0]) > (beta_hi - beta_lo)
+
+
+def test_resampled_is_reproducible_and_validates_its_split():
+    assert resampled_coverage_interval(
+        406, 81, 82, n_seeds=3, replicates=2_000, seed=5
+    ) == resampled_coverage_interval(406, 81, 82, n_seeds=3, replicates=2_000, seed=5)
+
+    with pytest.raises(ValueError, match="exceeds n_total"):
+        resampled_coverage_interval(100, 60, 60, replicates=100)

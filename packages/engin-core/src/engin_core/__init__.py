@@ -24,6 +24,7 @@ from .gp import (
     highest_attainable_level,
     mapie_split_interval,
     prob_at_least,
+    resampled_coverage_interval,
     smallest_calibration_set,
     split_conformal_multiplier,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "fit_gp",
     "split_conformal_multiplier",
     "conformal_coverage_interval",
+    "resampled_coverage_interval",
     "highest_attainable_level",
     "smallest_calibration_set",
     "mapie_split_interval",
