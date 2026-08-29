@@ -195,7 +195,9 @@ nitpick_ignore_regex = [
     #
     # What this hides is worth knowing: public functions take and return internal
     # types that a reader cannot look up. Widening `__all__` is the fix, and it is
-    # a maintainer's call rather than a docs one.
+    # a maintainer's call rather than a docs one -- see #322, which also records
+    # that `stopping.py` carries a MyST fence that will fail this build the moment
+    # any of its names is exported.
     ("py:class", r"engin_\w+\.(?!datasets\.|loaders\.|convention\.)\w+\.\w+.*"),
     # The same names again, unqualified, as autodoc writes them when the
     # annotation was already imported into the module being documented.
