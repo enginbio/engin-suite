@@ -24,9 +24,20 @@ validator that tells you how far a dataset sits from it.
 
 ```{note}
 The convention lives in the optional `io` extra, since the modelling path does
-not need xarray or pandas:
+not need xarray or pandas.
 
-    pip install "engin-core[io]"
+**`engin-core` is not released on PyPI, so that command does not get you this
+page.** The name is a reservation: a `0.0.1.dev0` distribution with an empty
+package list, carrying no `io` extra, no xarray and no pandas — and `pip` will
+select it, because a pre-release is admitted when nothing else matches the
+requirement. The `{code-cell}` below would then fail with `ModuleNotFoundError`.
+Install from source until [Installation](../install) says otherwise:
+
+    git clone https://github.com/enginbio/engin-suite
+    cd engin-suite && pip install -e "packages/engin-core[io]"
+
+The published form, for when there is a release, is
+`pip install "engin-core[io]"`.
 ```
 
 ## Why a convention and not a format

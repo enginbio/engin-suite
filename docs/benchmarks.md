@@ -191,8 +191,16 @@ than Engin's GP with expected improvement.
 Merck's Bayesian optimization library, GP surrogate over BoTorch — proposes better
 designs than Engin's expected improvement on **20 of 20 seeds**, on the identical
 protocol: same 120-point design, same 70-run training split, same batch of eight,
-scored on noise-free true titer. Reproduce with
-`python benchmarks/baybe_baseline.py --seeds 20` and the `[bo]` extra.
+scored on noise-free true titer. Reproduce it with the `[bo]` extra:
+
+```bash
+cd packages/engin-core
+python benchmarks/baybe_baseline.py --seeds 20
+```
+
+The `cd` is load-bearing for the same reason it is everywhere else on this page, and
+doubly so here: the last working directory this page established was
+`cd packages/engin-host`, whose `benchmarks/` holds only `ecoli_baseline.py` (#317).
 
 That matters more than the two RSM results. RSM is what a process engineer already
 does, so losing to it says the floor is above us. BayBE is what the field's current

@@ -16,10 +16,23 @@ Why placeholders rather than the real ``0.1.0``
 The packages are real and their code is public, but the project is not ready to make the
 promises a release makes: ``D24`` gates any visibility push, and the API-stability policy
 (``D14``) attaches to a published version. A ``0.0.1.dev0`` marker claims the name without
-claiming readiness. Because it is a *dev* release, ``pip install engin-core`` will not
-select it — pip needs ``--pre`` — so nobody gets a stub by accident. They get the same
-"no matching distribution" they get today, which is what ``GOVERNANCE.md`` §5.4 tells them
-to expect.
+claiming readiness.
+
+**A ``.dev`` marker does not stop anyone getting the stub, and this docstring claimed it
+did until 2026-08-29 (#315).** pip excludes pre-releases *only when some other candidate
+matches*; with a lone ``0.0.1.dev0`` on the index there is nothing else, so the fallback
+admits it and ``pip install engin-core`` succeeds. Measured with ``packaging``, which is
+the filtering pip uses:
+
+    >>> SpecifierSet("").filter([Version("0.0.1.dev0")])
+    [<Version('0.0.1.dev0')>]
+    >>> SpecifierSet("").filter([Version("0.0.1.dev0"), Version("1.0.0")])
+    [<Version('1.0.0')>]
+
+So a user gets an empty stub rather than "no matching distribution", which is the more
+confusing outcome and is why ``docs/install.md``, ``docs/index.md`` and ``GOVERNANCE.md``
+all warn about it. Those pages were right and this file was wrong -- including in the
+README it uploads, so the false claim was published on PyPI.
 
 This is deliberately not name-squatting, and the metadata is written so a reviewer can see
 that: every placeholder points at the repository where the real code already lives, and
@@ -90,8 +103,11 @@ real and public — it is in the repository — but no usable version has been p
 PyPI yet.
 
 This `{version}` marker exists so the name is held by the project rather than by whoever
-takes it first. It contains no modules and does nothing if installed. Being a `.dev`
-release, `pip install {name}` will not select it without `--pre`.
+takes it first. It contains no modules and does nothing if installed.
+
+**`pip install {name}` will select this stub.** A pre-release is normally skipped, but
+only when some other release matches -- and there is no other release, so it is chosen
+anyway. Expect an install that succeeds and gives you nothing.
 
 ## What to do instead
 
