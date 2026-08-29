@@ -44,8 +44,8 @@ import numpy as np
 
 from engin_core.datasets import fetch
 from engin_core.gp import (
-    conformal_coverage_interval,
     fit_gp,
+    resampled_coverage_interval,
     split_conformal_multiplier,
 )
 
@@ -102,10 +102,15 @@ def evaluate(X, y):
     The band is reported **per row** rather than once for the whole table (#276).
     Two reasons, and the second is why it is computed here rather than quoted:
 
-    * The nominal level is the *mean* of a Beta distribution, not the coverage a
-      given calibration set delivers. A coverage figure printed to three decimals
-      beside no band invites reading precision that a calibration set of this size
-      does not buy.
+    * A coverage figure printed to three decimals beside no band invites reading
+      precision the split does not buy. **And the band has to describe the
+      statistic actually printed** -- the mean over ``SEEDS`` re-splits of one
+      dataset, scored on a finite test set. It is not the Beta from
+      :func:`~engin_core.gp.conformal_coverage_interval`, which describes a single
+      fitted model against an infinite test set: averaging re-splits shrinks the
+      spread and the finite test set adds some back. Using the Beta here made every
+      row a **99%** acceptance region labelled 90%, so a genuinely miscalibrated
+      0.850 would have passed (#306).
     * ``n_cal`` is not a constant across these rows. It is
       ``int(0.8n) - int(0.6n)`` on whatever survives the ``isfinite`` filter below,
       and each (features, cutoff) combination drops a different number of
@@ -117,7 +122,14 @@ def evaluate(X, y):
 
     coverage, width, r2 = [], [], []
     n_cal = int(0.8 * len(X)) - int(0.6 * len(X))
-    band_lo, _, band_hi = conformal_coverage_interval(n_cal, level=NOMINAL)
+    n_test = len(X) - int(0.8 * len(X))
+    # The band must describe the statistic this function RETURNS -- the mean over
+    # SEEDS re-splits -- and not the coverage of a single fitted model.
+    # `conformal_coverage_interval` answers the latter, and printing it here made
+    # the row a 99% acceptance region wearing a 90% label (#306).
+    band_lo, _, band_hi = resampled_coverage_interval(
+        len(X), n_cal, n_test, n_seeds=len(SEEDS), level=NOMINAL
+    )
     for seed in SEEDS:
         rng = np.random.default_rng(seed)
         # A uniformly random split of a time-ordered production record. This
@@ -186,8 +198,9 @@ def main() -> None:
         "\nRead coverage and R2 together: a model that predicts nothing can still be\n"
         "perfectly calibrated, and on this task that is close to what happens.\n"
         "\nAnd read each coverage against the band on its own row, not against 0.90:\n"
-        "that band is where a correctly calibrated method lands 90% of the time with\n"
-        "this many calibration points. A row inside its band is not evidence of\n"
+        "that band is where a correctly calibrated method lands 90% of the time when\n"
+        "measured exactly this way -- the mean of five re-splits of one dataset, each\n"
+        "scored on a finite test set. A row inside its band is not evidence of\n"
         "anything having gone right or wrong."
     )
 

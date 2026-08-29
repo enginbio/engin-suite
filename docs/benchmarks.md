@@ -16,15 +16,17 @@ Real-data validation has landed, so the numbers that matter lead:
 | | synthetic (tier 1) | **real, 406 industrial batches (tier 3)** |
 |---|---|---|
 | R² | 0.96 | **0.10** |
-| split-conformal coverage | 0.96 | **0.877**, against a band of [0.844, 0.950] |
+| split-conformal coverage | 0.96 | **0.877**, against a band of [0.867, 0.936] |
 | what it establishes | the loop runs | the calibration holds on held-out batches |
 
 **Read 0.877 against the band beside it, not against 0.90.** The real column is
 calibrated on 81 points — 406 is the batch count, and a 60/20/20 split spends most
-of them on training — and [0.844, 0.950] is where a correctly calibrated method
-lands 90% of the time on a calibration set that size.
+of them on training — and [0.867, 0.936] is where this measurement lands 90% of the
+time when the method is correctly calibrated.
 <!-- ref: 2012-vovk-conditional-validity -->
-0.877 is inside it. The
+0.877 is inside it, **by 1.0 point**. *(Corrected 2026-08-29: this said
+[0.844, 0.950] until #306, which is the band for a single fitted model rather than
+for the five-seed mean printed here — three times the true slack.)* The
 [real-data page](methods/real-data-calibration.md) carries all six configurations
 and their bands.
 
