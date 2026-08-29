@@ -14,6 +14,7 @@ on someone else's server being up is a build that breaks for unrelated reasons.
 
 They come from a committed script instead, and you can run it yourself:
 
+    cd packages/engin-core
     python benchmarks/dasware_ingest.py
 
 It fetches the export at run time and caches it outside the repository. Nothing is

@@ -135,8 +135,8 @@ next — worked end to end on real batches, including where the forecast is weak
 :::
 
 :::{grid-item-card} What will it cost?
-Cost per kilogram as a distribution, including recovery. The **guide is unwritten**; what
-the model does and does not capture is in
+Cost per kilogram as a distribution, including recovery. Walk through it in
+[Cost and techno-economics](guides/cost); what the model does and does not capture is in
 [Limitations](limitations), and the API is in [`engin_core.tea`](api/index).
 :::
 
@@ -176,7 +176,7 @@ Including the baselines that beat us, in the same table as the ones that don't.
 :link: ecosystem
 :link-type: doc
 
-Ten capability areas Engin deliberately does not build, with licences and dead ends.
+Eleven capability areas Engin deliberately does not build, with licences and dead ends.
 :::
 
 ::::
@@ -191,7 +191,7 @@ The bundled simulator has no oxygen state, so it is exactly scale-invariant — 
 
 - **[Limitations](limitations)** — the five-tier validation status and what each tier does not establish
 - **[Cost and techno-economics](guides/cost)** — capital, batch scheduling and recovery, which *are* modelled
-- Break-even inversion — *"what titer must I hit to clear a price?"* — is tracked in [#143](https://github.com/enginbio/engin-suite/issues/143)
+- **Break-even inversion** — *"what titer must I hit to clear a price?"* — is built: `engin_core.tea.break_even`, walked through in [the cost guide](guides/cost)
 :::::
 
 ::::::
