@@ -603,6 +603,50 @@ sources:
       stands; re-check on the quarterly liveness sweep.
     type: dataset
 
+  - id: 2024-spannenkrebs-autonomous-plate-bo
+    title: >-
+      Closing the loop: establishing an autonomous test-learn cycle to optimize
+      induction of bacteria
+    authors: [Spannenkrebs, Eiermann, Zoll, Hackenschmidt, Kabisch]
+    year: 2025
+    venue: Frontiers in Bioengineering and Biotechnology 12:1528224
+    doi: 10.3389/fbioe.2024.1528224
+    accessed: 2026-08-30
+    stability: doi
+    type: paper
+    note: >-
+      Crossref record read 2026-08-30. **The id says 2024 and the paper is 2025**:
+      the DOI slug carries the volume year while Crossref gives issued 2025-01-22.
+      The id follows the DOI so it stays greppable against the source; the `year`
+      field is the true one. CC BY 4.0.
+      Backs the grouping vocabulary in `engin_core.convention` (#310). The load-
+      bearing quotation is that the inter-plate effect was "sometimes larger than
+      the intra-plate variety between different wells with different inducer
+      concentrations" -- a block effect exceeding the design-factor effect -- and
+      that they fixed it by changing the surrogate from f(inducer) to
+      f(inducer, plate). Quoted via #310; the abstract was checked, the body text
+      was not re-read here.
+
+  - id: 2025-siska-bo-bioprocess-guide
+    title: A Guide to Bayesian Optimization in Bioprocess Engineering
+    authors: [Siska, Pajak, Rosenthal, del Rio Chanona, von Lieres, Helleckes]
+    year: 2026
+    venue: Biotechnology and Bioengineering 123:805-830
+    doi: 10.1002/bit.70129
+    accessed: 2026-08-30
+    stability: doi
+    type: paper
+    note: >-
+      Crossref record read 2026-08-30: issued 2026-01-08, CC BY 4.0. Journal
+      version of arXiv:2508.10642, so it is a published guide rather than a
+      preprint drop -- worth stating because #310 cites both identifiers.
+      Backs the grouping vocabulary (#310) for two claims: that batch effects are
+      "common due to the complexity of experimental systems" and should be either
+      eliminated or "modelled explicitly", and that replication -- generally
+      discouraged for BO -- is worth it precisely for "models quantifying batch
+      effects or positional biases". Same group as `calibr8`/`murefi`, already on
+      docs/ecosystem.md. Quoted via #310; body text not re-read here.
+
   - id: 2026-bhagwat-try-unifying-equation
     title: >-
       A unifying equation for fermentation sustainability across the
