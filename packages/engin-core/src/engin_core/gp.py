@@ -100,11 +100,11 @@ class GP:
         genuinely have the higher LML, and ``n_restarts`` does not rescue it.
 
         When that branch wins, the lengthscales are fitted to noise and
-        :func:`~engin_core.sensitivity.ard_importance` reads them as structure. This
+        :func:`~engin_core.ard_importance` reads them as structure. This
         is a **specific but not sensitive** detector: measured over 20 seeds it fires
         on 5-11 of 20 fits to pure noise and on **0 of 20** fits to the bundled
         simulator, so it never cries wolf but it misses about half the bad cases.
-        Use :func:`~engin_core.sensitivity.cross_validated_r2` for the reliable
+        Use :func:`~engin_core.cross_validated_r2` for the reliable
         answer (#309).
         """
         return bool(self._noise_var / max(self.ystd**2, 1e-300) <= 1.01e-4)

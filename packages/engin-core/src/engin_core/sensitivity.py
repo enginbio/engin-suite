@@ -92,7 +92,7 @@ def cross_validated_r2(X: ArrayLike, y: ArrayLike, *, folds: int = 5, seed: int 
     titer no better than the training mean, and any importance readout from it is a
     description of noise.
 
-    Measured at ``n``=70, this separates cleanly where the importance share does not:
+    Measured at ``n=70``, this separates cleanly where the importance share does not:
     over ten null campaigns the score ran **-0.435 to +0.013**, over six simulator
     campaigns **+0.986 to +0.997**. Note the null side is *near* zero rather than
     reliably below it -- one seed came out marginally positive -- so treat "close to
