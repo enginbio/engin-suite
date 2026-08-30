@@ -203,7 +203,7 @@ nitpick_ignore_regex = [
     # annotation was already imported into the module being documented.
     (
         "py:class",
-        r"(ArrayLike|NDArray|GaussianProcessRegressor|ReactorConfig|Kinetics"
+        r"(ArrayLike|NDArray|GaussianProcessRegressor"
         r"|ProductionScale|PurityGrade|Provenance|Tier|Orientation|Level"
         r"|QpsStatus|PathwayRanker\.half_width|purity_dsp_multiplier|q)$",
     ),
