@@ -331,3 +331,78 @@ def test_every_role_carries_a_description():
     """The vocabulary is small enough that an undocumented member is an oversight."""
     assert set(convention.ROLES) == {"measured", "setpoint", "output"}
     assert all(v.strip() for v in convention.ROLES.values())
+
+
+# ------------------------------------------------------- run groupings (0.3, #310)
+
+
+def _grouped_dataset(n_runs: int = 6):
+    import numpy as np
+    import xarray as xr
+
+    ds = xr.Dataset(
+        {"titer": (("run", "time"), np.zeros((n_runs, 3)))},
+        coords={
+            "run": np.arange(n_runs),
+            "time": np.arange(3),
+            "run_day": ("run", [i // 2 for i in range(n_runs)]),
+        },
+    )
+    ds["titer"].attrs["units"] = "g/L"
+    return ds
+
+
+def test_a_coordinate_can_say_what_runs_share():
+    ds = _grouped_dataset()
+    ds.coords["run_day"].attrs[convention.GROUPING_ATTR] = "run_day"
+    codes = {f.code for f in convention.validate_timeseries(ds).findings}
+    assert "groupings-declared" in codes
+    assert "no-grouping-declared" not in codes
+
+
+def test_an_unknown_grouping_is_an_error_and_not_also_a_silence():
+    """A bad value must not simultaneously report as no value at all."""
+    ds = _grouped_dataset()
+    ds.coords["run_day"].attrs[convention.GROUPING_ATTR] = "whenever"
+    findings = convention.validate_timeseries(ds).findings
+    codes = [f.code for f in findings]
+    assert "unknown-grouping" in codes
+    assert "no-grouping-declared" not in codes, (
+        "a declared-but-invalid grouping is a different fault from none declared"
+    )
+    assert any(f.level == "error" for f in findings if f.code == "unknown-grouping")
+
+
+def test_absence_is_recorded_when_asked_and_silent_otherwise():
+    """The point of #310, without breaking the convention's additive promise.
+
+    An unconditional note would make every pre-0.3 dataset report a finding, which
+    is exactly what ``test_a_dataset_written_before_roles_existed_still_conforms``
+    asserts must not happen. So the note is opt-in.
+    """
+    ds = _grouped_dataset()
+    default_codes = {f.code for f in convention.validate_timeseries(ds).findings}
+    assert "no-grouping-declared" not in default_codes, "silent by default"
+    findings = convention.validate_timeseries(ds, note_missing_grouping=True).findings
+    note = next(f for f in findings if f.code == "no-grouping-declared")
+    assert note.level == "info", "absence is a note, not a failure -- it is often true"
+    assert "run-day" in note.message
+
+
+def test_grouping_has_no_default_unlike_role():
+    """``role`` defaults because every legacy column *was* measured. This cannot."""
+    ds = _grouped_dataset()
+    assert convention.grouping_of(ds.coords["run_day"]) is None
+    assert convention.role_of(ds["titer"]) == convention.DEFAULT_ROLE
+
+
+def test_the_convention_version_records_the_addition():
+    assert convention.CONVENTION_VERSION == "0.3"
+    assert set(convention.GROUPINGS) == {
+        "run_day",
+        "lot",
+        "lineage",
+        "operator",
+        "position",
+        "session",
+    }

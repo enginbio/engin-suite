@@ -194,6 +194,62 @@ Tracked in
 [#173](https://github.com/enginbio/engin-suite/issues/173), which also works out
 that a single chronological re-split would be underpowered to settle it.
 
+## What a random split cannot see
+
+The table above splits uniformly at random, which is what split conformal guarantees
+and what the split-protocol section below explains. A plant asks a narrower question: *will the interval hold on next
+month's batches?* A random split cannot answer it, because it puts members of every
+cohort on both sides.
+
+Grouping the 406 batches by the month their record starts — the only provenance the
+file carries — and holding one cohort out at a time:
+
+| | coverage |
+|---|---|
+| random split, 5 seeds (as published above) | 0.893 |
+| **leave-one-month-out, 12 cohorts** | **0.892** |
+
+**The marginal number survives, and that is the honest headline.** Holding out a
+whole cohort does not degrade average coverage at all.
+
+The spread does not survive:
+
+| cohort | n | coverage | z vs 0.90 |
+|---|---|---|---|
+| 2021-12 | 18 | 0.778 | −1.73 |
+| 2022-01 | 46 | 0.957 | +1.29 |
+| 2022-02 | 41 | 0.927 | +0.58 |
+| **2022-03** | 37 | **0.703** | **−3.99** |
+| 2022-04 | 35 | 0.914 | +0.28 |
+| 2022-05 | 36 | 1.000 | +2.00 |
+| 2022-06 | 36 | 0.806 | −1.88 |
+| 2022-07 | 36 | 0.944 | +0.88 |
+| 2022-08 | 36 | 0.861 | −0.78 |
+| 2022-09 | 33 | 0.939 | +0.75 |
+| 2022-10 | 38 | 0.947 | +0.97 |
+| 2022-11 | 14 | 0.929 | +0.36 |
+
+Cohort-to-cohort sd is **0.087** against the **0.055** that binomial noise alone
+would produce — 1.6× wider. <!-- not-a-claim: measured by benchmarks/block_holdout_coverage.py --> One cohort, 2022-03, covers at **0.703**, which is four
+binomial standard deviations low and not a small-sample artifact. A user running that
+month would have had a 90% interval hold seven times in ten.
+
+```{warning}
+**This mixes two mechanisms and cannot separate them.** Monthly cohorts are
+time-ordered, so a between-cohort offset and temporal drift
+([#173](https://github.com/enginbio/engin-suite/issues/173)) are confounded here.
+Nothing on this page distinguishes "the media lot changed" from "the process moved".
+
+Separating them needs provenance the dataset does not carry — no media lot, no seed
+train, no operator, no vessel. `engin_core.convention` gained
+[`GROUPINGS`](../api/index) in 0.3 so a dataset *can* record it
+([#310](https://github.com/enginbio/engin-suite/issues/310)); that is a field, not a
+finding, and this table is the argument for wanting it rather than evidence of what
+it would show.
+```
+
+Reproduce with `benchmarks/block_holdout_coverage.py`, same `cd` as above.
+
 ## Calibration transferred. Prediction did not.
 
 **Coverage lands within about two points of nominal on real industrial data.**

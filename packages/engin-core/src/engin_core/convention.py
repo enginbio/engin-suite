@@ -63,7 +63,7 @@ if TYPE_CHECKING:  # pragma: no cover - import-time typing only
     import pandas as pd
     import xarray as xr
 
-CONVENTION_VERSION = "0.2"
+CONVENTION_VERSION = "0.3"
 """Version of the convention itself. Written into ``Dataset.attrs`` so a reader
 can tell which rules a file was produced under. Bumped when the rules change,
 independently of the package version.
@@ -72,7 +72,13 @@ independently of the package version.
 ``attrs["role"]``, and a registered channel name at a non-measured role is now an
 error. The change is additive -- absent ``role`` means ``measured``, which is what
 every 0.1 dataset already was -- so **0.1 data is valid 0.2 data** and needs no
-migration. What 0.2 rejects is a claim 0.1 had no way to make."""
+migration. What 0.2 rejects is a claim 0.1 had no way to make.
+
+**0.3 added groupings** (:data:`GROUPINGS`, #310): a run-level coordinate may
+declare ``attrs["grouping"]`` to say it identifies what a run *shares* with the runs
+beside it -- the run-day, the media lot, the seed train, the operator, the vessel or
+plate position. Additive in the same way: absent means the column is not a grouping,
+which is what every earlier dataset was, so **0.2 data is valid 0.3 data**."""
 
 CONVENTION_ATTR = "engin_convention"
 """Dataset-level attribute carrying :data:`CONVENTION_VERSION`."""
@@ -160,6 +166,49 @@ registered channel name at any other role is a category error, and
 :func:`validate_timeseries` says so.
 """
 
+Grouping = Literal["run_day", "lot", "lineage", "operator", "position", "session"]
+
+GROUPINGS: dict[str, str] = {
+    "run_day": "the day or campaign the run was executed in",
+    "lot": "a consumable shared between runs -- media lot, feed lot, antifoam",
+    "lineage": "the seed train or inoculum the run descended from",
+    "operator": "the person or crew who executed it",
+    "position": "the physical slot -- vessel, plate well, deck location",
+    "session": "the analytics batch the measurements were read in",
+}
+"""What a run **shares with the runs beside it**, as distinct from what identifies it.
+
+``run_column`` names a run. Nothing named what a run has in common with its
+neighbours, which meant the variable could not be recorded and therefore could not
+be modelled, held out, or diagnosed.
+
+**This is the gap ADR 0009 closed for roles, one level up.** There the missing word
+was what a column *is*; here it is which group a run belongs to. Two 2025-26
+campaigns that ran real hardware both hit it and both fixed it by putting the group
+into the surrogate. Spannenkrebs et al. found the inter-plate effect *"sometimes
+larger than the intra-plate variety between different wells with different inducer
+concentrations"* -- the block effect exceeding the design-factor effect -- and
+changed their GP from ``f(inducer)`` to ``f(inducer, plate)``.
+# ref: 2024-spannenkrebs-autonomous-plate-bo
+Siska et al.'s bioprocess-BO guide advises either eliminating batch effects *"or to
+model them explicitly"*, and notes that replication, generally discouraged for BO,
+is worth it precisely for *"models quantifying batch effects or positional biases"*.
+# ref: 2025-siska-bo-bioprocess-guide
+
+**Recording it is the whole of this change.** Nothing here fits a block term or
+alters an interval; :func:`~engin_core.gp.fit_gp` still has no random effect. The
+claim is only that a convention whose stated contribution is the ingest layer
+(``D11``) should have a word for the variable both published campaigns had to add.
+
+**How large the effect is, is unmeasured in the open literature.** No published
+nested variance decomposition of fermentation titer into lot, seed train, operator
+and assay was found. That is an argument for shipping the field a campaign would
+need to measure it, and equally an argument that nobody yet knows whether it
+matters (#310).
+"""
+
+GROUPING_ATTR = "grouping"
+
 ROLE_ATTR = "role"
 DEFAULT_ROLE: Role = "measured"
 """Absent ``attrs["role"]`` means ``measured``.
@@ -179,6 +228,18 @@ def role_of(var: Any) -> str:
     be reported rather than swallowed.
     """
     return str(getattr(var, "attrs", {}).get(ROLE_ATTR, DEFAULT_ROLE))
+
+
+def grouping_of(var: Any) -> str | None:
+    """Grouping a coordinate declares, or ``None`` when it declares none.
+
+    ``None`` rather than a default: unlike ``role``, there is no value that is true
+    of every legacy column. A column that does not say it groups runs is simply not
+    a grouping, and guessing one from a name would be the category error this whole
+    vocabulary exists to prevent.
+    """
+    declared = getattr(var, "attrs", {}).get(GROUPING_ATTR)
+    return None if declared is None else str(declared)
 
 
 Level = Literal["error", "warning", "info"]
@@ -349,12 +410,20 @@ def _pint_available() -> bool:
     return True
 
 
-def validate_timeseries(ds: xr.Dataset) -> ConventionReport:
+def validate_timeseries(ds: xr.Dataset, *, note_missing_grouping: bool = False) -> ConventionReport:
     """Check a time-series Dataset against the convention.
 
     Expects dims ``(run, time)``, one data variable per channel, ``units`` in
     each variable's ``attrs``, and :data:`CONVENTION_ATTR` on the Dataset.
     Nothing is modified.
+
+    ``note_missing_grouping`` adds an ``info`` finding when no coordinate declares a
+    :data:`GROUPINGS` value. **It is off by default on purpose.** This convention's
+    additive promise is that data written under an earlier version still validates
+    clean, and an unconditional note would make every dataset written before 0.3
+    report a finding it cannot act on -- most runs genuinely have no recorded
+    run-day. Ask for the note when auditing a pipeline you control; do not impose it
+    on a reader checking a file someone else wrote (#310).
     """
     report = ConventionReport(checked_units_with_pint=_pint_available())
     add = report.findings.append
@@ -435,6 +504,58 @@ def validate_timeseries(ds: xr.Dataset) -> ConventionReport:
                 target="<dataset>",
                 message="no data variables; there is nothing to interpret",
                 suggestion="add one data variable per measured channel",
+            )
+        )
+
+    declared_groupings: list[str] = []
+    any_grouping_attr = False
+    for coord_name, coord in ds.coords.items():
+        grouping = grouping_of(coord)
+        if grouping is None:
+            continue
+        any_grouping_attr = True
+        if grouping not in GROUPINGS:
+            add(
+                Finding(
+                    level="error",
+                    code="unknown-grouping",
+                    target=str(coord_name),
+                    message=f"grouping {grouping!r} is not one of {', '.join(sorted(GROUPINGS))}",
+                    suggestion=f'set ds["{coord_name}"].attrs["{GROUPING_ATTR}"] to one of '
+                    "them, or drop the attribute -- absent means the coordinate does not "
+                    "group runs",
+                )
+            )
+        else:
+            declared_groupings.append(f"{coord_name} ({grouping})")
+
+    if declared_groupings:
+        add(
+            Finding(
+                level="info",
+                code="groupings-declared",
+                target=RUN_DIM,
+                message="run groupings declared: " + ", ".join(sorted(declared_groupings)),
+                suggestion="hold one of these out when validating, rather than splitting at "
+                "random -- a random split cannot see a between-group offset",
+            )
+        )
+    elif (
+        note_missing_grouping
+        and not any_grouping_attr
+        and RUN_DIM in ds.dims
+        and ds.sizes.get(RUN_DIM, 0) > 1
+    ):
+        add(
+            Finding(
+                level="info",
+                code="no-grouping-declared",
+                target=RUN_DIM,
+                message="no coordinate declares a grouping, so nothing records what these "
+                "runs share -- run-day, media lot, seed train, operator or position",
+                suggestion="if that information exists, add it as a run coordinate with "
+                f'attrs["{GROUPING_ATTR}"]; if it does not, this note is the record that '
+                "it was unavailable rather than omitted (#310)",
             )
         )
 
