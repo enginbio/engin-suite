@@ -46,6 +46,8 @@ import hashlib
 import json
 import os
 import shutil
+import time
+import urllib.error
 import urllib.request
 import warnings
 from datetime import datetime, timezone
@@ -500,6 +502,33 @@ def _digests(path: Path) -> tuple[str, str]:
 _TIMEOUT_SECONDS = 30.0
 _USER_AGENT = "engin-core (https://github.com/enginbio/engin-suite)"
 
+#: Retry policy (#296). The alternative considered was adopting ``pooch``, and it
+#: was declined on a measurement: into a bare environment ``pooch`` pulls **8**
+#: packages -- requests, urllib3, certifi, charset-normalizer, idna, platformdirs,
+#: packaging and itself -- none of which any current dependency already provides,
+#: against an ``engin-core`` install of 12. A 67% increase in install footprint,
+#: for a module whose whole job is getting people to real data, is the exact trade
+#: ADR 0002 refuses: "installs in seconds and runs anywhere. That is the adoption
+#: path."
+#:
+#: And it would not have bought much. #299 already took the temp-file-then-verify,
+#: the cache re-verification and the timeout; the only remaining gap was retry.
+#: ``pooch`` does not do ``Range`` resume either, so resume stays unsolved on both
+#: paths. Eight packages against the code below was not a close call.
+_MAX_ATTEMPTS = 3
+_BACKOFF_SECONDS = 1.0
+
+#: Codes worth a second try: request timeout, too-early, rate limit, and the 5xx
+#: family a server returns when it is briefly unable. A 404 or a 403 is an answer
+#: rather than a hiccup -- retrying it only delays the error the caller needs.
+_RETRY_STATUS = frozenset({408, 425, 429, 500, 502, 503, 504})
+
+#: A rate-limited server may say when to come back. Honour it, but never sleep
+#: longer than the whole retry budget would have taken -- a hostile or broken
+#: ``Retry-After`` must not hang the caller, which is the same argument as the
+#: timeout above.
+_RETRY_AFTER_CAP_SECONDS = 30.0
+
 
 def _mismatch(spec: DatasetFile, sha: str, md5: str) -> str | None:
     """Describe how ``sha``/``md5`` disagree with ``spec``, or ``None`` if they do not."""
@@ -512,7 +541,32 @@ def _mismatch(spec: DatasetFile, sha: str, md5: str) -> str | None:
     return None
 
 
-def _download(url: str, path: Path) -> Path:
+def _retry_after(error: urllib.error.HTTPError) -> float | None:
+    """Seconds a ``Retry-After`` header asks for, when it carries a usable one."""
+    raw = error.headers.get("Retry-After") if error.headers is not None else None
+    if raw is None:
+        return None
+    try:
+        seconds = float(raw)  # the delta-seconds form; HTTP-date is not honoured
+    except ValueError:
+        return None
+    if seconds < 0:
+        return None
+    return min(seconds, _RETRY_AFTER_CAP_SECONDS)
+
+
+def _is_transient(error: BaseException) -> bool:
+    """Whether ``error`` is worth trying again.
+
+    ``HTTPError`` is checked first because it *subclasses* ``URLError``: testing the
+    parent first would make every 404 look retryable.
+    """
+    if isinstance(error, urllib.error.HTTPError):
+        return error.code in _RETRY_STATUS
+    return isinstance(error, urllib.error.URLError | TimeoutError | ConnectionError)
+
+
+def _download_once(url: str, path: Path) -> Path:
     """Stream ``url`` to a sibling temp file and return it, *unmoved*.
 
     This used to be :func:`urllib.request.urlretrieve`, which opens the final
@@ -539,6 +593,32 @@ def _download(url: str, path: Path) -> Path:
         tmp.unlink(missing_ok=True)
         raise
     return tmp
+
+
+def _download(url: str, path: Path) -> Path:
+    """:func:`_download_once`, retried on a transient failure with backoff.
+
+    Each attempt cleans up its own temp file before the next begins, so a retry
+    never streams on top of a partial one. A non-transient error -- a 404, a bad
+    digest, anything the caller has to see -- is raised on the first attempt
+    rather than delayed behind the backoff.
+    """
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            return _download_once(url, path)
+        except BaseException as error:  # noqa: BLE001 - re-raised below unless transient
+            if attempt == _MAX_ATTEMPTS or not _is_transient(error):
+                raise
+            delay = _BACKOFF_SECONDS * 2 ** (attempt - 1)
+            if isinstance(error, urllib.error.HTTPError):
+                delay = _retry_after(error) or delay
+            warnings.warn(
+                f"{url} failed ({type(error).__name__}: {error}); "
+                f"retrying in {delay:.1f}s -- attempt {attempt + 1} of {_MAX_ATTEMPTS}",
+                stacklevel=2,
+            )
+            time.sleep(delay)
+    raise AssertionError("unreachable: the loop either returns or raises")
 
 
 def fetch(

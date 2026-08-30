@@ -215,14 +215,21 @@ def test_an_interrupted_download_leaves_nothing_at_the_destination(
     """A partial transfer must not be reachable under the real name (#296)."""
     import engin_core.datasets as datasets_module
 
+    attempts = []
+
     def die(*_args, **_kwargs):
+        attempts.append(1)
         raise TimeoutError("connection dropped mid-stream")
 
     monkeypatch.setattr(datasets_module.shutil, "copyfileobj", die)
+    monkeypatch.setattr(datasets_module.time, "sleep", lambda _s: None)
 
     dest = tmp_path / "out"
-    with pytest.raises(TimeoutError):
+    with pytest.raises(TimeoutError), pytest.warns(UserWarning, match="retrying in"):
         fetch("local-fixture", dest=dest)
+
+    # A dropped stream is transient, so it is retried -- and still gives up (#296).
+    assert len(attempts) == datasets_module._MAX_ATTEMPTS
 
     assert not (dest / "runs.csv").exists(), "a partial download must not survive"
     assert list(dest.glob("*")) == [], f"temp files left behind: {list(dest.glob('*'))}"
@@ -347,3 +354,100 @@ def test_the_published_table_states_each_dataset_s_real_tier():
     section = docs.read_text().split("## What is registered", 1)[1]
     for name, tier in re.findall(r"^\| `([a-z0-9-]+)` \| [^|]+ \| (\d) \|", section, re.M):
         assert int(tier) == REGISTRY[name].tier, f"{name}: table says tier {tier}"
+
+
+# ------------------------------------------------------------------ retry (#296)
+#
+# `pooch` was declined here on a measurement -- 8 net-new packages against a
+# 12-package install, for retry alone -- so the policy is ours and has to be
+# tested like it. The dangerous direction is retrying what should not be retried:
+# a 404 behind three backoffs is a worse error than a 404.
+
+
+def _flaky(datasets_module, monkeypatch, error, succeed_after):
+    """Make the first ``succeed_after`` stream attempts raise ``error``."""
+    attempts = []
+    real = datasets_module.shutil.copyfileobj
+
+    def maybe(*args, **kwargs):
+        attempts.append(1)
+        if len(attempts) <= succeed_after:
+            raise error
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(datasets_module.shutil, "copyfileobj", maybe)
+    monkeypatch.setattr(datasets_module.time, "sleep", lambda _s: None)
+    return attempts
+
+
+def test_a_transient_failure_is_retried_and_can_succeed(local_dataset, tmp_path, monkeypatch):
+    """The case the retry exists for: one hiccup, then the file arrives."""
+    import engin_core.datasets as datasets_module
+
+    _ds, digest = local_dataset
+    attempts = _flaky(datasets_module, monkeypatch, TimeoutError("dropped"), succeed_after=1)
+
+    dest = tmp_path / "out"
+    with pytest.warns(UserWarning, match="retrying in"):
+        (path,) = fetch("local-fixture", dest=dest)
+
+    assert len(attempts) == 2
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
+
+
+def test_a_404_is_not_retried(local_dataset, tmp_path, monkeypatch):
+    """`HTTPError` subclasses `URLError`, so testing the parent first would retry this."""
+    import urllib.error
+
+    import engin_core.datasets as datasets_module
+
+    not_found = urllib.error.HTTPError("u", 404, "Not Found", {}, None)
+    attempts = _flaky(datasets_module, monkeypatch, not_found, succeed_after=99)
+
+    with pytest.raises(urllib.error.HTTPError):
+        fetch("local-fixture", dest=tmp_path / "out")
+
+    assert len(attempts) == 1, "a 404 is an answer, not a hiccup"
+
+
+def test_a_503_is_retried(local_dataset, tmp_path, monkeypatch):
+    import urllib.error
+
+    import engin_core.datasets as datasets_module
+
+    unavailable = urllib.error.HTTPError("u", 503, "Unavailable", {}, None)
+    attempts = _flaky(datasets_module, monkeypatch, unavailable, succeed_after=1)
+
+    with pytest.warns(UserWarning, match="retrying in"):
+        fetch("local-fixture", dest=tmp_path / "out")
+
+    assert len(attempts) == 2
+
+
+def test_no_attempt_leaves_a_temp_file_behind(local_dataset, tmp_path, monkeypatch):
+    """Each retry must start clean, or a later attempt streams onto a partial one."""
+    import engin_core.datasets as datasets_module
+
+    _flaky(datasets_module, monkeypatch, TimeoutError("dropped"), succeed_after=99)
+
+    dest = tmp_path / "out"
+    with pytest.raises(TimeoutError), pytest.warns(UserWarning):
+        fetch("local-fixture", dest=dest)
+
+    assert list(dest.glob("*")) == [], f"temp files left behind: {list(dest.glob('*'))}"
+
+
+def test_retry_after_is_honoured_but_capped(monkeypatch):
+    """A rate-limited server may say when to return; a broken one must not hang us."""
+    import urllib.error
+
+    import engin_core.datasets as datasets_module
+
+    def error(value):
+        return urllib.error.HTTPError("u", 429, "Too Many", {"Retry-After": value}, None)
+
+    assert datasets_module._retry_after(error("2")) == 2.0
+    assert datasets_module._retry_after(error("99999")) == datasets_module._RETRY_AFTER_CAP_SECONDS
+    assert datasets_module._retry_after(error("-1")) is None
+    assert datasets_module._retry_after(error("Wed, 21 Oct 2026 07:28:00 GMT")) is None
+    assert datasets_module._retry_after(urllib.error.HTTPError("u", 429, "x", {}, None)) is None
