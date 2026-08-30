@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from engin_core.tea import ParametricCostModel, design_context
+from engin_core.tea import CostParameters, ParametricCostModel, design_context
 
 SEED = 0
 N_POINTS = 6000
@@ -95,6 +95,40 @@ def relative_importance(
     return float(np.log10(from_yield / from_titer))
 
 
+def coefficient_recovery() -> None:
+    """Does a high R^2 mean the structures agree? Here it does not, and this says why.
+
+    #304 asks for the precondition to be checked *before* the grid is trusted: the
+    closed form holds where recovery does not vary strongly with titer. Engin's does
+    -- ``downstream = base * (T_ref/T) ** 0.55`` -- and no term of ``a + b/Y + c/T +
+    d/(YT)`` has that shape.
+
+    The test is not R^2, which four free parameters can always buy over a bounded
+    range. It is whether the fit recovers a coefficient we already know from algebra:
+    ``b`` must equal ``substrate_usd_per_kg``, because ``raw_material`` *is*
+    ``substrate_usd_per_kg / Y`` identically. Sweeping the exponent isolates the
+    cause -- at 0 the downstream term is the constant ``a``, at 1 it is ``c/T``, and
+    both are in the form.
+    """
+    truth = CostParameters().substrate_usd_per_kg
+    print("## Does a high R2 mean the structure agrees?\n")
+    print(f"  b must equal substrate_usd_per_kg = {truth} -- raw_material is that identity.\n")
+    header = f"  {'downstream exponent':<22} {'in the form?':<14} {'R2':>10}"
+    print(f"{header}   {'fitted b':>9}   ratio")
+    for exponent, in_form in ((0.0, "yes (= a)"), (1.0, "yes (= c/T)"), (0.55, "NO")):
+        model = ParametricCostModel(CostParameters(downstream_titer_exponent=exponent))
+        y, titer, cost, _ = sample(model)
+        coef, r2 = fit(y, titer, cost)
+        label = f"{exponent}" + (" (shipped)" if exponent == 0.55 else "")
+        row = f"  {label:<22} {in_form:<14} {r2:>10.6f}"
+        print(f"{row}   {coef[1]:>9.3f}   {coef[1] / truth:>5.1f}x")
+    print()
+    print("  When the downstream term is expressible, the fit is exact and b is recovered")
+    print("  to four decimals. At the shipped exponent R2 still reads 0.999 while b is")
+    print("  wrong by 3.5x -- the free parameters absorb the power law. So R2 here measures")
+    print("  the flexibility of the form, not agreement with it.\n")
+
+
 def main() -> None:
     model = ParametricCostModel()
     y, titer, cost, ctx = sample(model)
@@ -123,6 +157,8 @@ def main() -> None:
     print(f"  max |raw_material - substrate_usd_per_kg / Y| = {raw_exact:.2e}")
     print("  It is an identity, not an approximation: the yield lever IS b/Y here,")
     print(f"  with b = substrate_usd_per_kg = {model.params.substrate_usd_per_kg}.\n")
+
+    coefficient_recovery()
 
     print("## Can yield move independently of titer?\n")
     band = (titer > 58.0) & (titer < 62.0)
