@@ -647,6 +647,32 @@ sources:
       effects or positional biases". Same group as `calibr8`/`murefi`, already on
       docs/ecosystem.md. Quoted via #310; body text not re-read here.
 
+  - id: 2026-igsc-harmonized-screening-protocol
+    title: IGSC Harmonized Screening Protocol v3.1
+    authors: [International Gene Synthesis Consortium]
+    year: 2026
+    venue: International Gene Synthesis Consortium
+    location: https://genesynthesisconsortium.org/wp-content/uploads/IGSC-Harmonized-Screening-Protocol-V3.1.pdf
+    accessed: 2026-08-30
+    stability: url
+    url_only_because: >-
+      A consortium protocol document with no DOI. The version is in the filename
+      and on page 1, which is what makes the pointer checkable: the claim backed
+      here is about v3.1 specifically, and an unversioned link would silently
+      re-point at the next revision.
+    type: standard
+    note: >-
+      **PDF fetched and read in full (20 pages) on 2026-08-30**, not summarised from
+      coverage. Page 1 reads "Harmonized Screening Protocol v3.1 1 June, 2026".
+      Section 1.1 reads "We do not ship to residential addresses or to PO Boxes",
+      which is the sentence `docs/lab-access.md` quotes and the actual mechanism
+      behind an unexplained order rejection.
+      **Recorded because it was checked and failed: the document contains no
+      nucleotide length threshold.** #240 attributes an October 2026 change from
+      200 to 50 nucleotides to this protocol; searching the full text finds no
+      threshold at either value. That is a US-government screening-framework matter
+      rather than an IGSC one, and it is not published here.
+
   - id: 2026-bhagwat-try-unifying-equation
     title: >-
       A unifying equation for fermentation sustainability across the

@@ -6,6 +6,7 @@
 
 quickstart
 install
+lab-access
 ```
 
 ```{toctree}
@@ -106,7 +107,9 @@ See [Install](install.md) for the full command set.
 
 **If you would rather see it work on real data**, start with
 **[Quickstart](quickstart)** — 406 batches from a working plant to a calibrated
-forecast. It is a Python script, and it is the honest one: the CLI simulates your runs
+forecast. **You do not need a lab for it**, or samples, or an institution; see
+[Running Engin without a lab](lab-access) for how far that goes and where the
+physical boundary actually falls. It is a Python script, and it is the honest one: the CLI simulates your runs
 from the vessel you describe, while the quickstart uses measurements somebody actually
 took.
 
