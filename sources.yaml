@@ -2724,16 +2724,31 @@ components:
     package: engin-protein
     stance: standard
     standard_impl: ridge regression on one-hot / physicochemical features
-    evidence: [2022-hsu-protein-fitness-baselines, 2021-biswas-low-n]
+    evidence: [2022-hsu-protein-fitness-baselines]
     adr: null
-    reviewed: 2026-08-13
+    reviewed: 2026-08-30
     note: >-
-      Cleared by #89. The estimator *is* the field's standard baseline for this
-      regime rather than a shortcut around one: Hsu et al. (2022) find simple
-      regression baselines competitive with or better than sophisticated methods
-      for fitness prediction, and Biswas et al. (2021) fix "low-N" at tens of
-      assayed variants. The switch condition to something richer is epistasis,
-      not sample size -- see the model docstring.
+      **Restated 2026-08-30 (#302 item 4).** This row previously read "the
+      estimator *is* the field's standard baseline for this regime rather than a
+      shortcut around one", cleared by #89, and listed Biswas as evidence for the
+      estimator. Both parts were wrong, and after #319 the first contradicted
+      this register's own claim row for the same source, which is `partially
+      supports` precisely because Hsu's endorsement of the *un-augmented* model
+      is scoped to larger data than a 60-variant campaign.
+
+      What survives: ridge on one-hot features is an estimator class this
+      literature takes seriously -- Hsu names plain one-hot regression a
+      neglected baseline -- so the stance stays `standard`, meaning we are not
+      reimplementing around a standard rather than that the source endorses this
+      configuration at this sample size. It does not: across their low-N sweep
+      augmentation helped at every training size.
+
+      Biswas is dropped from `evidence` here because it fixes the **regime** --
+      "low-N" is tens of variants -- and not the estimator: eUniRep is
+      evolutionary information plus a linear head, not a one-hot-only result.
+      It is still cited, correctly and narrowly, on its own claim row against
+      `model.py`. The switch condition to something richer is epistasis, not
+      sample size -- see the model docstring.
 
   - component: Monomer featurization
     package: engin-materials
