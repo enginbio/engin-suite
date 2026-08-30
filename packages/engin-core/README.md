@@ -36,6 +36,7 @@ pip install -e "packages/engin-core[dev]"
 import numpy as np
 from engin_core import (
     simulate_unit, fit_gp, split_conformal_multiplier,
+    cross_validated_r2,
     recommend_batch, ard_importance, unit_to_physical,
 )
 
@@ -53,7 +54,14 @@ q90 = split_conformal_multiplier(y[ca], mc, sdc, level=0.90)
 mean, sd = gp.predict(U[te])                     # forecast: mean ± q90*sd is a 90% PI
 X_next, m_next, sd_next, ei = recommend_batch(gp, float(y[tr].max()), k=8)
 print("recommended next runs (physical units):\n", unit_to_physical(X_next))
-print("titer drivers (ARD):", np.round(ard_importance(gp), 2))
+# Before quoting the ARD readout, ask whether the model learned anything at all:
+# on a response unrelated to the design it still names a "top" knob (#309).
+evidence = cross_validated_r2(U[tr], y[tr])
+print(f"cross-validated R2: {evidence:+.2f}")
+if evidence > 0:
+    print("titer drivers (ARD):", np.round(ard_importance(gp), 2))
+else:
+    print("no usable signal — the ARD shares would describe noise")
 ```
 
 **Running this in a loop?** `recommend_batch` draws a fresh candidate pool on each

@@ -37,7 +37,7 @@ from .handoff import (
     process_brief,
 )
 from .recommend import expected_improvement, recommend_batch
-from .sensitivity import ard_importance
+from .sensitivity import ard_importance, cross_validated_r2
 from .simulator import (
     KNOB_NAMES,
     KNOBS,
@@ -73,6 +73,7 @@ __all__ = [
     "expected_improvement",
     "recommend_batch",
     "ard_importance",
+    "cross_validated_r2",
     "simulate",
     "simulate_unit",
     "unit_to_physical",

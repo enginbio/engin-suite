@@ -87,6 +87,24 @@ class GP:
         self._noise_var = float(noise_var)  # observation-noise variance, physical g/L^2
         self.q90: float | None = None
 
+    def interpolates_at_noise_floor(self) -> bool:
+        """True when the fit drove observation noise to the kernel's lower bound.
+
+        ``WhiteKernel(0.1, (1e-4, 1.0))`` has two marginal-likelihood optima -- the
+        low-noise one interpolates the data, the high-noise one smooths it (Rasmussen
+        & Williams §5.4.1, Fig. 5.5). At small ``n`` the interpolating optimum can
+        genuinely have the higher LML, and ``n_restarts`` does not rescue it.
+
+        When that branch wins, the lengthscales are fitted to noise and
+        :func:`~engin_core.sensitivity.ard_importance` reads them as structure. This
+        is a **specific but not sensitive** detector: measured over 20 seeds it fires
+        on 5-11 of 20 fits to pure noise and on **0 of 20** fits to the bundled
+        simulator, so it never cries wolf but it misses about half the bad cases.
+        Use :func:`~engin_core.sensitivity.cross_validated_r2` for the reliable
+        answer (#309).
+        """
+        return bool(self._noise_var / max(self.ystd**2, 1e-300) <= 1.01e-4)
+
     def predict(
         self, Xs: ArrayLike, include_noise: bool = True
     ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
