@@ -196,7 +196,7 @@ is worth it precisely for *"models quantifying batch effects or positional biase
 # ref: 2025-siska-bo-bioprocess-guide
 
 **Recording it is the whole of this change.** Nothing here fits a block term or
-alters an interval; :func:`~engin_core.gp.fit_gp` still has no random effect. The
+alters an interval; ``engin_core.gp.fit_gp`` still has no random effect. The
 claim is only that a convention whose stated contribution is the ingest layer
 (``D11``) should have a word for the variable both published campaigns had to add.
 
