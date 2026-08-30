@@ -343,3 +343,112 @@ def test_the_explicit_opt_out_marker_works(tmp_path):
         "optimizer chasing titer alone will therefore move the real objective backwards.\n"
     )
     assert not cm.scan([doc], cores)
+
+
+# --- execution-cache churn (scripts/evidence/check_cache_churn.py) -----------
+#
+# The classification these assert is the whole check. Calling a real cache update
+# "churn" is the dangerous direction: it would have someone drop a refresh the
+# published site needs (D20), so every column is pinned, not just `accessed`.
+
+
+def _churn_module():
+    import importlib.util
+
+    path = REPO / "scripts" / "evidence" / "check_cache_churn.py"
+    spec = importlib.util.spec_from_file_location("check_cache_churn", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _cache_db(path, *, accessed="2026-08-01 00:00:00", created="2026-07-01 00:00:00", data="{}"):
+    """A minimal database with jupyter-cache's schema and one row per table."""
+    import sqlite3
+
+    con = sqlite3.connect(path)
+    con.executescript(
+        "create table settings (pk integer primary key, key varchar(36), value json);"
+        "create table nbproject (pk integer primary key, uri varchar(255),"
+        " read_data json, assets json, exec_data json, created datetime, traceback text);"
+        "create table nbcache (pk integer primary key, hashkey varchar(255),"
+        " uri varchar(255), description varchar(255), data json,"
+        " created datetime, accessed datetime);"
+    )
+    con.execute(
+        "insert into nbproject values (1, 'docs/page.md', '{}', '[]', null, ?, null)", (created,)
+    )
+    con.execute(
+        "insert into nbcache values (1, 'abc123', 'docs/page.md', '', ?, ?, ?)",
+        (data, created, accessed),
+    )
+    con.commit()
+    con.close()
+    return path
+
+
+def test_a_touched_timestamp_is_churn(tmp_path):
+    """The observed case: a build that executes nothing still moves `accessed`."""
+    cc = _churn_module()
+    base = _cache_db(tmp_path / "base.db")
+    head = _cache_db(tmp_path / "head.db", accessed="2026-08-30 12:00:00")
+    verdict, changed = cc.compare(base, head)
+    assert verdict == cc.TIMESTAMP_ONLY
+    assert changed == {("nbcache", "accessed")}
+
+
+def test_an_identical_cache_is_not_reported(tmp_path):
+    cc = _churn_module()
+    base = _cache_db(tmp_path / "base.db")
+    head = _cache_db(tmp_path / "head.db")
+    assert cc.compare(base, head)[0] == cc.IDENTICAL
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"data": '{"outputs": ["new"]}'},  # a cell produced different output
+        {"created": "2026-08-30 12:00:00"},  # a record was rewritten, not just read
+    ],
+)
+def test_a_real_cache_update_is_never_called_churn(tmp_path, kwargs):
+    """The false positive that would matter: dropping a refresh the site needs."""
+    cc = _churn_module()
+    base = _cache_db(tmp_path / "base.db")
+    head = _cache_db(tmp_path / "head.db", **kwargs)
+    assert cc.compare(base, head)[0] == cc.SUBSTANTIVE
+
+
+def test_a_timestamp_riding_along_with_a_real_change_is_substantive(tmp_path):
+    """`accessed` moves on every build, so it will accompany genuine updates."""
+    cc = _churn_module()
+    base = _cache_db(tmp_path / "base.db")
+    head = _cache_db(
+        tmp_path / "head.db", accessed="2026-08-30 12:00:00", data='{"outputs": ["new"]}'
+    )
+    assert cc.compare(base, head)[0] == cc.SUBSTANTIVE
+
+
+def test_a_new_cache_row_is_substantive(tmp_path):
+    """A re-executed notebook adds a row; the real build does exactly this."""
+    import sqlite3
+
+    cc = _churn_module()
+    base = _cache_db(tmp_path / "base.db")
+    head = _cache_db(tmp_path / "head.db")
+    con = sqlite3.connect(head)
+    con.execute(
+        "insert into nbcache values (2, 'def456', 'docs/two.md', '', '{}', ?, ?)", ("x", "y")
+    )
+    con.commit()
+    con.close()
+    assert cc.compare(base, head)[0] == cc.SUBSTANTIVE
+
+
+def test_an_unreadable_database_is_never_called_churn(tmp_path):
+    """Fail toward keeping the commit, not toward discarding it."""
+    cc = _churn_module()
+    base = _cache_db(tmp_path / "base.db")
+    head = tmp_path / "not-a-database.db"
+    head.write_bytes(b"certainly not sqlite")
+    assert cc.compare(base, head)[0] == cc.SUBSTANTIVE
