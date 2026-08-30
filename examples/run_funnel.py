@@ -17,7 +17,7 @@ packages, and neither depends on the other.
 
 ```{warning}
 **The inputs are illustrative, and so is every number this prints.** The host knowledge
-base is 60 hand-assigned values with no citations (#146) and the routes come from
+base is 54 hand-assigned values with no citations (#146) and the routes come from
 engin-pathway's own synthetic generator, whose step-count margin is itself under audit
 (#124). Read this as a demonstration of the interfaces, not as advice about a molecule.
 ```

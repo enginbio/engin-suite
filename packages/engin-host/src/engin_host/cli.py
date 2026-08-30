@@ -61,7 +61,7 @@ def _body(args: argparse.Namespace, project: ProjectConfig) -> int:
             f"— P({decision.host} really is the best feasible host here)"
         )
         print(
-            "\nThe capability knowledge base is illustrative: 60 hand-assigned values\n"
+            "\nThe capability knowledge base is illustrative: 54 hand-assigned values\n"
             "with no citations behind them (issue #146). Treat this as a structured\n"
             "way to argue about the choice, not as evidence for it."
         )

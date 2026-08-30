@@ -94,7 +94,7 @@ python benchmarks/ecoli_baseline.py
 host. The only ground truth here is `kb.py` — the table the scorer reads — and
 grading a scorer against its own inputs returns a number near 100% and means <!-- not-a-claim: a statement about method, not a measurement -->
 nothing by it. [#146](https://github.com/enginbio/engin-suite/issues/146) records
-that the knowledge base is 60 hand-assigned values with no citations, so there is
+that the knowledge base is 54 hand-assigned values with no citations, so there is
 no second opinion to grade against either.
 
 What it does measure is the machinery, and that does not need the knowledge base

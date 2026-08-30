@@ -6,7 +6,7 @@ the shared uncertainty vocabulary. Part of the engin-suite monorepo.
 
 ## Layout
 - `src/engin_host/schema.py` — pydantic models: `Host`, `KnowledgeBase`, `HostQuery`, `HostScore`.
-- `src/engin_host/kb.py` — the illustrative KB (6 hosts × 10 capabilities). **Illustrative, not sourced yet** (M1 replaces it with cited data).
+- `src/engin_host/kb.py` — the illustrative KB (6 hosts × 9 capabilities = 54 cells; `gras` was a tenth until ADR 0010 retired it). **Illustrative, not sourced yet** (M1 replaces it with cited data).
 - `src/engin_host/scoring.py` — weighted MCDA + linear uncertainty propagation + hard-constraint flags + attribution; `prob_meets` via `engin_core.prob_at_least`.
 - `src/engin_host/memo.py` — recommendation memo.
 - `examples/run_demo.py`, `tests/`.
