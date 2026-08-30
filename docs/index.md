@@ -26,6 +26,7 @@ api-stability
 methods/conformal-calibration
 methods/out-of-distribution
 methods/real-data-calibration
+methods/try-cost-form
 methods/vendor-export-ingest
 case-studies/process-development
 case-studies/techno-economic-analysis
