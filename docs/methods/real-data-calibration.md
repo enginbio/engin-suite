@@ -350,6 +350,42 @@ was always fitted to these windows. What was wrong is the description of what th
 windows are.
 ```
 
+### Would a common origin have been better? Measured, and no
+
+The obvious remedy is to anchor every batch at the same fermentation hour —
+`elapsed = hh - 30` — so a window covers the same band of the run for all of them.
+That is more defensible in principle, and it is available as
+`python benchmarks/real_data_coverage.py --alignment common`. It does not pay:
+
+| features | cutoff | R² per-batch *(ships)* | R² common origin | n per-batch → common |
+|---|---|---|---|---|
+| process only | 24 h | **0.023** | −0.125 | 406 → 401 |
+| process only | 48 h | **0.025** | 0.016 | 406 → 405 |
+| process only | 72 h | **0.104** | 0.091 | 405 → 406 |
+| process + early hx | 24 h | **0.059** | −0.032 | 406 → 401 |
+| process + early hx | 48 h | 0.113 | **0.143** | 406 → 405 |
+| process + early hx | 72 h | **0.223** | 0.134 | 405 → 406 |
+
+<!-- not-a-claim: our own benchmark, five seeds, printed by real_data_coverage.py -->
+
+**Worse in five of six, and negative in both feature sets at 24 h** — which is the
+cutoff where the truncation bites hardest, because a common origin gives every
+late-starting batch an empty window. The one win, `process + early hx` at 48 h, is
+0.030 of R² and does not survive as a pattern.
+
+**The two arms are not scored on the same batches**, which is why `n` is in the
+table. A common origin drops batches whose record begins too late to fill a short
+window, and admits one at 72 h that per-batch alignment drops for being too short.
+So these R² columns are close to comparable rather than strictly so, and the 24 h
+rows are the least comparable of them.
+
+**Coverage is unaffected either way.** Every row of both arms lands inside its own
+band, so this is a question about the forecast and not about the calibration —
+which is the half of this page that transfers.
+
+The alignment therefore stays as it is, on evidence rather than inertia
+([#307](https://github.com/enginbio/engin-suite/issues/307)).
+
 **Only one column is glossed.** `hx` is the target, confirmed from the dataset
 authors' own code rather than inferred from its behaviour. The remaining 22
 columns are unglossed abbreviations, and are used as features without

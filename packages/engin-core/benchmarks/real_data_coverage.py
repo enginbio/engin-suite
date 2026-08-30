@@ -7,6 +7,7 @@ erythromycin production batches from a working plant.
 **Run it yourself:**
 
     python benchmarks/real_data_coverage.py
+    python benchmarks/real_data_coverage.py --alignment common   # #307
 
 It fetches the dataset (CC-BY-4.0, ~8 MB) via :mod:`engin_core.datasets`, which
 verifies the checksum against the publisher's and writes a provenance manifest.
@@ -80,13 +81,35 @@ def load_frame():
     return pd.read_csv(path)
 
 
-def build(df, cutoff_h: int, include_potency: bool):
-    """Window-mean features per batch; target is that batch's final potency."""
+#: Earliest ``hh`` anywhere in the file. No batch's record begins before it, which is
+#: the fact #307 is about: the cutoffs are windows *within* a fermentation, not from
+#: its start.
+RECORD_ORIGIN = 30
+
+
+def build(df, cutoff_h: int, include_potency: bool, alignment: str = "per-batch"):
+    """Window-mean features per batch; target is that batch's final potency.
+
+    ``alignment`` chooses what a cutoff is measured from, which is the open question
+    on #307.
+
+    ``per-batch`` (shipped, and what every published number uses) zeroes each batch on
+    its own first observation, so a window is the first N hours *of available record*.
+    ``common`` zeroes every batch on :data:`RECORD_ORIGIN`, so a window is the same
+    fermentation-hour band for all of them -- comparable across batches, at the cost of
+    dropping batches whose record starts too late to fill the window.
+
+    **The two are not scored on the same batches**, which is why ``n`` is printed: a
+    difference in R^2 between them is partly a difference in which batches survive.
+    """
     process = [c for c in df.columns if c not in ("date", "batch_id", "hh", TARGET)]
     rows, targets = [], []
     for _, batch in df.groupby("batch_id"):
         batch = batch.sort_values("hh")
-        elapsed = batch["hh"] - batch["hh"].min()
+        if alignment == "common":
+            elapsed = batch["hh"] - RECORD_ORIGIN
+        else:
+            elapsed = batch["hh"] - batch["hh"].min()
         if elapsed.max() < cutoff_h + 2:
             continue
         window = batch[elapsed <= cutoff_h]
@@ -187,9 +210,20 @@ def evaluate(X, y):
 
 
 def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--alignment",
+        choices=("per-batch", "common"),
+        default="per-batch",
+        help="what a cutoff is measured from (#307); per-batch is what ships",
+    )
+    args = parser.parse_args()
+
     df = load_frame()
     print(f"erythromycin-efp: {df['batch_id'].nunique()} batches, {len(df):,} hourly rows")
-    print(f"nominal coverage {NOMINAL}, {len(list(SEEDS))} seeds\n")
+    print(f"nominal coverage {NOMINAL}, {len(list(SEEDS))} seeds, alignment {args.alignment}\n")
     print(
         f"  {'features':<22}{'rec-h':>7}{'n':>6}{'n_cal':>7}"
         f"{'coverage':>10}{'band it buys':>16}{'width':>9}{'R2':>8}"
@@ -197,7 +231,9 @@ def main() -> None:
     for include_potency in (False, True):
         label = "process + early hx" if include_potency else "process only"
         for cutoff in CUTOFFS:
-            n, n_cal, cov, w, r2, (b_lo, b_hi) = evaluate(*build(df, cutoff, include_potency))
+            n, n_cal, cov, w, r2, (b_lo, b_hi) = evaluate(
+                *build(df, cutoff, include_potency, args.alignment)
+            )
             band = f"[{b_lo:.3f}, {b_hi:.3f}]"
             print(
                 f"  {label:<22}{cutoff:>6}h{n:>6}{n_cal:>7}"
