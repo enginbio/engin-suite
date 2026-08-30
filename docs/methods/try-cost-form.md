@@ -36,6 +36,25 @@ against $0.55/Y$ point by point, the largest discrepancy across 6,000 designs is
 `3.6e-15` — floating-point noise. Substrate cost per kilogram *recovered* is
 substrate price divided by yield, by construction.
 
+## What the 6,000 points are, and are not
+
+The grid samples titer **independently** of the design knobs, so it spans
+(yield, titer) pairs the simulator cannot produce — the reported yield range runs
+to `9.7 g/g`, which no fermentation reaches and mass balance forbids. That is the
+right way to characterise a cost *surface*, which is a function of two arguments
+and is what the paper fits, and it is the wrong thing to quote as a reachable
+range.
+
+Measured properly — 40,000 random designs plus all 32 corners of the design
+space, taking each design's own simulated titer — **reachable yield is 0.22–0.69
+g/g**, and within a fixed titer band about 1.8×. <!-- not-a-claim: measured on our own simulator -->
+
+The distinction matters for the claim below. Yield genuinely is *not* slaved to
+titer — 1.8× of spread at fixed titer is real, and it is what makes the lever <!-- not-a-claim: measured on our own simulator -->
+representable at all. But it is a factor of two, not the order of magnitude the
+grid's range suggests, and the raw-material term it moves is a small share of
+this vessel's cost.
+
 ## A high R² here is not evidence the structures agree
 
 The row above is the one most worth reading carefully, because on its own it
