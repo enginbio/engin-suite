@@ -603,6 +603,38 @@ sources:
       stands; re-check on the quarterly liveness sweep.
     type: dataset
 
+  - id: 2026-bhagwat-try-unifying-equation
+    title: >-
+      A unifying equation for fermentation sustainability across the
+      titer-rate-yield landscape
+    authors: [Bhagwat, Sarang S., Rao, Rohan, Zhao, Yalin, Singh, Vijay, Guest, Jeremy S.]
+    year: 2026
+    venue: Nature Communications 17:8655
+    doi: 10.1038/s41467-026-75285-1
+    accessed: 2026-08-29
+    stability: doi
+    type: paper
+    note: >-
+      Bibliographic record and abstract read from Crossref on 2026-08-29 rather than
+      from the issue that surfaced it (#304): title, all five authors, Nature
+      Communications 17:8655, issued 2026-07-10, CC BY 4.0. The fit quality is
+      verbatim in the abstract -- "R2 of 0.992 - 1.000 across our simulations;
+      0.954 - 1.000 when validated against prior studies that used different tools"
+      -- as are the method counts (600,000 Monte Carlo simulations, 7500 TRY
+      combinations, 32 facility configurations).
+      **Not verified from the abstract: the "RI_MPSP > 0 across 71-95%" figure.**
+      It is in the body, and this register records only what was read. Engin's own
+      relative-importance grid reproduces the paper's two stated *directions*
+      (higher at higher titer, lower at higher yield) and lands close to its worked
+      example -- 0.28 at 20 g/L and 1.40 at 80 g/L against the paper's 0.11 and
+      1.28, both at 0.2 g/g -- which is agreement on the shape rather than
+      confirmation of the percentage.
+      Backs `benchmarks/try_cost_form.py`, which fits the paper's reduced form to
+      `ParametricCostModel` and gets R2 0.9992. Note the reduced four-term form
+      holds *at fixed productivity*; the paper's general equation carries
+      productivity-dependent coefficients and divides by recovery, so quoting the
+      four-term version without that condition drops the R from TRY.
+
   - id: 2026-nsf-pesose-solicitation
     title: >-
       NSF 26-506: Pathways to Enable Secure Open-Source Ecosystems (PESOSE)
