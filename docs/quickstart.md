@@ -125,9 +125,13 @@ library installed. See [Data formats](guides/data-formats.md).
 ```{admonition} Two things real data made us handle
 :class: tip
 
-**`hh` is an absolute process hour, not elapsed time.** Batches begin anywhere
-between hour 30 and hour 83, so each is aligned to its own start first. Skipping
-this produces empty windows rather than an error.
+**`hh` is per-batch fermentation time, and every batch's record starts late.**
+The first `hh` in a batch runs from 30 to 83 — that is where its *record* begins,
+not where the fermentation did; no batch is recorded from time zero. Each is
+aligned to its own first observation first, and skipping that produces empty
+windows rather than an error. *(Corrected 2026-08-29 — this said `hh` was an
+absolute process hour; the batches run in parallel and carry different `hh` at the
+same wall-clock instant, see #307.)*
 
 **156 rows repeat a `(run, time)` pair**, which pandas will not put in an xarray
 index. A first draft of this example did the reshape by hand and crashed on it;

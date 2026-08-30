@@ -28,13 +28,15 @@ design space to explore. Calling it a design-of-experiments benchmark would be
 the kind of overstatement this project keeps catching in itself.
 
 The closest honest analogue is **early batch outcome prediction** — from process
-variables averaged over the first N hours, predict the batch's final potency. It
+variables averaged over the first N hours *of recorded fermentation*, predict the
+batch's final potency. (Not the first N hours of the run — see the time-axis
+correction below.) It
 is a task practitioners genuinely want, and it exercises the machinery under
 test: features to a scalar, with a calibrated interval.
 
 ## The result
 
-| features | cutoff | n | n_cal | coverage | band it buys | width | R² |
+| features | cutoff (record h) | n | n_cal | coverage | band it buys | width | R² |
 |---|---|---|---|---|---|---|---|
 | process only | 24 h | 406 | 81 | 0.917 | [0.868, 0.934] | 1569 | 0.023 |
 | process only | 48 h | 406 | 81 | 0.893 | [0.868, 0.934] | 1480 | 0.025 |
@@ -256,10 +258,41 @@ The honest summary is that Engin's *calibration* transfers to real data and its
 
 ## Two things worth knowing if you run it
 
-**The time axis is not elapsed time.** `hh` is an absolute process hour: batches
-begin anywhere between hour 30 and hour 83. Every batch is aligned to its own
-start before a window is taken. Getting this wrong produces empty feature
-windows rather than an error, which is how it was noticed.
+**The time axis starts late, and every batch is missing its head.** `hh` is
+*per-batch fermentation time*, and each batch is aligned to its own first
+observation before a window is taken. Getting that alignment wrong produces empty
+feature windows rather than an error, which is how it was noticed.
+
+```{warning}
+**Corrected 2026-08-29 (#307): `hh` is not an absolute process hour.** This
+paragraph, `quickstart.md`, `quickstart_real_data.py` and the benchmark all said it
+was a plant clock, with batches beginning between hour 30 and 83. Measured on the
+file itself (md5 `6f65e6af…`):
+
+- **7,772 wall-clock timestamps carry more than one batch, and at every one of them
+  the batches report different `hh`.** A plant-wide clock cannot take two values at
+  one instant — the batches run in parallel.
+- Correlation between a batch's first `hh` and its wall-clock start time is
+  **−0.03**. A clock offset would be near +1.
+- Within a batch, `hh` advances one per hour of `date`, and the `hh` span equals the
+  wall-clock duration for every batch (both mean 125.9 h).
+
+So the varying start is not a clock offset. It is where each batch's **record**
+begins, and no record begins at zero — the minimum `hh` anywhere in the file is
+**30**, mean final `hh` is 160.2, and the depositors describe ~154 h runs. The
+inoculation and early growth phase is absent from this dataset, not summarised in
+it.
+
+**That changes what the `cutoff` column means**, which is why it is now labelled
+*record hours* rather than plain hours. A "24 h" row is not a decision taken 24
+hours into a fermentation: it is the first 24 hours *of available record*, which for
+389 of 406 batches begins at fermentation hour 30–39 and for one begins at 83.
+**This dataset cannot answer the 24-hours-into-the-run question at all.**
+
+None of the published numbers move — the preprocessing is unchanged and the model
+was always fitted to these windows. What was wrong is the description of what the
+windows are.
+```
 
 **Only one column is glossed.** `hx` is the target, confirmed from the dataset
 authors' own code rather than inferred from its behaviour. The remaining 22
