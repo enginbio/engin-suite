@@ -266,6 +266,51 @@ behind it: optimizing net cost per kilogram rather than titer rests on the
 argument in [Decisions](decisions.md) (`D13`), which does not depend on this
 simulator.
 
+### Batch operation is an assumption, not a setting
+
+**Nothing in the cost head can price a continuous process**, and the assumption is
+structural rather than configurable. `ProductionScale.batches_per_year` apportions
+capital over *completed batches*, `capital_cost_per_batch_usd` divides the annual
+charge by that count, and `cost_per_kg` computes `product_kg = titer x final_volume`.
+A batch count has no referent at steady state, and titer times volume is not
+kilograms in any continuous mode. Chemostat, perfusion and two-stage cell-recycle
+operation are unpriceable here by construction (#329).
+
+**The reason this is stated rather than fixed is that the obvious fix is dangerous.**
+`_rhs` already carries the dilution term `F/V`, so the chemostat equations look like
+ten lines and a sixth knob. Integrating exactly those equations on the bundled
+`DEFAULT_KINETICS` to steady state gives a best volumetric productivity of **5.36
+g/L/h**, against **2.23 g/L/h** for the best of 400 fed-batch designs on the same <!-- not-a-claim: measured on our own simulator -->
+code — **2.4x**. <!-- not-a-claim: measured on our own simulator, chemostat form of its own _rhs -->
+It gets there at 124–155 g/L dry cell weight held *indefinitely* and steady-state <!-- not-a-claim: measured on our own simulator -->
+titers to 237 g/L, which is **13x** the product-inhibition constant `kp = 18`, where <!-- not-a-claim: measured on our own simulator -->
+the model's own `1/(1 + P/kp)` term has fallen to **0.07**.
+
+Compare that with the missing oxygen state above, and the asymmetry is the point:
+
+| | how it fails |
+|---|---|
+| no oxygen state, scale-up | scaling the vessel moves titer by ~6e-07 g/L — an obvious nothing |
+| no oxygen state, continuous | a confident **2.4x** that looks like a result |
+
+The first is vacuous and visibly so. The second is quotable. *"Continuous
+fermentation is 2.4x more productive"* is a sentence that would survive being wrong <!-- not-a-claim: quoting the hypothetical claim this section exists to prevent -->
+for a while, and volumetric productivity at high cell density is precisely the
+quantity an oxygen balance bounds.
+
+**So the sequencing is the finding.** A continuous mode comes strictly *after* the
+oxygen state, not alongside it. `D12` is a second gate: the registered real-data
+corpus is fed-batch erythromycin batches plus batch and fed-batch CHO cultivations,
+so a continuous mode would have nothing to validate against and would ship tier-1
+only — which `D12` calls disqualifying.
+
+Worth knowing if you were about to try it anyway: the feeding predicate is
+`V < vmax`, so in a continuous mode `V` pins at `vmax` and a naive outflow term
+silently sets the feed to zero; and `simulate` returns titer at `t_end = 48 h`, which
+at `D = 0.02` reads 136 g/L against a 237 g/L steady state — so `t_end` becomes a <!-- not-a-claim: measured on our own simulator -->
+de-facto knob whose economics is "run it longer", the inflation `D13` exists to
+reject.
+
 ### The capital correlation is borrowed from a different cell type
 
 Added 2026-08-17 with the production-scale term
