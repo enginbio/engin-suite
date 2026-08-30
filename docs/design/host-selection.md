@@ -5,7 +5,7 @@
 
 ```{warning}
 **The shipped capability numbers are illustrative, not sourced.** `engin-host`'s
-knowledge base is roughly 60 hand-assigned values carrying no citations, and
+knowledge base is 54 hand-assigned values carrying no citations, and
 `Provenance` defaults to `"illustrative"` in the schema for exactly that reason
 ([#146](https://github.com/enginbio/engin-suite/issues/146)). The scoring
 arithmetic over them is separately marked `bespoke-unjustified`

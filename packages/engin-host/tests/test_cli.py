@@ -33,7 +33,7 @@ def test_a_valid_project_succeeds(tmp_path, capsys):
 
 
 def test_output_discloses_the_illustrative_knowledge_base(tmp_path, capsys):
-    """The KB is 60 hand-assigned values (#146). A CLI that printed a ranking without
+    """The KB is 54 hand-assigned values (#146, #330). A CLI that printed a ranking without
     saying so would be the most likely place for that to get lost."""
     main(["--config", _write(tmp_path, GOOD)])
     assert "illustrative" in capsys.readouterr().out.lower()
@@ -96,3 +96,28 @@ def test_malformed_yaml_reports_a_sentence(tmp_path, capsys):
     cfg = _write(tmp_path, "host:\n  weights: {titer: -5.0}\n")
     assert main(["--config", cfg]) == 2
     assert "Traceback" not in capsys.readouterr().err
+
+
+def test_the_starter_config_only_documents_capabilities_that_exist():
+    """#330: `engin-host --init` wrote a file the CLI then rejected.
+
+    The starter's weight block is preceded by a documented list of weightable
+    capabilities. It listed `gras` for a week after ADR 0010 retired it, so a user
+    who followed the file the tool itself generated got exit 2 — and the persona
+    that comment line addressed was the food/cosmetic user `gras` was retired *for*.
+
+    This asserts the invariant rather than the absence of one name, so the next
+    capability to be added or retired cannot reintroduce it.
+    """
+    import re
+
+    from engin_core.config import STARTER
+
+    from engin_host.kb import CAPABILITIES
+
+    documented = set(re.findall(r"^  #   (\w+)\s{2,}", STARTER, re.M))
+    assert documented, "could not parse the capability list out of STARTER"
+    unknown = documented - set(CAPABILITIES)
+    assert not unknown, (
+        f"the starter config documents capabilities the KB rejects: {sorted(unknown)}"
+    )

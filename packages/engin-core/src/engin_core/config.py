@@ -165,9 +165,15 @@ host:
   #   tools      how mature the genetic toolkit is
   #   scaleup    how well it behaves in a large vessel
   #   cost       how cheap it is to feed and run
-  #   gras       generally-recognised-as-safe status (food//cosmetic routes)
   #   smallmol   suited to small-molecule products
   #   protein    suited to protein products
+  #
+  # Regulatory status is NOT weightable here, and that is deliberate (ADR 0010).
+  # `gras` was a capability until 2026-08-23 and is retired: a GRAS conclusion
+  # attaches to a substance under conditions of use, not to an organism, so a
+  # per-host number could not carry a citation. EFSA QPS status is reported
+  # instead -- printed in the memo, ignored by the score. Weighting `gras` here
+  # is an error and the CLI will say so.
   weights:
     secretion: 1.0
     titer: 1.0

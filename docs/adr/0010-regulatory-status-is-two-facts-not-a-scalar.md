@@ -121,7 +121,7 @@ organism", because no such quantity exists.
 - **The encoding has a refresh cadence.** QPS is revised on a published schedule, so a vendored
   snapshot goes stale on a known clock rather than silently. The concept DOI resolves to the current
   version, which is what the register row points at.
-- **Fifty-nine cells are untouched.** This settles the one capability #146 item 3 named as citable and
+- **The other fifty-four cells are untouched.** This settles the one capability #146 item 3 named as citable and
   says nothing about the rest. If anything it strengthens that issue's suspicion that some cells are
   permanently editorial: `gras` looked like the easy one and turned out to need a schema change.
 
