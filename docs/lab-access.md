@@ -5,11 +5,15 @@ This page says how far you can get anyway, where the physical boundary actually
 falls, and what governs crossing it.
 
 ```{important}
-**This page names no vendor, no price and no community lab, on purpose.**
-Those are the parts that go stale fastest, and a page that sends someone to a
-provider that changed its terms — or a lab that closed — is worse than no page.
-What is here is capability *categories* and governance facts that move slowly,
-each dated and sourced. See [what this deliberately leaves out](#what-this-leaves-out).
+**Every entry below is dated, and the date is the point.** A provider's marketing
+site outlives the service behind it, so what is checked here is coverage and
+liveness rather than price — a provider whose menu excludes your organism is not a
+cheaper option, it is not an option. Prices appear only where the provider publishes
+one and it could be quoted directly.
+
+Kept current by a weekly pass
+([`.github/prompts/lab-access-maintenance.md`](https://github.com/enginbio/engin-suite/blob/main/.github/prompts/lab-access-maintenance.md)),
+because a page that sends someone to a lab that closed is worse than no page.
 ```
 
 ## The whole tool runs on public data, today
@@ -55,16 +59,31 @@ narrowly — cell-free reactions, or protein expression, or bioprocess — and a
 provider whose menu does not include your organism is not a cheaper option, it is
 not an option. Check the menu before the price list.
 
+**Who operates in it** *(checked 2026-08-30, from each provider's own site)*:
+
+| provider | covers | price |
+|---|---|---|
+| [Adaptyv Bio](https://www.adaptyvbio.com) | proteins only — binding, expression, thermostability | **"From $149 / protein"**, publishes "Price includes 2 replicates" |
+| [Culture Biosciences](https://www.culturebiosciences.com) | **the bioprocess option** — bioreactors, fermentation | none published; quote-based |
+| [Ginkgo Cloud Lab](https://cloud.ginkgo.bio) | "Run Autonomous Lab Protocols On Demand" | none published |
+
+**Adaptyv is the only one of the three publishing a unit price.** The Ginkgo and
+Culture pages render their detail through JavaScript, so a plain fetch reaches the
+title and no more; both were confirmed live and neither could be read for terms.
+That is recorded rather than filled in from memory.
+
 **This category has a well-populated graveyard**, which is the reason to check dates
-rather than reputation: several widely cited providers have pivoted or gone quiet
-while their marketing sites stayed up.
+rather than reputation — see [dead ends](#dead-ends) below.
 :::
 
 :::{dropdown} Buying the work — sequencing, synthesis, assays as a service
 :animate: fade-in-slide-down
 
 The most accessible category, and the one where an individual can transact at all.
-Sequencing in particular has flat published pricing.
+Sequencing in particular is sold per sample rather than per project —
+[Plasmidsaurus](https://plasmidsaurus.com) covers whole-plasmid, amplicon, whole-genome,
+AAV, microbiome and RNA-seq *(menu read 2026-08-30; its per-sample prices sit behind
+an ordering flow and are not quoted here)*.
 
 **Gene synthesis is gated on identity rather than on price**, and that gate is the
 subject of [the governance section below](#what-governs-crossing-it). Budget for
@@ -75,8 +94,11 @@ being asked who you are.
 :animate: fade-in-slide-down
 
 Some national facilities provide sequencing and synthesis at no cost to accepted
-proposals. The recurring gate is **institutional**: an authorised signatory on a
-user agreement, which an unaffiliated individual does not have.
+proposals. The [JGI Community Science Program](https://jgi.doe.gov/user-programs/program-info/community-science-program/)
+states it plainly — work "will be performed by the JGI **at no cost to the user**"
+*(read 2026-08-30)*. The recurring gate is **institutional** rather than financial:
+an accepted proposal, and a signatory on a user agreement that an unaffiliated
+individual does not have.
 
 **One correction worth having before you go looking.** NSF's Programmable Cloud
 Laboratories network is widely described as a national cloud lab for biology. Read
@@ -130,16 +152,50 @@ Nothing here is legal advice, and export-control and screening rules change. Ver
 against the provider's current terms before relying on any of it.
 ```
 
+(dead-ends)=
+
+## Dead ends, recorded on purpose
+
+Half the cost of surveying a field is rediscovering that the obvious-looking option
+stopped operating. Both of these are still routinely cited as cloud-lab options.
+
+**Strateos** — [strateos.com](https://www.strateos.com) resolves and the site loads.
+The most recent dated content on the front page is a conference held **5–6 November
+2024**, and the banner advertises a pivot: *"Strateos Launches Rapid Idea-to-Data
+Solution for Small Molecule Discovery."* <!-- not-a-claim: read from the provider's own front page on the date given -->
+Read 2026-08-30. **A live homepage is not a live service**, and nearly two years
+without a dated update is the signal here.
+
+**Emerald Cloud Lab** — [emeraldcloudlab.com](https://www.emeraldcloudlab.com) loads
+and its footer reads **"© 2026 Emerald Cloud Lab, Inc."** *(read 2026-08-30)*.
+<!-- not-a-claim: read from the provider's own footer on the date given -->
+
+```{note}
+**#240 lists Emerald as a dead end and this page does not.** The issue reports it as
+having published nothing since April 2024; a current copyright year is weak evidence
+of life, but it is evidence, and it is the opposite of what a lapsed site looks like.
+Neither the claim nor its negation is established here, so Emerald is recorded as
+*unverified* rather than dead. Calling a company defunct is not a thing to get wrong
+on a page whose whole argument is that stale entries are worse than none.
+```
+
 (what-this-leaves-out)=
 
 ## What this leaves out, and why
 
-**Vendor names, prices and community-lab listings.** They are the highest-decay
-content this site could carry, and unlike a software package's health they are not
-checkable in one click. [#240](https://github.com/enginbio/engin-suite/issues/240)
-proposed the full directory and also wrote its own counter-case: the page should not
-ship without extending the standing maintenance scan to cover it. That extension is
-a commitment rather than an edit, so the directory is not here.
+**Most prices, and every community-lab listing.** A price behind an ordering flow or
+a JavaScript configurator cannot be quoted from a check, and a quoted price that has
+moved is worse than none — so prices appear only where a provider publishes one on a
+page that can be read. Community labs are omitted entirely: their operating status is
+the least checkable fact on this page, and #240's own research turned up two lapsed
+domains and one site whose homepage and classes page contradicted each other.
+
+**Several specifics from #240 that did not verify.** It gives an entry price and a
+cell-free-only restriction for Ginkgo Cloud Lab, a ~60-protein minimum for Adaptyv,
+and per-sample prices for two sequencing providers. None of those could be read from
+the providers' own pages on 2026-08-30 — the pages render through JavaScript or put
+the number behind an ordering flow. They may well be right; they are not published
+here, because this page's value is that its entries were checked.
 
 **One claim that did not survive checking.** #240 attributes an October 2026
 threshold change, 200 → 50 nucleotides, to the IGSC protocol. It is not in that
