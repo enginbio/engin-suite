@@ -46,6 +46,31 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-docs.txt
 
+      # Every sphinx-build rewrites docs/.jupyter_cache/global.db even when it
+      # executes nothing: jupyter-cache stamps `accessed` on a cache *hit*, so
+      # merely reading the cache dirties the file. That is 28 KB of binary churn
+      # riding along on `git add -A` into pull requests that touched no notebook --
+      # and with several agents on this repository concurrently, a binary file every
+      # docs build rewrites is a merge conflict with no principled resolution (#294).
+      #
+      # Both sides are read out of git rather than the working tree, so this is
+      # unaffected by the builds below dirtying the file. A genuine cache update --
+      # a new row, changed output, a new hashkey -- passes and must be committed.
+      - name: Fail on timestamp-only churn in the execution cache
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          CACHE=docs/.jupyter_cache/global.db
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          if ! git show "FETCH_HEAD:$CACHE" > "$RUNNER_TEMP/base-cache.db" 2>/dev/null; then
+            echo "no committed cache on $BASE_REF; nothing to compare against"
+            exit 0
+          fi
+          git show "HEAD:$CACHE" > "$RUNNER_TEMP/head-cache.db"
+          python scripts/evidence/check_cache_churn.py \
+            "$RUNNER_TEMP/base-cache.db" "$RUNNER_TEMP/head-cache.db"
+
       # -W turns warnings into errors: a dead cross-reference is a broken promise
       # on a site whose argument is that its documentation is trustworthy.
       # --keep-going reports every problem rather than stopping at the first.
