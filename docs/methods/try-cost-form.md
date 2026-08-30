@@ -36,6 +36,66 @@ against $0.55/Y$ point by point, the largest discrepancy across 6,000 designs is
 `3.6e-15` — floating-point noise. Substrate cost per kilogram *recovered* is
 substrate price divided by yield, by construction.
 
+## What the 6,000 points are, and are not
+
+The grid samples titer **independently** of the design knobs, so it spans
+(yield, titer) pairs the simulator cannot produce — the reported yield range runs
+to `9.7 g/g`, which no fermentation reaches and mass balance forbids. That is the
+right way to characterise a cost *surface*, which is a function of two arguments
+and is what the paper fits, and it is the wrong thing to quote as a reachable
+range.
+
+Measured properly — 40,000 random designs plus all 32 corners of the design
+space, taking each design's own simulated titer — **reachable yield is 0.22–0.69
+g/g**, and within a fixed titer band about 1.8×. <!-- not-a-claim: measured on our own simulator -->
+
+The distinction matters for the claim below. Yield genuinely is *not* slaved to
+titer — 1.8× of spread at fixed titer is real, and it is what makes the lever <!-- not-a-claim: measured on our own simulator -->
+representable at all. But it is a factor of two, not the order of magnitude the
+grid's range suggests, and the raw-material term it moves is a small share of
+this vessel's cost.
+
+## A high R² here is not evidence the structures agree
+
+The row above is the one most worth reading carefully, because on its own it
+overstates. #304 asked for a precondition to be checked **before** the grid is
+trusted: the closed form holds only where recovery does not vary substantially
+with yield, titer or productivity. Engin's does vary — `downstream` is
+`downstream_base_usd_per_kg × (T_ref / T) ** 0.55` — and **no term of
+`a + b/Y + c/T + d/(YT)` has that shape.** That check was not run when the fit
+above was first published here.
+
+Run now, it changes what the R² means. The test is not goodness of fit, which
+four free parameters can buy over a bounded titer range; it is whether the fit
+recovers a coefficient already known from algebra. `b` *must* equal
+`substrate_usd_per_kg`, because `raw_material` is that identity to `3.6e-15`.
+Sweeping the downstream exponent isolates the cause:
+
+| downstream exponent | in the form? | R² | fitted `b` | vs the true 0.55 |
+|---|---|---|---|---|
+| 0.0 | yes — it is the constant `a` | 1.000000 | 0.550 | 1.0× |
+| 1.0 | yes — it is `c/T` | 1.000000 | 0.550 | 1.0× |
+| **0.55 (shipped)** | **no** | 0.999157 | **1.930** | **3.5×** |
+
+<!-- not-a-claim: measured on our own cost model by benchmarks/try_cost_form.py -->
+
+When the downstream term is expressible in the form, the fit is **exact** and `b`
+comes back to four decimals. At the shipped exponent R² still reads 0.999 while
+`b` is wrong by three and a half times. The free parameters are absorbing a power
+law, and R² is measuring the flexibility of the form rather than agreement with
+it.
+
+**The earlier attribution was also wrong.** The 1.93 was noted when this page was
+first written and put down to collinearity — 1/Y and 1/T correlate at +0.87, so a
+global fit identifies `b` and `c` poorly. That is real but it is not the cause:
+the collinearity is unchanged at exponent 0.0 and 1.0, where `b` recovers
+exactly. The un-representable term is what moves it.
+
+What survives is narrower and still worth having: the **yield** term is the
+paper's `b/Y` identically, and the **facility** term is `c/T` identically. Two of
+Engin's three terms are the published form. The third is not, and the aggregate
+R² conceals that rather than showing it.
+
 ## What this corrects
 
 ```{important}
