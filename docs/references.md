@@ -173,7 +173,7 @@ to serve.
 | Expected-improvement recommender | `engin-core` | bespoke-justified | BoTorch / Ax / BayBE | `2020-balandat-botorch` |
 | Host-capability knowledge base and scoring | `engin-host` | bespoke-justified | pymcdm / scikit-criteria (weighted-sum MCDA) | `2026-pymcdm-methods`, `2026-scikit-criteria` |
 | Route-as-graph embedding | `engin-pathway` | bespoke-justified | PyTorch Geometric (M1 upgrade) | `2019-fey-pytorch-geometric` |
-| Protein fitness ridge head | `engin-protein` | standard | ridge regression on one-hot / physicochemical features | `2022-hsu-protein-fitness-baselines`, `2021-biswas-low-n` |
+| Protein fitness ridge head | `engin-protein` | standard | ridge regression on one-hot / physicochemical features | `2022-hsu-protein-fitness-baselines` |
 | Monomer featurization | `engin-materials` | bespoke-justified | none applicable (RDKit was a category error) | `2026-rdkit-descriptors` |
 | Graph embedding | `engin-graph` | bespoke-justified | PyTorch Geometric | `2019-fey-pytorch-geometric` |
 
