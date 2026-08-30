@@ -41,6 +41,8 @@ from .sensitivity import ard_importance, cross_validated_r2
 from .simulator import (
     KNOB_NAMES,
     KNOBS,
+    Kinetics,
+    ReactorConfig,
     simulate,
     simulate_unit,
     unit_to_physical,
@@ -74,6 +76,8 @@ __all__ = [
     "recommend_batch",
     "ard_importance",
     "cross_validated_r2",
+    "Kinetics",
+    "ReactorConfig",
     "simulate",
     "simulate_unit",
     "unit_to_physical",

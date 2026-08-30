@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from engin_core import KNOBS, simulate, simulate_unit, unit_to_physical
-from engin_core.simulator import Kinetics
+from engin_core import KNOBS, Kinetics, simulate, simulate_unit, unit_to_physical
 
 
 def test_titer_is_positive_and_finite():
@@ -84,3 +83,27 @@ def test_kinetics_reject_unphysical_values():
     for bad in ({"mu_max": 0.0}, {"kp": -1.0}, {"yxs": 0.0}, {"alpha": -0.1}):
         with pytest.raises(ValidationError):
             Kinetics(**bad)
+
+
+def test_the_types_the_simulator_takes_are_reachable_from_the_top_level():
+    """#322: neither can be supplied as a dict, so both have to be importable.
+
+    ``simulate``/``simulate_unit`` are plain functions -- nothing coerces their
+    arguments the way pydantic coerces a nested model field -- so a caller wanting
+    a non-default process must construct these. Reaching them at
+    ``engin_core.simulator`` would mean depending on a submodule path
+    ``api-stability.md`` explicitly declines to keep stable.
+    """
+    import engin_core
+
+    for name in ("Kinetics", "ReactorConfig"):
+        assert name in engin_core.__all__
+        assert getattr(engin_core, name) is getattr(engin_core.simulator, name)
+
+
+def test_a_dict_is_not_accepted_in_their_place():
+    """The measurement behind #322: this is why exporting them was the fix."""
+    import pytest
+
+    with pytest.raises(AttributeError):
+        simulate_unit([[0.5] * len(KNOBS)], kinetics={"mu_max": 0.3})

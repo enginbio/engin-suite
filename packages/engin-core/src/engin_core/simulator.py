@@ -108,7 +108,7 @@ class ReactorConfig(BaseModel):
     Defaults reproduce the bundled 1 L -> 2.5 L, 48 h fed-batch exactly, so every
     existing caller is unaffected. Passing a modified instance describes a *different
     vessel* — which is what lets someone with a real reactor use any of this, and,
-    because :func:`engin_core.tea.design_context` reads the same object, get a cost
+    because :func:`engin_core.design_context` reads the same object, get a cost
     denominated in their own volume and duration rather than in ours.
 
     **The knob set is fixed by the equations, not by this object.** The five names in
@@ -121,7 +121,7 @@ class ReactorConfig(BaseModel):
     **This object does not make the model answer a scale-up question, and an earlier
     version of this docstring said it did** -- "a scale-up question usually varies the
     second while holding the first". Varying precisely those parameters is provably a
-    no-op. Every concentration equation in :func:`_rhs` sees volume only through the
+    no-op. Every concentration equation in ``_rhs`` sees volume only through the
     dilution term ``F/V``, and the feeding switch is ``V < vmax``, so scaling ``v0``,
     ``vmax`` and ``feed_rate`` together leaves ``X``, ``S`` and ``P`` pointwise
     identical and scales only ``V``. Titer is unchanged; there is no dissolved-oxygen
@@ -130,7 +130,7 @@ class ReactorConfig(BaseModel):
     oxygen, so scale is inert" in ``docs/limitations.md`` (#190).
 
     What this object *is* good for is the rest of it: ``t_end``, ``x0``, the output
-    grid, and the per-knob ranges, plus giving :func:`engin_core.tea.design_context` a
+    grid, and the per-knob ranges, plus giving :func:`engin_core.design_context` a
     volume and a duration to denominate cost in. Those are real. Scale is not.
     """
 
@@ -159,7 +159,7 @@ class ReactorConfig(BaseModel):
         return self
 
     def bounds(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        """``(lo, hi)`` arrays in :data:`KNOB_NAMES` order — the mapping's own order."""
+        """``(lo, hi)`` arrays in ``KNOB_NAMES`` order — the mapping's own order."""
         lo = np.array([self.knob_bounds[n][0] for n in KNOB_NAMES], float)
         hi = np.array([self.knob_bounds[n][1] for n in KNOB_NAMES], float)
         return lo, hi

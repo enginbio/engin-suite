@@ -23,8 +23,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from engin_core import Kinetics, simulate_unit
 from engin_core.gp import fit_gp, split_conformal_multiplier
-from engin_core.simulator import Kinetics, simulate_unit
 
 NOMINAL, D, TRAIN_HI = 0.90, 5, 0.6
 SEEDS = range(5)

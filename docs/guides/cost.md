@@ -145,7 +145,7 @@ lever, the one that dominates real COGS, is nearly invisible at these defaults.*
 Every number above came from defaults that are almost certainly not yours.
 
 ```{code-cell} python
-from engin_core.simulator import ReactorConfig
+from engin_core import ReactorConfig
 from engin_core.tea import PurityGrade, purity_dsp_multiplier
 
 params = CostParameters(
