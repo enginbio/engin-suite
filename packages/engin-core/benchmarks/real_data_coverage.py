@@ -17,7 +17,9 @@ Nothing is redistributed with Engin (`D12`).
 Engin forecasts a scalar outcome from a *design point*. This dataset is not a
 design of experiments -- it is production history, so the process conditions were
 recorded rather than chosen. The closest honest analogue is **early batch
-outcome prediction**: from process variables averaged over the first N hours,
+outcome prediction**: from process variables averaged over the first N hours of
+recorded fermentation (see the time-axis note below -- the record starts around
+fermentation hour 30, so this is not the first N hours of the run),
 predict the batch's final potency.
 
 That is a real task practitioners care about, and it exercises exactly the
@@ -25,10 +27,17 @@ machinery under test -- features to a scalar, with a calibrated interval.
 
 ## What the time axis required
 
-``hh`` is an absolute process hour, not elapsed time from inoculation: batches
-begin anywhere between hour 30 and hour 83. Each batch is therefore aligned to
-its own start before any window is taken. Getting this wrong silently produces
-empty feature windows, which is how it was noticed.
+``hh`` is **per-batch fermentation time**, and this docstring said it was an
+absolute process hour until 2026-08-29 (#307). It is not: 7,772 wall-clock
+timestamps carry more than one batch and at every one of them the batches report
+different ``hh``, so they run in parallel; and the correlation between a batch's
+first ``hh`` and its wall-clock start is -0.03.
+
+What varies from 30 to 83 is where each batch's **record** begins. No record begins
+at zero, so ``cutoff_h`` counts hours of available record rather than hours of
+fermentation -- a 24 h window is fermentation hours ~30-54 for most batches. Each
+batch is aligned to its own first observation before any window is taken; getting
+that wrong silently produces empty feature windows, which is how it was noticed.
 
 ## Reading the result
 
@@ -182,7 +191,7 @@ def main() -> None:
     print(f"erythromycin-efp: {df['batch_id'].nunique()} batches, {len(df):,} hourly rows")
     print(f"nominal coverage {NOMINAL}, {len(list(SEEDS))} seeds\n")
     print(
-        f"  {'features':<22}{'cutoff':>7}{'n':>6}{'n_cal':>7}"
+        f"  {'features':<22}{'rec-h':>7}{'n':>6}{'n_cal':>7}"
         f"{'coverage':>10}{'band it buys':>16}{'width':>9}{'R2':>8}"
     )
     for include_potency in (False, True):

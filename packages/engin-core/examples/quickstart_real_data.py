@@ -66,8 +66,12 @@ def main() -> None:
     print("  meanings for them.")
 
     rule("3. Reshape to the convention")
-    # `hh` is an absolute process hour, not elapsed time: batches start between
-    # hour 30 and 83. Align each to its own start before anything else.
+    # `hh` is per-batch fermentation time. Batches run in parallel and report
+    # different `hh` at the same wall-clock instant, so it is not a plant clock
+    # (#307). What varies from 30 to 83 is where each batch's *record* starts --
+    # none begins at zero. Align each to its own first observation before anything
+    # else; the window is therefore "first N hours of record", not "first N hours
+    # of fermentation".
     df = df.assign(elapsed_h=df.groupby("batch_id")["hh"].transform(lambda s: s - s.min()))
 
     ds, load_report = load_timeseries(df, run_column="batch_id", time_column="elapsed_h")
