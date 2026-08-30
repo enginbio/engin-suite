@@ -251,12 +251,17 @@ def write_memo(
     L.append(f"- 90% predictive-interval coverage **{cover:.0%}** (target ~90%)\n")
     L.append("\n## What actually drives titer\n")
     L.append(
-        "_Ordering is the reliable part. The **share** is a single-campaign estimate "
-        "and moves a lot between campaigns of the same process -- on the bundled "
-        "simulator the top knob ranges 30-56% across 12 runs, and ranks 2-5 can "
-        "reorder. The share is also convention-dependent (1/l here, variance/l^2 "
-        "elsewhere), though the ordering is not. Treat it as a rough weight, not a "
-        "measurement._\n\n"
+        "_Ordering is the reliable part **when the model has learned something**, and "
+        "the R-squared above is how you know. On a response with no relationship to "
+        "the design at all this readout still hands one knob about half the total -- "
+        "more than it gets on the bundled simulator -- and the leading knob then "
+        "changes between campaigns. So read the fit quality first: this section is "
+        "only worth reading when it is clearly positive (#309)._\n\n"
+        "_The **share** is a single-campaign estimate and moves a lot between "
+        "campaigns of the same process -- on the bundled simulator the top knob "
+        "ranges 30-56% across 12 runs, and ranks 2-5 can reorder. The share is also "
+        "convention-dependent (1/l here, variance/l^2 elsewhere), though the ordering "
+        "is not. Treat it as a rough weight, not a measurement._\n\n"
     )
     for rank, j in enumerate(order, 1):
         L.append(f"- **{sim.KNOB_NAMES[j]}** — rank {rank}, share ~{imp[j] * 100:.0f}%\n")
