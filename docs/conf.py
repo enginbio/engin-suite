@@ -98,6 +98,14 @@ myst_enable_extensions = [
 # -- API reference ----------------------------------------------------------
 
 autosummary_generate = True
+
+# Respect ``__all__``. Sphinx's default is to ignore it and document every public
+# member it can reach, which would put names on the API pages that
+# ``api-stability.md`` does not cover -- and that page counts anything documented
+# here as public. So the default would quietly widen the guarantee. ``False``
+# makes the generated pages track each package's ``__all__`` exactly, which is
+# the first bullet of what the guarantee actually promises.
+autosummary_ignore_module_all = False
 autodoc_typehints = "description"
 autodoc_member_order = "bysource"
 autodoc_default_options = {
@@ -160,6 +168,46 @@ html_css_files = ["engin.css"]
 # Warnings are errors in CI. A dead cross-reference is a broken promise on a
 # site whose whole argument is that the documentation is trustworthy.
 nitpicky = True
+
+# Types that appear in signatures but have no resolvable target. `nitpicky` above
+# is what makes these fail the build, and the API reference is what surfaces them
+# -- none of this fires until autodoc actually renders a signature.
+#
+# Kept narrow on purpose. A blanket `.*` would switch nitpicky off in all but
+# name, and the whole value of the setting is that a genuinely dead reference in
+# prose still breaks the build.
+nitpick_ignore_regex = [
+    # -- Third-party, and not ours to fix. numpy's typing aliases resolve to
+    # private paths (`numpy._typing._array_like.NDArray`) that its own published
+    # inventory does not carry, and pydantic/annotated_types publish no inventory
+    # we map. Adding intersphinx entries would not fix the numpy ones.
+    ("py:class", r"(numpy|np)\..*"),
+    ("py:class", r"(pydantic|annotated_types|networkx)\..*"),
+    ("py:class", r"(pd|xr|xarray)\..*"),
+    # Pydantic renders a field's constraints where a type belongs, so the
+    # constraint repr itself arrives as a cross-reference.
+    ("py:class", r"(gt|ge|lt|le|min_length|max_length|multiple_of)=.*"),
+    # -- Ours, and a real trade rather than an oversight. Three-component paths
+    # are submodule-qualified (`engin_core.simulator.ReactorConfig`), and
+    # `api-stability.md` deliberately keeps submodules out of the public surface,
+    # so there is no page for them to link to. The three public submodules are
+    # excluded from the pattern, so a dead reference inside those still fails.
+    #
+    # What this hides is worth knowing: public functions take and return internal
+    # types that a reader cannot look up. Widening `__all__` is the fix, and it is
+    # a maintainer's call rather than a docs one -- see #322, which also records
+    # that `stopping.py` carries a MyST fence that will fail this build the moment
+    # any of its names is exported.
+    ("py:class", r"engin_\w+\.(?!datasets\.|loaders\.|convention\.)\w+\.\w+.*"),
+    # The same names again, unqualified, as autodoc writes them when the
+    # annotation was already imported into the module being documented.
+    (
+        "py:class",
+        r"(ArrayLike|NDArray|GaussianProcessRegressor|ReactorConfig|Kinetics"
+        r"|ProductionScale|PurityGrade|Provenance|Tier|Orientation|Level"
+        r"|QpsStatus|PathwayRanker\.half_width|purity_dsp_multiplier|q)$",
+    ),
+]
 
 # .jupyter_cache lives under docs/ (see nb_execution_cache_path) and contains an
 # executed .ipynb per cached document. Sphinx globs those as source files and then

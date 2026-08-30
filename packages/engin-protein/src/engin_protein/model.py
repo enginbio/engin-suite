@@ -143,7 +143,7 @@ DEFAULT_ALPHA = 1.0
 def level_for_split(n_cal: int, level: float, *, context: str) -> float:
     """The requested ``level``, or the highest one ``n_cal`` can support (#197).
 
-    The faces in :mod:`engin_protein.lown` and :mod:`engin_protein.evaluate` choose
+    The faces in ``engin_protein.lown`` and :mod:`engin_protein.evaluate` choose
     their own calibration split from ``cal_fraction``, so a user who asks for a 90%
     interval on a 24-variant campaign never chose the ``n_cal = 7`` that cannot
     deliver it. Raising there would make the low-N face unusable in the low-N
@@ -203,7 +203,7 @@ class CalibratedFitnessModel:
         self.level: float | None = None
         """Coverage level the multiplier was calibrated at. Set by :meth:`calibrate`."""
         self.n_calibration: int | None = None
-        """Calibration-set size behind :attr:`q`. Kept so the interval's provenance
+        """Calibration-set size behind ``q``. Kept so the interval's provenance
         travels with the model rather than living in the caller's memory -- at this
         package's sample sizes it is what decides whether the level means anything."""
 
@@ -282,7 +282,7 @@ class CalibratedFitnessModel:
         widest-justifiable interval. Here the multiplier is minted into
         :class:`ScoredDesign` bounds that a user reads as *the* interval at
         ``level``, and this package's stated regime is a few dozen assay
-        measurements (see :mod:`engin_protein.lown`) -- exactly where the ceiling
+        measurements (see ``engin_protein.lown``) -- exactly where the ceiling
         binds. A mislabelled interval is worse than an exception on a package whose
         deliverable is the label.
 

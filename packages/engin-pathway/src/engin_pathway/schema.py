@@ -19,7 +19,7 @@ FEATURES: tuple[str, ...] = ("g_thermo", "g_enzyme", "g_cofactor", "g_tox", "g_e
 """The five per-step goodness scores, each in [0, 1].
 
 **Four of the five are supplied by hand.** ``g_thermo`` can now come from
-eQuilibrator via :func:`~engin_pathway.thermo_bridge.step_from_reaction` (#140
+eQuilibrator via ``step_from_reaction`` (#140
 item 3); the rest have no ingest, and `simulate.py` is the only other in-repo
 supplier. Which is which travels with the step -- see :attr:`Step.measured`,
 added because a mixed step was otherwise indistinguishable from a guessed one.
@@ -115,7 +115,7 @@ class Step(BaseModel):
 
     **This became necessary when it stopped being uniform.** While every feature
     was typed by hand, "these are expert judgements" was true of all of them and a
-    docstring said it adequately. :func:`~engin_pathway.thermo_bridge.step_from_reaction`
+    docstring said it adequately. ``step_from_reaction``
     now returns a step whose ``g_thermo`` is measured against eQuilibrator and
     whose other four are not, and without this field that step is
     indistinguishable from one where all five were guessed (#140 item 4).
@@ -182,7 +182,7 @@ class Route(BaseModel):
         produced it, rather than inferred from the absence of anything saying
         otherwise.
 
-        Use :func:`~engin_pathway.thermo_bridge.step_from_reaction` where a
+        Use ``step_from_reaction`` where a
         feature can be measured instead.
         """
         return cls(

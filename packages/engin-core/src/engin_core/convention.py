@@ -130,7 +130,7 @@ CHANNELS: dict[str, Channel] = {
         Channel(name="kla", units="1/h", description="volumetric oxygen mass-transfer coefficient"),
     )
 }
-"""Known channels. Extend by registering rather than editing: unknown names are
+"""Known channels. Extend by registering rather than editing — unknown names are
 carried, not rejected."""
 
 # ------------------------------------------------------------------------ roles

@@ -115,11 +115,12 @@ class DatasetFile(BaseModel):
     url: str
     sha256: str | None = None
     md5: str | None = None
-    """At least one is required for a fetchable file (:func:`validate_registry`).
-    Say in ``description`` where the value came from if it is not the publisher's."""
+    """At least one digest is required for a fetchable file — see
+    :func:`validate_registry`. Say in ``description`` where the value came from if
+    it is not the publisher's."""
 
     filename: str | None = None
-    """What to call the download. Needed more often than it looks: Zenodo's file
+    """What to call the download. Needed more often than it looks — Zenodo's file
     endpoints end in ``/content``, so the URL's last segment is not a name."""
 
     size_bytes: int | None = None
