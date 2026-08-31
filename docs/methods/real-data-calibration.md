@@ -250,6 +250,46 @@ it would show.
 
 Reproduce with `benchmarks/block_holdout_coverage.py`, same `cd` as above.
 
+### The same experiment on the simulator, where the truth is known
+
+The real-data table above cannot separate a cohort offset from drift, and cannot say
+what a *known* block effect would do. The simulator can, and — contrary to
+[#310](https://github.com/enginbio/engin-suite/issues/310)'s reading that tier 1
+"provably cannot" exhibit this — **no simulator change was needed.** `simulate_unit`
+takes a `kinetics` argument and `Kinetics` is a top-level export, so drawing one
+`Kinetics` per group reproduces the structure directly:
+
+```bash
+cd packages/engin-core
+python benchmarks/block_effect_synthetic.py
+```
+
+10 groups of 24 batches, nominal 0.90. `block_sd` is the spread of each group's
+kinetic draw — a knob on a synthetic landscape, not an estimate of any plant's
+variability:
+
+| `block_sd` | random split | leave-one-group-out | group sd | vs binomial floor | worst group |
+|---|---|---|---|---|---|
+| 0.00 | 0.917 | 0.950 | 0.069 | 1.1× | 0.833 |
+| 0.15 | 0.908 | 0.954 | 0.057 | 0.9× | 0.833 |
+| 0.30 | 0.954 | 0.946 | 0.087 | 1.4× | 0.708 |
+| 0.50 | 0.963 | 0.904 | 0.157 | **2.6×** | **0.542** |
+
+<!-- not-a-claim: measured by benchmarks/block_effect_synthetic.py -->
+
+**The mean never shows it.** Leave-one-group-out coverage stays near nominal at every
+block strength, which is exactly what the 406 industrial batches show — 0.892 grouped
+against 0.893 random. A marginal number cannot detect this, on real data or synthetic.
+
+**The spread and the worst group are where it appears.** At the strongest block the
+cohort-to-cohort sd is 2.6× the binomial floor and one group's 90% interval covers
+**54%** of the time. <!-- not-a-claim: measured by benchmarks/block_effect_synthetic.py -->
+
+The industrial cohorts sit at 1.6× their floor, between the 0.15 and 0.30 rows here. <!-- not-a-claim: both measured by our own benchmarks -->
+That is a correspondence in magnitude and **not** evidence that the mechanism is the
+same one — the simulator's block effect is a kinetic draw, while the plant's cohorts
+confound lot, season and drift.
+
 ## Calibration transferred. Prediction did not.
 
 **Coverage lands within about two points of nominal on real industrial data.**
