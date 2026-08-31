@@ -70,6 +70,28 @@ invisible on this simulator**, so cost optimization here is driven by the other
 two terms. Anyone using this to argue about industrial economics needs a
 representative process, not this one.
 
+**Yield is not an input here, and that was argued rather than overlooked (#304).**
+The proposal was to give this model an explicit yield axis, on the reading that
+yield is "algebraically slaved to titer, not an axis anything can be optimized
+along". That reading holds at a *fixed design point* -- which is where
+:func:`break_even` stands, and why its docstring is right -- and not across design
+points, which is the space :func:`recommend_batch_by_cost` searches. Measured over
+40,000 random designs plus all 32 corners, reachable yield is 0.22-0.69 g/g and
+varies about 1.8x within a fixed titer band. <!-- not-a-claim: measured on our own simulator -->
+
+So the lever is representable already. What the model lacks is a yield *parameter*,
+and adding one would let a caller name a ``(titer, yield)`` pair no design realises
+-- turning ``cost_per_kg`` from "what this candidate costs" into "what this
+hypothetical costs". The first is what an acquisition function needs. The second is
+what a fitted *surface* needs, and ``benchmarks/try_cost_form.py`` already provides
+it by sampling the two independently, which is why its yield range runs far past
+anything the simulator produces.
+
+The identity that makes both true: ``raw_material`` **is**
+``substrate_usd_per_kg / yield``, exactly. This model is already parameterised by
+yield; it simply reaches it through the design point rather than through an
+argument.
+
 **Note the sign on titer, because an earlier version of this module had it backwards.**
 Higher titer *reduces* downstream cost — less water to remove, smaller equipment,
 fewer unit operations. It does not raise it. The reason titer is nonetheless the wrong
