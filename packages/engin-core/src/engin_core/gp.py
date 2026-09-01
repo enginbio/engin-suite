@@ -143,6 +143,31 @@ def fit_gp(X: ArrayLike, y: ArrayLike, seed: int = 0, n_restarts: int = 8) -> GP
     ``CrossConformalRegressor``, which implements CV+ and has a published bound,
     rather than something hand-rolled here that looks like it does.
     # ref: 2021-barber-jackknife-plus
+
+    **What ``n_restarts`` buys, since the number used to be unattributed (#345).**
+    Nine L-BFGS runs per fit rather than one, at roughly **8-10x the fit time**.
+    That is a real cost and it was worth asking whether it buys anything.
+
+    On the bundled simulator it usually does not: over 20 seeds x 4 training sizes,
+    ``n_restarts=8`` reaches the same log marginal likelihood as ``n_restarts=1`` in
+    78 of 80 fits and as ``n_restarts=0`` in 72 of 80.
+    **It is never beaten** -- more restarts can only raise the maximum -- so the
+    question is how often the extra ones find anything, and on tier-1 data the answer
+    is 2.5% and 10% of fits respectively.
+
+    On **real data it earns its cost**, which is the regime that decided this. The
+    likelihood surface there is close to flat: on the 406-batch erythromycin set the
+    log marginal likelihood is identical to four decimals at every restart count
+    while the fitted noise variance spans **22490 down to 58.9** -- radically
+    different signal/noise splits at the same likelihood.
+    Lowering the default moves published numbers there: ``process only`` at 48 h goes
+    from R^2 **+0.025 to -0.008**, a sign flip, and 72 h from **0.104 to 0.029**.
+    Coverage stays inside its band throughout, so what degrades is the forecast and
+    not the calibration.
+
+    So the default stays at 8, and the honest summary is that it is nearly free of
+    effect on tier 1 and load-bearing on tier 3. Lower it deliberately for
+    simulator-only work if fit time matters; do not lower it globally.
     """
     X = np.asarray(X, float)
     y = np.asarray(y, float)
