@@ -326,16 +326,13 @@ Cases where a simpler baseline wins are published in the same table as the wins.
 
 ## Install
 
-**Not released on PyPI** — and `pip install engin-core` will *appear* to work.
-Every `engin-*` name is registered as an empty placeholder reservation, so that
-command installs a stub containing nothing. See [Install](install). From source:
-
 ```bash
-git clone https://github.com/enginbio/engin-suite
-cd engin-suite && pip install -r requirements-dev.txt
+pip install "engin-host[cli]" "engin-pathway[cli]"   # all three CLIs
 ```
 
-Requires Python 3.10+. See [Install](install) for extras and the reasoning.
+On PyPI as of 0.1.1; pre-1.0, so pin an exact version. For development, install
+from a source checkout instead. Requires Python 3.10+. See [Install](install)
+for per-package installs, extras, and the reasoning.
 
 ## Contributing
 

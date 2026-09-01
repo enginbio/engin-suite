@@ -1,12 +1,13 @@
 # Install
 
-```{warning}
-**Engin has not been released to PyPI, and `pip install engin-core` is worse than
-a clean failure.** Every `engin-*` name is registered as a **placeholder
-reservation**, so the command *succeeds* and installs a `0.0.1.dev0` stub
-containing nothing. There is no name that fails cleanly.
+```{note}
+**Engin is on PyPI as of 0.1.1.** Each stage ships a console script, and
+installing any one pulls its siblings, so a single line gives you all three:
 
-Install from source until this page says otherwise.
+    pip install "engin-host[cli]" "engin-pathway[cli]"
+
+Pre-1.0, so pin an exact version (see [Versioning](#versioning)). Prefer a source
+checkout for development, or to build against unreleased changes — below.
 ```
 
 ## From source
@@ -20,8 +21,8 @@ cd packages/engin-core && pytest
 
 `requirements-dev.txt` is a requirements file rather than a root package because
 there is no root package to install — the six distributions live under
-`packages/`, and a root `pyproject.toml` would have to declare them as
-dependencies pip would then look for on PyPI, where they are not published.
+`packages/`, and it installs them editable from there, so a checkout exercises
+local changes rather than the released wheels.
 
 Requires **Python 3.10 or later**. Continuous integration runs the suites on
 3.10, 3.11, 3.12 and 3.13, and separately against the oldest dependency versions
