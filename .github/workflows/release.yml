@@ -229,7 +229,7 @@ jobs:
       # which workflow. Verifiable with `gh attestation verify <file> --repo
       # enginbio/engin-suite` and no key material for anyone to lose.
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: "dist/*"
 
