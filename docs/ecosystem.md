@@ -1715,3 +1715,38 @@ maintained is missing entirely, open an issue — see [Contributing](contributin
 If you came here looking for something and this page didn't have it, that gap is the most
 useful thing you could tell us. You read far enough to conclude the need is unmet and you
 are still here, which is more signal than any amount of guessing on our end.
+
+::::{grid} 1 1 2 2
+:gutter: 3
+
+:::{grid-item-card} Publicly
+:link: https://github.com/enginbio/engin-suite/issues/new?labels=unmet-need,task/tooling&title=Unmet+need:+
+
+A prefilled issue. Best for a concrete gap: a stale entry, a changed licence, a maintained
+tool that is missing.
+:::
+
+:::{grid-item-card} Privately
+:link: mailto:maintainers@engin.bio?subject=Unmet+need
+
+**maintainers@engin.bio** — for anyone without a GitHub account, or unwilling to describe
+in public what they are building.
+:::
+
+::::
+
+Three prompts are all it needs: **what you were trying to do**, **what you looked for**, and
+**what you found instead**. Not a form.
+
+If the need is vaguer than an issue wants to be — *"I need something for X and I don't know
+what to ask for"* — [Discussions](https://github.com/enginbio/engin-suite/discussions) is
+the better room. Filing that as an issue creates a backlog item nobody intends to close.
+
+**What happens when you do.** This is read by one person (`D18`). You will get a reply where
+there is something useful to say, and silence is not a verdict on the report — it is a solo
+project with no support commitment, and saying so is better than implying otherwise.
+
+**And what it becomes.** What arrives this way is **testimony, not evidence**
+(`CONTRIBUTING.md` rule 2). Twelve people reporting the same gap is a strong signal about
+demand and is not a measurement. If it reaches a public document it will be recorded as a
+source and phrased *"practitioners report"* — never *"studies show"*.
