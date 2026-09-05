@@ -1698,3 +1698,16 @@ in public what they are building.
 
 Three prompts are all it needs: **what you were trying to do**, **what you looked for**, and
 **what you found instead**. Not a form.
+
+If the need is vaguer than an issue wants to be — *"I need something for X and I don't know
+what to ask for"* — [Discussions](https://github.com/enginbio/engin-suite/discussions) is
+the better room. Filing that as an issue creates a backlog item nobody intends to close.
+
+**What happens when you do.** This is read by one person (`D18`). You will get a reply where
+there is something useful to say, and silence is not a verdict on the report — it is a solo
+project with no support commitment, and saying so is better than implying otherwise.
+
+**And what it becomes.** What arrives this way is **testimony, not evidence**
+(`CONTRIBUTING.md` rule 2). Twelve people reporting the same gap is a strong signal about
+demand and is not a measurement. If it reaches a public document it will be recorded as a
+source and phrased *"practitioners report"* — never *"studies show"*.
