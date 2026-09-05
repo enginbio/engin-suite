@@ -116,15 +116,15 @@ The realistic failure mode for a one-maintainer project is not conflict. It is s
 
 **5.4 Names and infrastructure.** The `engin.bio` domain is held by EnginBio.
 
-**Every `engin-*` distribution name is registered to this project**, as placeholder reservations rather than releases — each a `0.0.1.dev0` stub whose description points back at this repository. `enginbio` is not registered. The bare name `engin` belongs to an unrelated dependency-injection framework and is not obtainable.
+**Every `engin-*` distribution name is registered to this project.** The suite's first real release, `0.1.1`, is published to all six (2026-08-22); each name also carries the earlier `0.0.1.dev0` reservation stub beneath it. `enginbio` is not registered. The bare name `engin` belongs to an unrelated dependency-injection framework and is not obtainable.
 
 This paragraph has been wrong about the count four times, because it restated an index state that kept moving. It no longer carries a count: the names are discovered from `packages/*/pyproject.toml` and checked against the live index by `python scripts/pypi/reserve_names.py --verify`, which CI runs. If that check passes, this sentence is true; if a name is ever unclaimed, CI says so rather than this paragraph going quietly stale a fifth time.
 
-**Nothing has been *released*.** A reservation stub is not a distribution: `pip install engin-core` succeeds and gives you an empty placeholder, which is a more confusing outcome than failing outright. Install from the repository.
+**`pip install engin-core` works as of `0.1.1`.** Before that release it fetched only an empty `0.0.1.dev0` placeholder — a more confusing outcome than a clean failure; that is no longer the case.
 
 This section has now been wrong in both directions. An early version claimed the names were held when none were; it was corrected on 2026-08-13 to say none were registered, and that in turn went stale when four were taken on 2026-08-14. Corrected again 2026-08-16 rather than quietly amended — checked against PyPI on that date, name by name.
 
-The practical consequence for anyone depending on this: **install from the repository, and do not assume a PyPI name is ours until this section says it is.** On handover, whatever is held transfers with the project where transferable. Where not, a fork is free to rename, and this project will link to it.
+The practical consequence for anyone depending on this: **install a released version from PyPI or editable from a source checkout, and do not assume an unreleased PyPI name is ours until this section says it is.** On handover, whatever is held transfers with the project where transferable. Where not, a fork is free to rename, and this project will link to it.
 
 ---
 

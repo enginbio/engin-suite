@@ -21,8 +21,9 @@ the Gaussian process.
 
 
 ```{note}
-Engin is **not on PyPI** — see [Install](install.md). Clone and install from
-source.
+This quickstart runs a script from the source tree, so it clones the repo. To use
+Engin as a library or through the CLIs, it is on PyPI as of 0.1.1 —
+`pip install "engin-host[cli]" "engin-pathway[cli]"`. See [Install](install.md).
 ```
 
 ## You do not need a lab to run any of this

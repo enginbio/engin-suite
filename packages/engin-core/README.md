@@ -21,8 +21,12 @@ Calibrated uncertainty is the whole point of the wedge: a scale-up decision need
 
 ## Install
 
-**Not published to PyPI yet** — `pip install engin-core` will not find anything.
-Install from a checkout of the monorepo:
+```bash
+pip install engin-core        # on PyPI as of 0.1.1; add the [cli] extra for the engin-process script
+```
+
+Pre-1.0 — pin an exact version. For development, install editable from a checkout
+of the monorepo:
 
 ```bash
 git clone https://github.com/enginbio/engin-suite
