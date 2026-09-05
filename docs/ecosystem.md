@@ -839,10 +839,28 @@ commits since January 2024. Run it, pin the whole dependency tree, and do not bu
 CI gate on it.
 
 **Dead ends.** [cameo](https://github.com/biosustain/cameo) has been dormant since 2022
-and is superseded by StrainDesign. [MEWpy](https://github.com/BioSystemsUM/mewpy) had the
-most interesting evolutionary strain-design layer and has been dormant since 2024. The
-MATLAB COBRA Toolbox requires a commercial MATLAB seat, which makes it non-reproducible
-for anyone without an institutional licence regardless of its own terms.
+and is superseded by StrainDesign. The MATLAB COBRA Toolbox requires a commercial
+MATLAB seat, which makes it non-reproducible for anyone without an institutional
+licence regardless of its own terms.
+
+**Not a dead end any more, and this page had it wrong.** [MEWpy](https://github.com/BioSystemsUM/mewpy)
+has the most interesting evolutionary strain-design layer in the slot, and until 2026-08-30
+this paragraph listed it as dormant since 2024. The canonical repository *is* frozen — the
+default branch's newest commit is
+[`6a5031d`](https://github.com/BioSystemsUM/MEWpy/commit/6a5031d6b8c654e15b7b53778d7a8186ad735b23),
+2024-06-09. **Development moved rather than stopped.** The lead developer's fork,
+[vmspereira/MEWpy](https://github.com/vmspereira/MEWpy), is active to 2026-01-04, and the
+PyPI distribution `mewpy` now points its Repository and Development URLs at that fork
+rather than at the organisation. So `pip install mewpy` today installs work maintained in a
+personal fork, which is a different bus-factor question from the one "dormant" implies.
+
+**And it is GPL-3.0**, which this page never stated in either direction. `LICENSE` on the
+fork's default branch opens "GNU GENERAL PUBLIC LICENSE / Version 3, 29 June 2007", and the
+2026-01-04 README commit describes itself as updating the licence information "to match GPL
+v3.0 badge". Copyleft, so it sits on the same side of the line as COBRApy for an
+Apache-2.0 project and is a subprocess boundary at best, never a dependency. *(Commits and
+`LICENSE` read through the GitHub API at both addresses on 2026-08-30; PyPI project metadata
+read the same day.)*
 
 **If you pick one:** COBRApy — it is not really a choice, it is the data model. Decide
 the GPL question deliberately before importing it.
@@ -1159,7 +1177,12 @@ pipeline stage. [ProteinNPT](https://github.com/OATML-Markslab/ProteinNPT) (MIT)
 very few architectures built *for* the low-N regime rather than adapted to it, but it is
 GPU-hungry, research-packaged, and slowing.
 [FLIP](https://github.com/J-SNACKKB/FLIP) tests distribution shift on enzyme-engineering
-datasets, which complements ProteinGym's sample-scarcity splits.
+datasets, which complements ProteinGym's sample-scarcity splits — but it is **AFL-3.0**,
+not MIT, and it was the one entry in this licence-labelled slot carrying no label. `LICENSE`
+on `main` opens "Academic Free License (AFL) v. 3.0" *(read 2026-08-30)*. AFL-3.0 is
+OSI-approved and permissive in effect, so nothing here is blocked; it is flagged because it
+is GPL-incompatible by the FSF's reckoning and because a reader scanning a column of MITs
+will assume this one is too.
 [ProteinMPNN](https://github.com/dauparas/ProteinMPNN) and
 [LigandMPNN](https://github.com/dauparas/LigandMPNN) are MIT for code *and* weights but are
 inverse-folding models — a decent zero-shot stability proxy and a poor activity predictor.
@@ -1356,9 +1379,17 @@ Python interface, from Forschungszentrum Jülich.
   as a hosted service, with no distribution involved; GPL-3.0 does not. *(Both files
   read at their respective refs on 2026-08-24; the previous version of this page
   stated AGPL flatly and treated it as a longstanding fact.)*
-- **Con** — a C++ simulator, not a bioprocess library. Standing up a case means
-  building or fetching binaries and writing the model configuration; there is no
-  `pip install` that gets you a costed recovery step.
+- **Con** — a C++ simulator, not a bioprocess library. Standing up a case still means
+  writing the model configuration, and no `pip install` gets you a *costed* recovery step —
+  that part of this slot's gap is unchanged.
+- **Correction, 2026-08-30: "you have to build or fetch binaries" is no longer true, and
+  the pip route lands on the copyleft side of the split above.** The `v5.1.1` release notes
+  say verbatim that it "marks the first release of CADET-Core on PyPI" *(release published
+  2026-03-18; notes read through the GitHub API on 2026-08-30)*. `v5.1.1` is cut from the
+  `v5.1.X` branch, i.e. the **GPL-3.0** tree — so `pip install cadet-core` gets you GPL
+  while `master` is AGPL. That makes the licence con above sharper rather than softer: the
+  easiest way to obtain this project is now also the way that hides which of the two
+  licences you took.
 :::
 
 :::{dropdown} CADET-Process — GPL-3.0
