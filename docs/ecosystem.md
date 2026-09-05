@@ -176,6 +176,13 @@ Apache-2.0. A BoTorch-backed Bayesian DoE engine built for wet-lab campaigns.
 - **Pro** — transfer learning is first-class, which is the shape of the
   shake-flask-to-bioreactor problem, and it ships a backtesting harness so you can
   run the honest BO-versus-RSM comparison on your own history.
+- **Pro** — multi-objective is first-class too, and has been since `0.13.0`
+  (2025-04-16): a `ParetoObjective` over multiple targets with
+  `qNoisyExpectedHypervolumeImprovement`, `qLogNoisyExpectedHypervolumeImprovement`
+  and `qLogNParEGO`, joined by `qEHVI` and `qLogEHVI` in `0.14.0` (2025-09-10). The
+  trade-off a reader arrives at this slot with — titer against cost, or yield against
+  an impurity spec — does not need Ax to express it. *(Read from BayBE's
+  `CHANGELOG.md` on 2026-09-05.)*
 - **Con** — pulls the full torch/botorch/gpytorch stack for a package whose job is
   "suggest eight flask conditions", and the release cadence is aggressively
   breaking. Pin the exact version.
@@ -193,8 +200,13 @@ MIT. The reference implementation of modern acquisition functions, plus a campai
 layer over it.
 
 - **Pro** — everything downstream in this slot is built on BoTorch, so the learning
-  transfers; qNEHVI gives real multi-objective support (titer versus cost versus
-  impurity) that nothing else here matches.
+  transfers, and qNEHVI gives real multi-objective support (titer versus cost versus
+  impurity). It is no longer the only entry here that has it. *(Corrected 2026-09-05:
+  this clause ended "that nothing else here matches", and that stopped being true on
+  2025-04-16 — see the BayBE entry above. The BoFire entry below has said "Single and
+  multi-objective are both supported" the whole time, so the page contradicted itself
+  within one slot, and the slot routed a reader with a Pareto problem to the entry
+  whose own cons are "no domain affordances whatsoever" and a pinned BoTorch.)*
 - **Pro** — Ax persists trial state between weeks-long experiment rounds and can
   mark a trial abandoned, which is what a contaminated run actually needs.
 - **Con** — no domain affordances whatsoever, and Ax pins an exact BoTorch version,
