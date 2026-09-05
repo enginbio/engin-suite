@@ -29,9 +29,23 @@ the filtering pip uses:
     >>> SpecifierSet("").filter([Version("0.0.1.dev0"), Version("1.0.0")])
     [<Version('1.0.0')>]
 
-So a user gets an empty stub rather than "no matching distribution", which is the more
-confusing outcome and is why ``docs/install.md``, ``docs/index.md`` and ``GOVERNANCE.md``
-all warn about it. Those pages were right and this file was wrong -- including in the
+**That reasoning was correct and its premise expired the week it was written.**
+``0.1.1`` was published to all six names on **2026-08-22**, seven days before #315 --
+so by then a real release *did* match, the fallback no longer applied, and
+``pip install engin-core`` resolved to 0.1.1 rather than to a stub. The specifier
+semantics above are still right; the "there is no other release" they rested on is
+not. Corrected 2026-09-05 (#368).
+
+**Both halves of that are worth keeping in view**, because this file has now been
+wrong in each direction: first about pre-release selection, then about whether
+anything had been released at all. The mechanism was verified and the premise was
+not, which is the cheaper mistake to make and the harder one to notice.
+
+The historical note below is why ``docs/install.md``, ``docs/index.md`` and
+``GOVERNANCE.md`` used to warn about the stub -- they were right at the time and are
+now corrected too. It is kept because it explains what a reader will still find if
+they look at the ``0.0.1.dev0`` artifacts, which remain on the index beneath the real
+releases. Including in the
 README it uploads, so the false claim was published on PyPI.
 
 This is deliberately not name-squatting, and the metadata is written so a reviewer can see
@@ -99,15 +113,16 @@ README = """\
 
 `{name}` is part of [engin-suite]({repo_url}), an Apache-2.0 toolkit for bioprocess
 forecasting under calibrated uncertainty, coupled to cost. The code for this package is
-real and public — it is in the repository — but no usable version has been published to
-PyPI yet.
+real and public — it is in the repository — and a usable version **is** published: see
+the project's latest release rather than this `{version}` placeholder.
 
 This `{version}` marker exists so the name is held by the project rather than by whoever
 takes it first. It contains no modules and does nothing if installed.
 
-**`pip install {name}` will select this stub.** A pre-release is normally skipped, but
-only when some other release matches -- and there is no other release, so it is chosen
-anyway. Expect an install that succeeds and gives you nothing.
+**It is no longer what `pip install {name}` gives you.** A real release is published,
+so pip resolves to that and skips this pre-release marker. This stub remains on the
+index beneath it, and this description is what you are reading if you navigated to
+the `{version}` artifact directly.
 
 ## What to do instead
 
