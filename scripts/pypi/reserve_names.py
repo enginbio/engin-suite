@@ -62,6 +62,48 @@ PACKAGES = REPO / "packages"
 PLACEHOLDER_VERSION = "0.0.1.dev0"
 REPO_URL = "https://github.com/enginbio/engin-suite"
 
+#: Documents that tell a reader whether Engin is installable. This prose has
+#: disagreed with the index **five** times -- four where the index moved and the
+#: prose did not (#269), and once the other way, where six documents said
+#: ``pip install`` gave you nothing after ``0.1.1`` had shipped (#368). The second
+#: direction is the more misleading one: a reader concludes the project is broken
+#: rather than unpublished.
+_CLAIM_ROOTS = ("README.md", "GOVERNANCE.md", "DECISIONS.md", "CONTRIBUTING.md")
+
+#: Phrases that assert Engin is *not* installable. Deliberately a short, literal
+#: list rather than anything clever: validated against `main` immediately before
+#: #368, where it catches four of the six documents that correction had to fix, at
+#: the exact lines, and produces no hits on the tree after it.
+_NOT_RELEASED = re.compile(
+    r"not (?:yet )?on PyPI"
+    r"|not released on PyPI"
+    r"|has not been released"
+    r"|empty stub"
+    r"|installs nothing"
+    r"|fetches nothing",
+    re.IGNORECASE,
+)
+
+#: A corrected page often *quotes* the claim it withdrew, and that quotation is
+#: the opposite of the defect. Same line-scoped escape hatch the evidence checks
+#: use, and using it is a visible act in the diff.
+_CLAIM_OPT_OUT = re.compile(r"<!--\s*pypi-status-ok\b[^>]*-->")
+
+
+def _documents_denying_release() -> list[tuple[str, int, str]]:
+    """Published lines asserting Engin is not installable, with their locations."""
+    paths = [p for p in (REPO / "docs").rglob("*.md") if "_build" not in p.parts]
+    paths += [REPO / name for name in _CLAIM_ROOTS]
+    found = []
+    for path in sorted(paths):
+        if not path.exists():
+            continue
+        for number, line in enumerate(path.read_text().splitlines(), 1):
+            if _NOT_RELEASED.search(line) and not _CLAIM_OPT_OUT.search(line):
+                found.append((str(path.relative_to(REPO)), number, line.strip()))
+    return found
+
+
 PYPROJECT = """\
 [build-system]
 requires = ["setuptools>=68", "wheel"]
@@ -174,7 +216,28 @@ def main() -> int:
         # anything. The point is that a document claiming an index state can be
         # checked against the index rather than re-read by a human for a fifth time.
         print(f"Verifying {len(names)} names against PyPI:")
-        return 0 if _report(names, verify_only=True) else 1
+        if not _report(names, verify_only=True):
+            return 1
+
+        # The index half passing is not the check. Every name being held while a
+        # document still says otherwise is exactly the state #368 shipped, and
+        # `_report` cannot see it -- it compares the index to `pyproject.toml` and
+        # then tells a human the documents "may say so".
+        denials = _documents_denying_release()
+        if denials:
+            print(
+                f"\nAll names are held, but {len(denials)} published line(s) still say "
+                "Engin is not installable:"
+            )
+            for path, number, text in denials:
+                print(f"  {path}:{number}\n      {text[:96]}")
+            print(
+                "\nUpdate them, or mark a line that is quoting a withdrawn claim with"
+                "\n  <!-- pypi-status-ok: why this line is correct -->"
+            )
+            return 1
+        print("No published line contradicts that.")
+        return 0
 
     outdir = Path(args.outdir)
     if outdir.exists():
@@ -259,7 +322,7 @@ def _report(names: list[str], verify_only: bool = False) -> bool:
         )
         return False
     if verify_only:
-        print(f"\nAll {len(held)} names held. The documents may say so.")
+        print(f"\nAll {len(held)} names held.")
     else:
         print("\nAll names held. Update GOVERNANCE.md 5.4 to say so.")
     return True

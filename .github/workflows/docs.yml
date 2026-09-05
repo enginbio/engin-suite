@@ -186,16 +186,26 @@ jobs:
   # the live index against the names discovered from packages/*/pyproject.toml,
   # so the two cannot silently disagree.
   #
-  # Scheduled rather than per-PR, on the same reasoning as cache-freshness above
-  # (#166): the drift is a calendar problem, not a per-change one -- the index
-  # moves independently of pull requests. Making it a required check would also
-  # put pypi.org's availability in front of every merge, which is a bad trade for
-  # a fact that changes a few times a year.
+  # **Now on pull requests too, because the scheduled-only reasoning covered one
+  # direction of the defect and not the other.** It read: the drift is a calendar
+  # problem, not a per-change one, since the index moves independently of pull
+  # requests (#166). True when the index moves and the prose lags -- the four
+  # failures in #269. It is not true of #368, where a release had already shipped
+  # and six documents still said `pip install` gave you nothing: there the *prose*
+  # was the thing that moved, which is per-change by definition, and a weekly job
+  # catches it up to a week after a reader does.
   #
-  # Read-only and unauthenticated. `--verify` treats an unreachable index as
-  # unknown rather than unclaimed, so an outage reports and does not fail.
+  # The other objection -- putting pypi.org in front of every merge -- is already
+  # answered by the script rather than by the schedule: `--verify` reports an
+  # unreachable index as unknown and does not fail on it. That was true before
+  # this change and is what makes running per-PR safe.
+  #
+  # Kept on the schedule as well, because the index-moves-first direction is real
+  # and no pull request would catch it.
   pypi-names:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'pull_request' || github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
