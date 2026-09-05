@@ -73,6 +73,7 @@ are explained. Read them before trusting any number that comes back — in parti
 pathway step features are your own judgement entered by hand, not computed from
 structure ([#140](https://github.com/enginbio/engin-suite/issues/140)).
 
+(versioning)=
 ## Versioning
 
 Pre-1.0: pin an exact version, or a commit. See
