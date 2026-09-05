@@ -329,14 +329,65 @@ deletes the Dash web app — so the installable package trails the repository by
 version with no tag to pin. And the repository was silent between those two commits.
 Cite the method; do not take the dependency. *(Checked 2026-08-18.)*
 
+:::{dropdown} Atlas — MIT — the only entry here that models a failed experiment
+:animate: fade-in-slide-down
+
+[the-matter-lab/atlas](https://github.com/the-matter-lab/atlas)
+
+MIT (`LICENSE`, "Copyright (c) 2022 rileyhickman"). A BoTorch-backed planner for
+self-driving laboratories, and the reference implementation of Bayesian
+optimization under *unknown* constraints — the case where an experiment runs and
+returns nothing.
+
+- **Pro** — `src/atlas/unknown_constraints/` treats a failed experiment as a label
+  rather than an absence: a classifier over feasible/infeasible outcomes driving
+  `feas_strategy` in `{naive-0, fwa, fca, fia}` — feasibility-weighted,
+  feasibility-constrained and feasibility-interpolated acquisition. Nothing else in
+  this slot has the concept. Ax can mark a trial abandoned, which is a status;
+  this is a model of *where* failures live in the design space.
+- **Pro** — pending experiments are handled by Kriging-Believer-style conditioning,
+  and input uncertainty — a pump that does not deliver its setpoint — composes in
+  through `matter-golem`. Those are the other two things a weeks-long parallel
+  campaign needs and this slot otherwise has nowhere to send you for.
+- **Con** — **not installable from the index.** `setup.py` names the distribution
+  `matter-atlas` and no such project exists on PyPI, while its own dependencies
+  `matter-golem` and `matter-chimera` are both there — so this is an omission, not
+  a naming difference. Install is from git, with no released version to pin.
+  *(Checked 2026-09-04.)*
+- **Con** — quiet since 2025-05-21, and the last commit is a README link update
+  rather than a sign of life. Not archived; treat it as a thing to read rather
+  than a thing to depend on, and re-check before building on it.
+- **Con** — the interpreter ceiling this page previously stated as a bare fact is
+  real but comes from somewhere other than where a reader would look. `setup.py`
+  declares `python_requires=">=3.9"` and then pins `pandas<=2.0.3` and
+  `matplotlib<=3.7.3`, neither of which publishes wheels for recent interpreters.
+  It is an upper-pin problem, and unpinning it is your problem.
+- **Con** — the repository moved, and the old path still resolves.
+  `aspuru-guzik-group/atlas` is a **301 redirect** to `the-matter-lab/atlas`,
+  exactly as Olympus did below, so the GitHub API follows it silently while a
+  reader clicking an old citation — including the availability statement in the
+  paper's own text — lands somewhere they did not expect. Link the current path.
+
+Reference: Hickman, Tom, Zou, Aldeghi & Aspuru-Guzik, *Digital Discovery* (2025),
+[10.1039/d5dd00018a](https://doi.org/10.1039/d5dd00018a).
+:::
+
 **Dead ends.** `pyDOE3` was archived in May 2026 and points back at `pydoe`.
 [scikit-optimize](https://github.com/holgern/scikit-optimize) has been dormant since
 mid-2024. [dexpy](https://github.com/statease/dexpy) last moved in 2018.
 [Summit](https://github.com/sustainable-processes/summit) is useful now only as a
-source of benchmark problems. [Atlas](https://github.com/aspuru-guzik-group/atlas)
-has a good paper and a Python ceiling below 3.11.
-[EDBO+](https://github.com/doyle-lab-ucla/edboplus) is research code — cite the
-method, don't depend on the package.
+source of benchmark problems.
+
+**Removed from that list on 2026-09-04, because it is alive.**
+[EDBO+](https://github.com/doyle-lab-ucla/edboplus) (MIT) was filed above as a dead
+end. It is not one: commits land on `main` at low volume but without a gap —
+2025-08-19, 2025-09-04 (a fix to the expected-improvement values written to the
+prediction file), 2025-09-19, 2026-02-17 and 2026-09-03. The advice this page gave
+survives the correction, but for a different reason than "it stopped moving": PyPI
+carries `edboplus` **0.0.2** and nothing since, so the 2026-02-17 commit — which
+changed the prediction file from variance to standard deviation, a user-visible
+change of meaning — exists only in git. Cite the method; if you must depend on it,
+depend on a commit, not on the release. *(Checked 2026-09-04.)*
 
 :::{dropdown} Benchmark harnesses: there is not one to run inside — dead end
 :animate: fade-in-slide-down
