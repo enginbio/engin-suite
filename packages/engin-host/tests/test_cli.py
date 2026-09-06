@@ -121,3 +121,23 @@ def test_the_starter_config_only_documents_capabilities_that_exist():
     assert not unknown, (
         f"the starter config documents capabilities the KB rejects: {sorted(unknown)}"
     )
+
+
+def test_the_printed_kb_size_matches_the_kb(tmp_path, capsys):
+    """#330, #367: every hand-written copy of this number has drifted.
+
+    Six places said 60 after ADR 0010 retired a capability, and two more said
+    "sixty" in words — which #330's sweep missed because it grepped the digits.
+    The user-facing count is derived now, so this asserts the property rather than
+    the value: whatever the KB holds is what the CLI says.
+    """
+    from engin_host.kb import default_kb
+
+    kb = default_kb()
+    expected = len(kb.hosts) * len(kb.capabilities)
+
+    assert main(["--config", _write(tmp_path, GOOD)]) == 0
+    out = capsys.readouterr().out
+    assert f"illustrative: {expected} hand-assigned" in out, (
+        f"CLI should report {expected} cells; got:\n{out[-400:]}"
+    )
