@@ -60,10 +60,14 @@ def _body(args: argparse.Namespace, project: ProjectConfig) -> int:
             f"\nconfidence: {decision.confidence:.2f}  "
             f"— P({decision.host} really is the best feasible host here)"
         )
+        # Counted rather than typed. Every hand-written copy of this number has
+        # drifted at least once -- six places said 60 after ADR 0010 retired a
+        # capability (#330), and two more said "sixty" in words (#367).
+        cells = len(kb.hosts) * len(kb.capabilities)
         print(
-            "\nThe capability knowledge base is illustrative: 54 hand-assigned values\n"
-            "with no citations behind them (issue #146). Treat this as a structured\n"
-            "way to argue about the choice, not as evidence for it."
+            f"\nThe capability knowledge base is illustrative: {cells} hand-assigned\n"
+            "values with no citations behind them (issue #146). Treat this as a\n"
+            "structured way to argue about the choice, not as evidence for it."
         )
 
     emit(payload, args.json, human)
