@@ -58,8 +58,16 @@ What genuinely isn't served turns out not to be data-structure shaped: calibrati
 
 **So: use xarray and pandas as-is, publish a thin versioned convention over them, and build the ingest layer.** That last is the real contribution — unglamorous, genuinely hard, and nobody has built it. Standard-hood, if it comes, comes from the convention and loaders being the obvious way to do this, not from owning a type. Precedent: climate science layered CF conventions onto netCDF rather than inventing an array format.
 
-**D12 — Tiered validation, each tier's limitation published.** `standing`
-Synthetic-only validation is disqualifying: R² 0.97 on your own simulator reads as "the code runs." But a binary synthetic-bad/real-good framing isn't achievable either — no public corpus of in-domain microbial DoE with absolute titers exists.
+**D12 — Tiered validation, each tier's limitation published.** `standing` — *absence claim narrowed 2026-09-05*
+Synthetic-only validation is disqualifying: R² 0.97 on your own simulator reads as "the code runs." But a binary synthetic-bad/real-good framing isn't achievable either — no public corpus of *process-condition* design-of-experiments data with absolute titers exists.
+
+**Corrected 2026-09-05: this sentence said "in-domain microbial DoE", and the narrowing that made it true never reached this file.** `docs/limitations.md` narrowed it twice — on 2026-08-10, and again on 2026-08-16 where it states outright that "in-domain" *"reads as any microbial DoE and is false on that reading"*. `sources.yaml` is more explicit still: the JBEI isoprenol campaign is filed as `contradicts` with the note that it "does overturn the *older* wording (`in-domain microbial DoE`)". So the register recorded this phrasing as overturned for three weeks while the decisions record kept publishing it.
+
+"In-domain" here means Engin's own design space — `feed_rate`, `feed_start`, `Sf`, `induction_time`, `S0`. A design-of-experiments over gene targets is not an input this model can consume, which is why the JBEI isoprenol campaign falsifies the absolute-titer half and not the claim.
+
+**The claim is narrow and possibly temporary, and should be read that way.** The JBEI flaviolin campaigns are designed variation over process inputs across multiple cycles and fail it on the assay alone — Abs340, which that paper itself calls a titer proxy. Limitations puts it as "one measurement away from not existing". Treat a counterexample as a contribution rather than an embarrassment; the tier-4 gap closing would be good news.
+
+**Why this was invisible.** `check_corrections.py` scans this file. It did not fire because the narrowing note *describes* the withdrawn wording rather than quoting it in the form the checker parses, so no retracted phrase was ever generated to search for. Found by an ecosystem audit, not by a check — which is the same failure mode as #368, one document corrected and a second left behind.
 
 Five tiers, each published with what it does and does not prove: own simulator → an independent simulator → real but out-of-domain industrial data → in-domain literature DoE → partner data. More credible than a blanket "validated on real data," and a publishable methods contribution.
 
