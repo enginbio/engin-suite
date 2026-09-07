@@ -102,7 +102,23 @@ EXEMPT_NAMES = {
 }
 
 # Quoted spans inside a notice: straight, curly, or italicized-quoted.
-QUOTED = re.compile(r"[\"“]([^\"“”]{40,})[\"”]")
+#
+# **The length floor is applied after pairing, not inside it.** This pattern used
+# to read ``[\"“]([^\"“”]{40,})[\"”]``, which silently mis-pairs quotes whenever a
+# notice contains a *short* quoted span: the short span cannot match, so its
+# closing quote is taken as an opening one and the ordinary prose that follows is
+# captured instead. Both failure directions were live in ``DECISIONS.md`` --
+# three of the six phrases it generated were prose fragments beginning ", and",
+# which can never legitimately match anything, and in the same paragraphs the
+# *real* withdrawn claim was consumed as a closing delimiter and never extracted.
+# A checker that silently stops looking for the thing it exists to find is worse
+# than one that fails loudly (found while auditing why #378 went uncaught).
+QUOTED = re.compile(r"[\"“]([^\"“”]*)[\"”]")
+
+#: Shortest quoted span worth treating as a withdrawn claim. Applied to
+#: :data:`QUOTED`'s captures rather than baked into the pattern, for the reason
+#: above.
+MIN_QUOTE_CHARS = 40
 
 # How much of a quoted span must reappear before it counts. Long enough that
 # ordinary shared phrasing does not trip it, short enough to survive rewrapping
@@ -128,6 +144,8 @@ def retracted_phrases(decisions: str) -> list[str]:
         if not NOTICE.search(para):
             continue
         for quoted in QUOTED.findall(para):
+            if len(quoted) < MIN_QUOTE_CHARS:
+                continue
             core = normalize(quoted)[:CORE_CHARS]
             if len(core) >= CORE_CHARS:
                 cores.append(core)
