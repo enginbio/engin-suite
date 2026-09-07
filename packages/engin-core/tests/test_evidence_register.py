@@ -452,3 +452,47 @@ def test_an_unreadable_database_is_never_called_churn(tmp_path):
     head = tmp_path / "not-a-database.db"
     head.write_bytes(b"certainly not sqlite")
     assert cc.compare(base, head)[0] == cc.SUBSTANTIVE
+
+
+# --- quote pairing in correction notices -------------------------------------
+#
+# The length floor used to live inside the QUOTED pattern, which mis-paired
+# quotes whenever a notice also carried a *short* quoted span. Both directions
+# were live in DECISIONS.md: prose fragments filed as retracted claims, and the
+# real withdrawn claim consumed as a closing delimiter and never extracted.
+
+
+_SHORT_THEN_LONG = (
+    'Corrected 2026-01-01: this said "too short", and the prose in between is not a '
+    'quotation at all, but "the genuinely withdrawn claim runs long enough to clear "\n'
+    "the floor and is the thing that must be found."
+)
+
+
+def test_a_short_quote_does_not_swallow_the_real_one(tmp_path):
+    """The failure that made #378 invisible: pairing, not matching."""
+    cm = _corrections_module()
+    captured = cm.QUOTED.findall(_SHORT_THEN_LONG)
+
+    # The short span is captured and then rejected on length, rather than being
+    # skipped by the pattern and desynchronising everything after it.
+    assert "too short" in captured
+    assert any(len(c) >= cm.MIN_QUOTE_CHARS for c in captured), captured
+
+    # And no capture is a prose fragment starting mid-sentence.
+    used = [c for c in captured if len(c) >= cm.MIN_QUOTE_CHARS]
+    assert not any(c.lstrip().startswith((", and", ", but")) for c in used), used
+
+
+def test_the_length_floor_still_rejects_short_quotes(tmp_path):
+    """Relaxing the pattern must not relax what counts as a retracted claim."""
+    cm = _corrections_module()
+    notice = 'Corrected: this previously said "a brief aside" and nothing else.'
+    assert cm.retracted_phrases(notice) == []
+
+
+def test_a_long_quote_in_a_notice_is_still_extracted():
+    """The property the check exists for, unchanged by the pairing fix."""
+    cm = _corrections_module()
+    cores = cm.retracted_phrases(_NOTICE)
+    assert cores, "a notice quoting a withdrawn claim must still yield a phrase"
