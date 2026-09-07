@@ -509,13 +509,40 @@ BSD-3. The scikit-learn-contrib conformal library.
   the repository returns no hits. `TimeSeriesRegressor` covers ACI and EnbPI, which
   adapt online and are a different family from reweighting a fixed calibration set.
 - **Con** — the v1 API is a rewrite; most tutorials on the internet target the dead
-  v0 classes. The newer conditional-conformal features require torch, so
-  "lightweight" holds only on the classical path.
+  v0 classes, and the rewrite **dropped Mondrian**. `mapie/mondrian.py`, exporting
+  `MondrianCP`, is in the 0.9.2 wheel; nothing matching `mondrian` — file, class or
+  export — is in the 1.5.0 wheel. Stratum-conditional coverage now means
+  `ConditionalSplitConformalRegressor` in `mapie/conditional_conformal_prediction.py`,
+  which takes a `feature_map` rather than a group label, so this is a port and not a
+  rename. Worth knowing before pinning: the capability a reader comes to this slot
+  for may be the one the upgrade removed.
+- **Con** — that conditional path needs a convex solver and will not run without one.
+  `conformalize` raises `ImportError: cvxpy is required for
+  ConditionalSplitConformalRegressor` through a lazy import, so the failure arrives at
+  fit time rather than at install time.
 - **Con** — the guarantee it implements is the marginal one, and the library will not
   stop you reading a per-stratum number off it. That is a property of split conformal
   rather than of MAPIE, but it is where users of it go wrong.
 
 Reference: Cordier et al., *Proceedings of COPA* (PMLR 204:549-581, 2023).
+
+```{note}
+**Corrected 2026-09-07: the rewrite con said the conditional-conformal features
+"require torch", and torch is not what they require.**
+`mapie/conditional_conformal_prediction.py` imports numpy, scipy and scikit-learn and
+nothing else; the solver arrives through a lazy `_import_cvxpy` whose own error names
+cvxpy. Measured in an environment with no torch installed:
+`ConditionalSplitConformalRegressor` conformalizes and returns intervals once cvxpy is
+present. The `conditional` extra *does* declare `torch>=2.0` beside cvxpy, so
+`pip install mapie[conditional]` pulls a deep-learning stack the code path never
+imports — the requirement is packaging metadata rather than the algorithm, and the
+distinction decides whether a reader who needs conditional coverage installs a solver
+or a framework. This page was routing them away on the second.
+
+*(Wheels for 0.9.2 and 1.5.0 downloaded from PyPI and their file lists, metadata and
+module imports read on 2026-09-07. Reported as read from the distributions, not from
+the documentation site.)*
+```
 
 ```{note}
 **Corrected 2026-08-16.** This entry previously said MAPIE "has a preprint and no
