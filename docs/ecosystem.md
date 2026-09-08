@@ -699,7 +699,24 @@ NCSA (permissive). Flowsheet design, simulation, TEA and LCA of biorefineries.
   BioSTEAM sits *downstream* of a titer forecast; it does not produce one.
 - **Con** — effectively a single dominant committer, and the GitHub Releases tab is
   years stale because the project ships via PyPI only. Judge maintenance from
-  commits, not from releases.
+  commits, not from releases. **But do not read the commit stream as the install
+  either:** the newest PyPI release is `2.53.11`, published 2026-05-21, while `master`
+  is taking commits through 2026-09-08 — the most recent of them on fermentation
+  substrate uptake. Commits tell you the project is alive; they do not tell you what
+  `pip install biosteam` contains, and here the two are months apart. *(Release list
+  read from PyPI and the commit list from the GitHub API, both 2026-09-08.)*
+- **Con, and it is new — capability has begun leaving the package.** The automated
+  heat-exchanger-network synthesis facility formerly reached as
+  `biosteam.facilities.hxn` is now a separate distribution,
+  [hensmith](https://pypi.org/project/hensmith/) (NCSA, `0.1.2`, published
+  2026-09-04), whose own PyPI description states that it "provides the automated heat
+  exchanger network (HXN) synthesis facility previously distributed as
+  `biosteam.facilities.hxn`". The engineering case for splitting it is not in
+  question; the consequence for a reader is. Utility integration is where a
+  fermentation flowsheet's steam and cooling costs are actually decided, so a TEA
+  reproduced against an older pin may need a second dependency to produce the same
+  number, and the split is recent enough that essentially no existing BioSTEAM
+  tutorial or paper mentions it. *(PyPI project page read 2026-09-08.)*
 
 Reference: Cortés-Peña et al., *ACS Sustainable Chem. Eng.* (2020),
 [10.1021/acssuschemeng.9b07040](https://doi.org/10.1021/acssuschemeng.9b07040).
@@ -1678,6 +1695,17 @@ BSD-3. The standard cheminformatics toolkit.
   molecular-weight-distribution semantics are not first-class.
 - **Con** — C++ behind Python bindings, so stack traces stop being informative at the
   boundary. It gives you graphs and descriptors, never a model.
+- **Con, and it is a packaging trap rather than a defect in the project** — the
+  distribution to depend on is `rdkit`, but the superseded name `rdkit-pypi` is still
+  live on PyPI and still installs. It is frozen at `2022.9.5`, published 2023-02-26,
+  and its own project description says what happened: "`rdkit-pypi` is the old name of
+  this project at PyPI. Future RDKit versions will be available at the `rdkit` PyPI
+  repository. Please update your dependencies, i.e., change `rdkit-pypi` to `rdkit`."
+  Requirements files, Dockerfiles and tutorials written before the rename still say
+  `rdkit-pypi`, and copying one gets you a years-old build with no error and no
+  warning — the same shape of trap as `retropath2-wrapper` above, and easier to walk
+  into because the package that catches you is the one everything else depends on.
+  *(PyPI project page read 2026-09-08.)*
 :::
 
 :::{dropdown} PyTorch Geometric — MIT
