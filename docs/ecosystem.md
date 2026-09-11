@@ -145,6 +145,15 @@ one implementation to reach for if you only take one — the detail sits under t
 **Reach for:** RDKit
 :::
 
+:::{grid-item-card} Workflow orchestration across HPC & cloud
+:link: eco-workflow
+:link-type: ref
+
+**Engin:** does not build
+
+**Reach for:** horus-runtime
+:::
+
 ::::
 
 ---
@@ -1400,6 +1409,52 @@ attempt — and BioSTEAM alongside it for the economics half, because they solve
 problems. Say the quiet part: `estim8` is the better-targeted estimator of the two, and
 AGPL-3.0 is why it is not the recommendation for a permissively licensed tree. If your own
 project has no such constraint, reverse that.
+
+(eco-workflow)=
+
+## Workflow orchestration across HPC and cloud
+
+*Funnel stage: wherever a pipeline, simulation, or plugin needs to actually run —
+upstream of everything else on this page in the sense that every other tool still
+needs somewhere to execute.*
+
+**Engin's position: does not build.** Provisioning compute, scheduling jobs across
+heterogeneous HPC/cloud resources, and giving non-infrastructure users a workflow
+interface is a distinct problem from anything Engin's own packages solve.
+
+:::{dropdown} Horus — emerging, pre-launch, licence not yet finalized
+:animate: fade-in-slide-down
+
+[templecompute.com](https://www.templecompute.com) — Temple Compute, S.L.
+(company formation 2026).
+
+A workflow manager aimed at a gap this page's own entries keep surfacing: capable
+engines (COPASI, CADET, COBRApy, BASICO, etc.) with no bioreactor/infrastructure
+abstraction, requiring a systems engineer to stand up. Horus provides a no-code,
+visual interface for defining and running multi-step scientific/engineering
+pipelines, with automated provisioning of the underlying HPC/cloud infrastructure —
+rather than the user hand-configuring a cluster or writing scheduler-facing code.
+
+- **Pro** — targets the infrastructure-abstraction gap directly rather than
+  extending an engine's modeling capability. A functional prototype has been
+  validated with early users running production-level workflows across multiple
+  institutions.
+- **Pro** — plugin architecture lets domain-specific tools be distributed and run
+  inside the platform without users installing or maintaining separate software
+  stacks, with the infrastructure layer folded in rather than left to the user.
+- **Con — pre-commercial, TRL 6.** Not yet a public package or pip/conda-installable
+  artifact; commercial launch is targeted for Q1 2027.
+- **Con — licence undecided in practice, even though a model is stated.** The
+  stated intent is an Open Core split — core engine open, advanced features
+  (auto-scaling, collaboration, SSO, multi-tenancy) proprietary — but no licence
+  text has been published yet.
+- **Con — single-vendor, pre-seed stage.** No independent maintenance-health signal
+  exists yet, unlike every other entry on this page.
+
+:::
+
+**If you pick one:** watch rather than adopt — Horus targets a real gap but has
+nothing installable or licensed yet.
 
 ---
 
