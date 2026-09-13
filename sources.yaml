@@ -1031,6 +1031,27 @@ sources:
     stability: doi
     type: paper
 
+  - id: 2026-didi-flip2
+    title: >-
+      FLIP2: Expanding Protein Fitness Landscape Benchmarks for Real-World
+      Machine Learning Applications
+    authors: [Didi, Kieran, Alamdari, Sarah, Lu, Alex Xijie, Wittmann, Bruce,
+              Johnston, Kadina E., Amini, Ava P., Madani, Ali K., Czeneszew, Mateusz,
+              Dallago, Christian, Yang, Kevin K.]
+    year: 2026
+    venue: ICML 2026 (spotlight); bioRxiv 2026.02.23.707496v5
+    location: https://doi.org/10.64898/2026.02.23.707496
+    accessed: 2026-09-12
+    stability: doi
+    type: paper
+    note: >-
+      Read from the bioRxiv JATS XML (v5, 2026-08-07) and the Zenodo deposit
+      (https://doi.org/10.5281/zenodo.18433203). Seven datasets, 16 splits;
+      ridge on one-hot is an explicit baseline. Preprint version matters:
+      v1 reported fine-tuned pLMs best on 4/16; v5 reports 7/16 after adding
+      SaProt and LoRA variants. The abstract's conclusion is unchanged across
+      versions.
+
   - id: 2021-biswas-low-n
     title: Low-N protein engineering with data-efficient deep learning
     authors: [Biswas, Surojit, Khimulya, Grigory, Alley, Ethan C., Esvelt, Kevin M., Church, George M.]
@@ -2051,6 +2072,43 @@ claims:
       a sequence-appropriate kernel is a different experiment this project has
       not run. The docstring implied the distinction and now states it.
 
+  - doc: packages/engin-protein/src/engin_protein/model.py
+    tier: A
+    source_id: 2026-didi-flip2
+    claim: >-
+      Ridge on one-hot amino-acid features is competitive with fine-tuned
+      protein language models on engineering-relevant benchmark splits.
+    strength: partially supports
+    reviewed: 2026-09-12
+    note: >-
+      **Filed for #380.** FLIP2 explicitly benchmarks ridge on one-hot
+      (alone and augmented with pLM likelihoods) across 16 splits of seven
+      datasets. The abstract says "simpler models often matched or outperformed
+      fine-tuned protein language models." By the v5 split-level count,
+      augmented ridge wins 4/16 outright and zero-shot pLM scores win 4/16,
+      while fine-tuned pLMs win 7/16. On single-wild-type enzyme landscapes
+      (Amylase, IRED, NucB, TrpB) plain ridge needed more training data than
+      the best zero-shot score; augmenting with likelihoods closed that gap —
+      which is Hsu's own combination approach and exactly the augmentation
+      engin-protein does not ship (#302).
+
+      `partially supports` rather than `supports` for two reasons.
+      (1) The splits test distribution shift (position, wild-type, mutation
+      identity, fitness level), not sample size. There is no explicit low-N
+      split, so the finding bears on the estimator class more than the regime
+      engin-protein operates in. (2) On the single-enzyme landscapes most
+      analogous to a 60-variant campaign, augmented ridge outperformed plain
+      ridge — and engin-protein ships plain. That is the same gap #302
+      documented from Hsu's own data.
+
+      Version drift matters: v1 (February 2026) reported fine-tuned pLMs best
+      on 4/16 and zero-shot on 6/16; v5 (August 2026) revised to 7/16 and
+      4/16 after adding SaProt and LoRA baselines. The abstract's qualitative
+      conclusion survived the revision; the quantitative margin did not. Read
+      from the JATS XML, not from the formatted page, because the v1 numbers
+      still appear in search summaries. Checked against the Zenodo deposit
+      READMEs for per-dataset licences.
+
   - doc: packages/engin-materials/README.md
     tier: A
     source_id: 2021-jiang-gnn-vs-descriptors
@@ -2724,17 +2782,18 @@ components:
     package: engin-protein
     stance: standard
     standard_impl: ridge regression on one-hot / physicochemical features
-    evidence: [2022-hsu-protein-fitness-baselines]
+    evidence: [2022-hsu-protein-fitness-baselines, 2026-didi-flip2]
     adr: null
-    reviewed: 2026-08-30
+    reviewed: 2026-09-12
     note: >-
-      **Restated 2026-08-30 (#302 item 4).** This row previously read "the
-      estimator *is* the field's standard baseline for this regime rather than a
-      shortcut around one", cleared by #89, and listed Biswas as evidence for the
-      estimator. Both parts were wrong, and after #319 the first contradicted
-      this register's own claim row for the same source, which is `partially
-      supports` precisely because Hsu's endorsement of the *un-augmented* model
-      is scoped to larger data than a 60-variant campaign.
+      **Restated 2026-08-30 (#302 item 4); FLIP2 added 2026-09-12 (#380).**
+      This row previously read "the estimator *is* the field's standard
+      baseline for this regime rather than a shortcut around one", cleared by
+      #89, and listed Biswas as evidence for the estimator. Both parts were
+      wrong, and after #319 the first contradicted this register's own claim
+      row for the same source, which is `partially supports` precisely because
+      Hsu's endorsement of the *un-augmented* model is scoped to larger data
+      than a 60-variant campaign.
 
       What survives: ridge on one-hot features is an estimator class this
       literature takes seriously -- Hsu names plain one-hot regression a
@@ -2742,6 +2801,13 @@ components:
       reimplementing around a standard rather than that the source endorses this
       configuration at this sample size. It does not: across their low-N sweep
       augmentation helped at every training size.
+
+      FLIP2 strengthens the class-level case: ridge on one-hot is the explicit
+      baseline in a 2026 ICML spotlight with 16 engineering-relevant splits.
+      Augmented ridge (one-hot + pLM likelihoods) wins 4/16 outright. But the
+      regime gap persists: the splits test distribution shift, not sample size,
+      and on the single-enzyme landscapes most like a small campaign the
+      augmented variant outperformed the plain one -- same finding as Hsu.
 
       Biswas is dropped from `evidence` here because it fixes the **regime** --
       "low-N" is tens of variants -- and not the estimator: eUniRep is

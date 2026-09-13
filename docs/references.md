@@ -64,6 +64,7 @@ register rather than a bibliography.
 | `2026-bhagwat-try-unifying-equation` | [A unifying equation for fermentation sustainability across the titer-rate-yield landscape](None)<br/>Bhagwat, Sarang S., Rao, Rohan, Zhao, Yalin, Singh, Vijay, Guest, Jeremy S. — *Nature Communications 17:8655* | 2026 | paper | doi |
 | `2026-brenda-license` | [BRENDA enzyme database — licence and disclaimer](https://www.brenda-enzymes.org/license.php)<br/>BRENDA / Technische Universitaet Braunschweig — *brenda-enzymes.org* | 2026 | dataset | url |
 | `2026-cf-xarray-units` | [Units — cf_xarray documentation](https://cf-xarray.readthedocs.io/en/latest/units.html)<br/>cf_xarray contributors — *cf-xarray.readthedocs.io* | 2026 | software | url |
+| `2026-didi-flip2` | [FLIP2: Expanding Protein Fitness Landscape Benchmarks for Real-World Machine Learning Applications](https://doi.org/10.64898/2026.02.23.707496)<br/>Didi, Kieran, Alamdari, Sarah, Lu, Alex Xijie, Wittmann, Bruce, Johnston, Kadina E., Amini, Ava P., Madani, Ali K., Czeneszew, Mateusz, Dallago, Christian, Yang, Kevin K. — *ICML 2026 (spotlight); bioRxiv 2026.02.23.707496v5* | 2026 | paper | doi |
 | `2026-efsa-qps-list` | [Updated list of QPS-recommended microorganisms for safety risk assessments carried out by EFSA](https://doi.org/10.5281/zenodo.1146566)<br/>European Food Safety Authority — *EFSA Knowledge Junction on Zenodo* | 2026 | dataset | doi |
 | `2026-efsa-qps-topic-page` | [Qualified presumption of safety (QPS)](https://www.efsa.europa.eu/en/topics/topic/qualified-presumption-safety-qps)<br/>European Food Safety Authority — *efsa.europa.eu* | 2026 | web | url |
 | `2026-efsa-qps-update-23` | [Update of the list of qualified presumption of safety (QPS) recommended microbiological agents intentionally added to food or feed as notified to EFSA 23](https://doi.org/10.2903/j.efsa.2026.9824)<br/>EFSA Panel on Biological Hazards — *EFSA Journal* | 2026 | paper | doi |
@@ -155,6 +156,7 @@ register rather than a bibliography.
 | `packages/engin-protein/src/engin_protein/model.py` | Ridge on one-hot amino-acid features is a baseline this literature takes seriously rather than a shortcut — but the paper's endorsement of the *un-augmented* form is scoped to larger data than engin-protein's regime. | `2022-hsu-protein-fitness-baselines` | partially supports |
 | `packages/engin-protein/src/engin_protein/model.py` | There is a clean crossover sample size N* above which the more expressive model starts winning. | `2022-hsu-protein-fitness-baselines` | **contradicts** |
 | `packages/engin-protein/src/engin_protein/model.py` | The measured GP result is evidence that Gaussian processes lose to ridge on protein fitness in general. | `2022-hsu-protein-fitness-baselines` | **contradicts** |
+| `packages/engin-protein/src/engin_protein/model.py` | Ridge on one-hot amino-acid features is competitive with fine-tuned protein language models on engineering-relevant benchmark splits. | `2026-didi-flip2` | partially supports |
 
 ## Components
 
@@ -173,7 +175,7 @@ to serve.
 | Expected-improvement recommender | `engin-core` | bespoke-justified | BoTorch / Ax / BayBE | `2020-balandat-botorch` |
 | Host-capability knowledge base and scoring | `engin-host` | bespoke-justified | pymcdm / scikit-criteria (weighted-sum MCDA) | `2026-pymcdm-methods`, `2026-scikit-criteria` |
 | Route-as-graph embedding | `engin-pathway` | bespoke-justified | PyTorch Geometric (M1 upgrade) | `2019-fey-pytorch-geometric` |
-| Protein fitness ridge head | `engin-protein` | standard | ridge regression on one-hot / physicochemical features | `2022-hsu-protein-fitness-baselines` |
+| Protein fitness ridge head | `engin-protein` | standard | ridge regression on one-hot / physicochemical features | `2022-hsu-protein-fitness-baselines`, `2026-didi-flip2` |
 | Monomer featurization | `engin-materials` | bespoke-justified | none applicable (RDKit was a category error) | `2026-rdkit-descriptors` |
 | Graph embedding | `engin-graph` | bespoke-justified | PyTorch Geometric | `2019-fey-pytorch-geometric` |
 
