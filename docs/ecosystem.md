@@ -871,9 +871,9 @@ minutes. Fast, BiGG-namespaced, community-model capable — but it needs Diamond
 MILP solver installed out of band, the free-solver path is slow, and it is
 prokaryote-oriented, so *S. cerevisiae* and *P. pastoris* hosts are out of scope.
 **Its last commit and its last release are the same day, 2025-09-12** — not archived,
-no deprecation notice, no successor named, but nothing has moved in close to a year.
+no deprecation notice, no successor named, but nothing has moved in a year.
 Not yet a dead end; treat it as one to re-check rather than one to build a pipeline
-on. *(Checked 2026-08-17.)*
+on. *(Checked 2026-09-12; unchanged since the 2026-08-17 check.)*
 
 [gapseq](https://github.com/jotech/gapseq) (GPL-3.0) infers pathways from sequence
 homology and gap-fills, producing per-reaction evidence a reviewer can interrogate —
@@ -1246,6 +1246,30 @@ on `main` opens "Academic Free License (AFL) v. 3.0" *(read 2026-08-30)*. AFL-3.
 OSI-approved and permissive in effect, so nothing here is blocked; it is flagged because it
 is GPL-incompatible by the FSF's reckoning and because a reader scanning a column of MITs
 will assume this one is too.
+[FLIP2](https://github.com/J-SNACKKB/FLIP) (ICML 2026 spotlight; Didi et al.,
+[bioRxiv](https://doi.org/10.64898/2026.02.23.707496),
+[Zenodo](https://doi.org/10.5281/zenodo.18433203)) extends FLIP with seven new
+sequence-fitness datasets — enzymes acting on small molecules and nucleic acids, a
+light-sensitive protein, and protein–protein interactions involving intrinsically
+disordered regions — under five split types designed to measure generalization
+relevant to engineering campaigns: by mutation count, position, mutation identity,
+fitness level, and wild type. Ridge regression on one-hot encoding is an explicit
+baseline, both alone and augmented with pLM zero-shot likelihood scores (the Hsu
+2022 combination). The abstract says *"simpler models often matched or outperformed
+fine-tuned protein language models"*; by v5 of the preprint the split-level count is
+7/16 for fine-tuned pLMs, 4/16 for augmented ridge, 4/16 for zero-shot pLM scores,
+and 1/16 for a naive supervised pLM (Table A18). On single-wild-type enzyme
+landscapes (Amylase, IRED, NucB, TrpB), plain ridge needed more data than the best
+zero-shot score; augmenting with likelihoods closed that gap. On multi-backbone
+landscapes (Hydro, Rhomax) and the two-protein system (PDZ3), ridge alone matched
+quickly. The splits test distribution shift, not sample size: there is no explicit
+low-N split, so the finding informs `engin-protein`'s estimator *class* more than
+its *regime*. Per-dataset licences in the Zenodo deposit vary — MIT (Amylase, AAV,
+SCL), CC-BY 4.0 (IRED, NucB, Rhomax, Hydro, PDZ3, GB1, secondary structure), CC0
+(TrpB), and an informal "free for anyone" statement (meltome) — but the deposit
+itself is CC-BY 4.0 and all individual licences are at least as permissive, so
+`D12`'s licence rule is met throughout. *(Read from the bioRxiv JATS XML v5
+2026-08-07 and the Zenodo READMEs; project page checked 2026-09-12.)*
 [ProteinMPNN](https://github.com/dauparas/ProteinMPNN) and
 [LigandMPNN](https://github.com/dauparas/LigandMPNN) are MIT for code *and* weights but are
 inverse-folding models — a decent zero-shot stability proxy and a poor activity predictor.
