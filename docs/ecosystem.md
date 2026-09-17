@@ -596,10 +596,10 @@ library that carries a small conformal layer under `src/tsbootstrap/uq/`.
   search found in a maintained, permissively licensed package on PyPI. Alongside it
   `uq/adaptive.py` has `aci_halfwidths` and `agaci_bounds`, `uq/conformal.py` has
   `EnbPIEnsemble` and `enbpi_intervals`, and `uq/calibrators.py` exposes them as `NexCP`,
-  `ACI`, `AgACI`, `SlidingWindow` and `Static`. Verified by importing 0.7.1, not by
+  `ACI`, `AgACI`, `SlidingWindow` and `Static`. Verified by importing 0.7.2, not by
   reading the README.
-- **Pro** — released and moving: PyPI 0.7.1 on 2026-07-15, last commit on the default
-  branch 2026-08-27.
+- **Pro** — released and moving: PyPI 0.7.2 on 2026-08-29, last commit on the default
+  branch 2026-09-16 (a dependency bump, not feature work).
 - **Con, and it is the one to read before adopting** — `nexcp_quantile` is the
   fixed-weight estimator, not the paper's method. It weights score `i` by
   `decay ** (n - 1 - i)` and returns the smallest score whose weighted CDF reaches
@@ -614,7 +614,8 @@ library that carries a small conformal layer under `src/tsbootstrap/uq/`.
   point at.
 
 *(Licence, version, commit date and module contents read from the repository, from
-PyPI, and by importing the installed package, on 2026-08-28.)*
+PyPI, and by importing the installed package, on 2026-08-28; version, commit date and
+the module contents re-checked against 0.7.2 on 2026-09-17.)*
 :::
 
 **Also worth knowing.** [puncc](https://github.com/deel-ai/puncc) is MIT with a
@@ -694,15 +695,45 @@ NCSA (permissive). Flowsheet design, simulation, TEA and LCA of biorefineries.
 - **Pro** — ships a library of published, peer-reviewed biorefinery models
   (Bioindustrial-Park) you can diff against, so "compose" actually means something
   other than an empty flowsheet.
+- **Pro, and it is the concrete form of the bullet above** — `biorefineries` (PyPI,
+  MIT, 2.35.1 uploaded 2026-04-13) is the installable Bioindustrial-Park library, and
+  its `gas_fermentation` module ships `TRYBiorefinery`, a `bst.ProcessModel` whose
+  declared parameters are titer (`units='g/L'`), productivity (`units='g/L/h'`) and
+  bioreactor yield (`units='% theoretical'`), with chaospy distributions over them.
+  That is the shape of the BioSTEAM baseline `README.md` lists as not yet built, so it
+  is the thing to read before writing one. Read it as one worked configuration and not
+  a general one: its own README calls it "Acetate as a Platform Chemical for
+  Carbon-Negative Oleochemical Production", built on LanzaTech's gas-to-acetate step,
+  with `Dodecanol` the product and `{H2, Glucose, Corn}` the substrate options.
 - **Con** — fermentation is modelled at the stoichiometric-conversion and
-  reactor-sizing level. No structured kinetics, no scale-up correlation layer.
+  reactor-sizing level: no structured kinetics.
   BioSTEAM sits *downstream* of a titer forecast; it does not produce one.
+  It is **not** devoid of scale-up physics, and this bullet said so wrongly until
+  2026-09-17: `biosteam/units/design_tools/aeration.py` registers published kLa
+  correlations for stirred tanks and bubble columns behind a `kLa_methods` registry,
+  and `P_at_kLa_Riet` inverts the Van 't Riet correlation to the gassed power required
+  for a target kLa. What is missing is kinetics, not oxygen transfer. Note the
+  correlations are used by `AeratedBioreactor` rather than re-exported: only some of
+  them appear in `aeration.__all__`.
+- **Con** — `biorefineries` requires `biosteam>=2.53.0` with no upper bound and has not
+  released since 2026-04-13, while `biosteam` released 2.54.0 on 2026-09-11. A fresh
+  install today pairs an April model library with a September simulator, unpinned. Pin
+  both together.
+- **Con, minor, but it will make your licence scanner disagree with the repository** —
+  the project declares two licences. `LICENSE.txt` is the University of
+  Illinois/NCSA Open Source License; `setup.py` says `license='MIT'`, a few lines below
+  a header stating the module is under the UIUC licence. PyPI serves both at once — the
+  `License` field reads MIT, the classifier reads NCSA. Both are permissive so nothing
+  is blocked. Treat `LICENSE.txt` as authoritative.
 - **Con** — effectively a single dominant committer, and the GitHub Releases tab is
   years stale because the project ships via PyPI only. Judge maintenance from
   commits, not from releases.
 
 Reference: Cortés-Peña et al., *ACS Sustainable Chem. Eng.* (2020),
 [10.1021/acssuschemeng.9b07040](https://doi.org/10.1021/acssuschemeng.9b07040).
+*(Versions, upload dates, licence declarations and the `aeration.py` and
+`gas_fermentation` contents read from PyPI and from the 2.54.0 and 2.35.1 sdists on
+2026-09-17.)*
 :::
 
 :::{dropdown} IDAES-PSE — BSD
@@ -871,9 +902,10 @@ minutes. Fast, BiGG-namespaced, community-model capable — but it needs Diamond
 MILP solver installed out of band, the free-solver path is slow, and it is
 prokaryote-oriented, so *S. cerevisiae* and *P. pastoris* hosts are out of scope.
 **Its last commit and its last release are the same day, 2025-09-12** — not archived,
-no deprecation notice, no successor named, but nothing has moved in close to a year.
+no deprecation notice, no successor named, but nothing has moved for over a year now.
 Not yet a dead end; treat it as one to re-check rather than one to build a pipeline
-on. *(Checked 2026-08-17.)*
+on. *(Checked 2026-08-17; commit and PyPI dates re-read 2026-09-17, when "close to a
+year" became an understatement.)*
 
 [gapseq](https://github.com/jotech/gapseq) (GPL-3.0) infers pathways from sequence
 homology and gap-fills, producing per-reaction evidence a reviewer can interrogate —
@@ -1087,11 +1119,13 @@ successor to Pickaxe and NetGen.
   and the newest published artifact is `0.5.7a1` from that same day; the repository has
   never cut a GitHub release at all. The two commits before it are 2026-01-29 and
   2025-06-13, so long quiet stretches are this project's normal rather than a new
-  development — but a pre-alpha with an unstable API and no upstream movement in six
-  months is a different recommendation from a pre-alpha under active development, and
-  this entry read as the second. *(Commit list and an empty release list read from the
-  GitHub API on 2026-08-26; version and date from PyPI the same day. Not a dead end:
-  the January burst was substantive, and nothing here says it will not resume.)*
+  development — but a pre-alpha with an unstable API and no upstream movement in over
+  seven months is a different recommendation from a pre-alpha under active development,
+  and this entry read as the second. *(Commit list and an empty release list read from
+  the GitHub API on 2026-08-26; version and date from PyPI the same day; the last
+  commit of 2026-02-04 and `0.5.7a1` of that same day re-verified 2026-09-17, when the
+  interval read "six months". Not a dead end: the January burst was substantive, it has
+  a matching 2026 publication, and nothing here says it will not resume.)*
 
 Reference: Zhang et al., *Digital Discovery* (2025),
 [10.1039/d5dd00229j](https://doi.org/10.1039/d5dd00229j).
@@ -1114,8 +1148,17 @@ MIT code over the [RetroRules](https://retrorules.org/) rule set, with
   is not empty, which is what makes this a trap rather than an inconvenience: it is
   frozen many minor versions behind a repository that is still moving. Install from
   conda or from source, and check what you actually got.
-- **Con** — the code is MIT but the RetroRules *dataset* states no licence anywhere we
-  could find. Ask before redistributing rules.
+- **Con, and this one improved** — the code is MIT, and the RetroRules *dataset* now
+  carries a licence: retrorules.org/download states "Unless stated otherwise, data are
+  available under CC BY 4.0". The caveat moved upstream rather than disappearing — the
+  same page warns that the databases it integrates "may have different licensing terms.
+  Check licenses of each referenced database before redistribution, especially for
+  commercial use." The current rule set is v3.1.0 (2026-09-06), whose notes list
+  "Updated Rhea, MetaNetX and USPTO RetroRules datasets"; USPTO coverage dates from
+  v3.0.0 (2025-10-20) rather than from this release.
+  *(Read 2026-09-17. This bullet said the dataset "states no licence anywhere we could
+  find" until that date, and it was wrong rather than stale — the statement is on the
+  page the entry already links.)*
 
 Reference: Delépine et al., *Metabolic Engineering* (2018),
 [10.1016/j.ymben.2017.12.002](https://doi.org/10.1016/j.ymben.2017.12.002).
@@ -1213,6 +1256,11 @@ scores variant effects.
   output.
 - **Con** — needs external HMMER and PLMC binaries on PATH, cannot score indels, and
   cannot score outside the aligned region.
+- **Con** — `pip install evcouplings` gets you 0.2.1 from 2024-11-05 (the release
+  before it was 0.1.1, 2020-11-06), while the repository's default branch was still
+  moving on 2026-04-20. Judge it from the repository and install from git if you need
+  anything landed since — the same install trap this page already flags for
+  RetroPath2.0. *(PyPI and the repository read 2026-09-17.)*
 :::
 
 :::{dropdown} ProteinGym — MIT
@@ -1287,15 +1335,31 @@ and `D23` both say an absence claim has to be the narrow one.
 
 **The nearest miss, named because `D15` requires it.** [BiRD](https://github.com/NREL/BioReactorDesign)
 (BSD-3-Clause) is purpose-built for bioreactors, actively developed — commits through
-2026-07-31 — and its 2026 OpenFOAM-13 merge added kLa function objects and kLa
-correlations, so it models the gas-liquid transfer the packages above have no
-abstraction for. It is rejected for this slot on scope, not on health: it is an
+2026-09-14 — and its 2026 OpenFOAM-13 merge added kLa function objects and kLa
+post-processing, so it resolves gas-liquid transfer from the flow field.
+It is rejected for this slot on scope, not on health: it is an
 OpenFOAM CFD toolbox solving hydrodynamics and interphase mass transfer, not a
 fermentation kinetics model, and standing up a case is a meshing-and-solver project
 rather than a `pip install`. Reach for it when the question is *transport inside a
 specific vessel geometry*; it will not give you a titer trajectory. Note the repository
 moved: `NREL/BioReactorDesign` now redirects to `NatLabRockies/BioReactorDesign`.
-*(Checked 2026-08-17.)*
+
+**Corrected 2026-09-17: this paragraph said BiRD "models the gas-liquid transfer the
+packages above have no abstraction for", and that clause was false.** BioSTEAM — in the
+techno-economic slot above, and the package `engin-core` itself declares in its `[tea]`
+extra — ships `biosteam/units/design_tools/aeration.py`, which registers published kLa
+correlations for stirred tanks and bubble columns behind a `kLa_methods` registry and
+inverts the Van 't Riet correlation in `P_at_kLa_Riet` to give the gassed power needed
+to hit a target kLa; `AeratedBioreactor` and `GasFedBioreactor` consume them. The
+distinction worth keeping is the *kind* of answer, not its absence: BiRD computes kLa
+from a resolved flow field, BioSTEAM applies an empirical correlation. Grepping BiRD's
+Python tree finds no kLa correlations, so the withdrawn sentence had the two backwards.
+The consequence is not cosmetic — the omission the simulator is criticised for in
+[#190](https://github.com/enginbio/engin-suite/issues/190) has a `D9` composition
+partner in a dependency this project already ships an extra for, and this page said
+there was none.
+*(Checked 2026-08-17; kLa claim, commit date and the BioSTEAM counterexample re-read
+from the repositories and the 2.54.0 sdist on 2026-09-17.)*
 ```
 
 :::{dropdown} BASICO / COPASI — Artistic-2.0
@@ -1416,7 +1480,9 @@ the saleable kilogram.*
 why it presumes none. `D9` says compose rather than reimplement unit-operation
 models, and the projects below are what there is to compose with. Their licences are
 the whole problem, and the thing you would most want — *choosing* a recovery train
-rather than simulating one you already chose — is not available from anybody.
+rather than simulating one you already chose — is not available **as open source** from
+anybody. *(Narrowed 2026-09-17: this read "is not available from anybody", and a closed
+product now does it — see the absence claim below.)*
 
 :::{dropdown} CADET-Core — AGPL-3.0 today, GPL-3.0 in the current stable release
 :animate: fade-in-slide-down
@@ -1532,10 +1598,33 @@ or copyleft, was found that takes a broth specification and returns a ranked rec
 train.** Rejected near-misses and why: CADET-Process optimizes within a fixed
 structure; BioSTEAM has no bioseparation units; IDAES-PSE is an equation-oriented
 framework whose model library targets energy systems; PharmaPy is
-API-and-crystallization shaped. Note that the closed incumbents do not fill this
-either — SuperPro Designer and BioSolve Process are costing tools in which the
-engineer specifies the train — so this is not a case of open source lagging a
-commercial product. If you know of a counterexample, that correction is worth more to
+API-and-crystallization shaped. Note that the closed incumbents named in the
+techno-economic slot do not fill this either — SuperPro Designer and BioSolve Process
+are costing tools in which the engineer specifies the train.
+
+**The inference that used to follow was wrong, and is withdrawn 2026-09-17.** This
+paragraph ended "so this is not a case of open source lagging a commercial product",
+and one closed product now does fill it, so it is exactly that.
+[untangle.bio](https://untangle.bio/) is a browser-based, proprietary, freemium
+bioprocess flowsheet designer — tagline "Separate the broth. Rank the routes." — which
+advertises route generation by "A diversity-preserving genetic search", a rules engine
+that rejects infeasible trains, and candidates "scored on recovery, purity and
+installed cost", reporting CAPEX, OPEX, COGS and a minimum selling price per route with
+an "AACE class band". **It is not a counterexample to the claim above**, and that
+distinction is the whole reason the claim survives: its feedback repository states
+verbatim that "The application source code is not in this repository", and its terms
+state the application "is the intellectual property of its developers". Read the
+advertised capability with the caution the rest of this page applies to any vendor's
+own copy — its landing page and its documentation give different counts of both unit
+operations and constraints, and it publishes a self-run benchmark against a corpus of
+published techno-economic analyses rather than an independent validation, with neither
+data nor code released. No legal entity is named on the site; the terms are governed by
+Dutch law and the feedback repository is owned by an individual GitHub account. The
+free tier rate-limits route generation and the academic tier is non-commercial, which
+on this page is the material fact rather than the price.
+*(Site, pricing, terms, benchmark page and feedback repository read 2026-09-17.)*
+
+If you know of an open counterexample, that correction is worth more to
 this page than any entry on it.
 
 **If you pick one:** CADET-Process, because it is the only thing here that will give
