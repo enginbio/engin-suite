@@ -338,8 +338,13 @@ Two things to know before reading it for ideas: the published PyPI package
 (`obsidian-apo`) and the latest GitHub release are both `0.8.6` from 2025-03-20, while
 `main` carries a squashed "Release 1.0.0" commit from 2026-07-29 that among other things
 deletes the Dash web app — so the installable package trails the repository by a major
-version with no tag to pin. And the repository was silent between those two commits.
-Cite the method; do not take the dependency. *(Checked 2026-08-18.)*
+version with no tag to pin. The gap between them was not silence: `main` took bug-fix
+commits in March, April and August 2025, after the `0.8.6` tag. Read it as a project
+that fixes on `main` and rarely tags, not as one that went dormant and revived — which
+makes the pinning problem worse, because fixes you may want exist only in git. Cite the
+method; do not take the dependency.
+*(Commits and releases re-read 2026-09-22. This entry previously said the repository
+"was silent between those two commits"; the commit history says otherwise.)*
 
 :::{dropdown} Atlas — MIT — the only entry here that models a failed experiment
 :animate: fade-in-slide-down
