@@ -317,16 +317,83 @@ retraction lived in a pull-request comment. Nothing was watching the difference.
 ```
 :::
 
+:::{dropdown} PyOptEx — BSD-3-Clause
+:animate: fade-in-slide-down
+
+[mborn1/pyoptex](https://github.com/mborn1/pyoptex)
+
+BSD-3-Clause, from the `LICENSE` file ("Copyright (c) 2022-2026, Mathias Born").
+Optimal design of experiments plus a model-fitting layer, with no torch anywhere
+in the tree.
+
+- **Pro** — it is the entry this slot was missing: `pyoptex.utils.model` builds a
+  partial response-surface model (`partial_rsm`, `partial_rsm_names` — quadratic,
+  two-factor-interaction and linear terms per factor), and `pyoptex.analysis` fits
+  it with scikit-learn-shaped estimators that expose `predict()` and a `summary()`
+  carrying coefficient confidence intervals. Designs and the fit live in one
+  dependency.
+- **Pro** — mixtures are first-class rather than encoded by hand:
+  `mixture_scheffe_model` and `mixtureY2X` build Scheffé models, which is the media
+  case this section flags, and the design algorithms take a predicate for the
+  physically possible factor combinations.
+- **Pro** — no torch, and not by the undeclared route BoFire takes: `grep -rn
+  "import torch"` over the tree returns nothing, and the declared dependencies are
+  numba, numpy, scipy, pandas, scikit-learn, statsmodels, tqdm, plotly, openpyxl,
+  kaleido and ruptures. `requires_python` is `>=3.10`, so it installs across all
+  four Python versions Engin's CI tests, which several entries in this page's other
+  slots no longer do.
+- **Pro** — it is moving: `1.2.1` on PyPI (2026-05-14), seventeen releases with six
+  of them in 2026, and a last commit on `main` of 2026-08-19. *(Read from PyPI JSON
+  and a clone of `main` on 2026-10-09.)*
+- **Con, and it is the half of the old claim that survives** — **the documented
+  per-point prediction-variance accessor does not work in the released version.**
+  `SimpleRegressor.fit()` never sets `X_`, so `pred_var()` raises
+  `AttributeError: 'SimpleRegressor' object has no attribute 'X_'` at
+  `pyoptex/analysis/mixins/fit_mixin.py`. Reproduced on a clean install of `1.2.1`
+  on Python 3.13 on 2026-10-09: `fit()`, `predict()` and `summary()` all return,
+  `pred_var()` does not. So you get the fitted quadratic and its coefficient
+  intervals, and the per-design prediction interval is yours to compute from the
+  information matrix.
+- **Con** — effectively a single maintainer. All but a dozen commits in the
+  repository's history are Mathias Born's, across several author identities, and the
+  only other contributor is one co-author at the same university. *(Counted from
+  `git log` over the full history on 2026-10-09.)*
+- **Con** — numba is a core dependency, so an install drags an LLVM toolchain in;
+  cheaper than torch and not free.
+- **Con** — the peer-reviewed publication behind it covers the splitk-plot design
+  algorithm, not the analysis layer recommended above, which carries no publication
+  of its own.
+
+Reference: Born & Goos, *Computational Statistics & Data Analysis* 201 (2025),
+[10.1016/j.csda.2024.108028](https://doi.org/10.1016/j.csda.2024.108028).
+:::
+
 **Classical DoE.** [pydoe](https://github.com/pydoe/pydoe) (BSD-3) is the maintained
 home of the classical designs — factorial, Plackett-Burman, Box-Behnken, central
 composite, mixture designs, definitive screening. Mixture designs matter more here
 than anything else, because media components are a constrained mixture and most BO
 libraries have no first-class notion of that — BoFire above is the exception, and is
 the reason that sentence now says *most* rather than *all*. pydoe generates designs
-and does not fit them; the response-surface fit is statsmodels. **There is no
-maintained dedicated Python RSM package, and Engin should stop implying otherwise.**
-That remains true: BoFire builds designs under constraints, it does not give you the
-fitted quadratic and its prediction interval.
+and does not fit them; the response-surface fit is statsmodels.
+
+```{note}
+**Corrected 2026-10-09: this paragraph carried an absence claim, and the absence is
+not there.** It read *"There is no maintained dedicated Python RSM package, and Engin
+should stop implying otherwise. That remains true: BoFire builds designs under
+constraints, it does not give you the fitted quadratic and its prediction interval."*
+
+PyOptEx is a maintained Python package that builds a partial response-surface model
+and fits it — see its entry above. The claim was wrong on the package and wrong on
+the fitted quadratic; it was right on the prediction interval, and for a reason it
+did not state, which is that PyOptEx's own `pred_var()` is broken in the released
+version. The surviving sentence is therefore narrower: **BoFire builds designs under
+constraints and does not fit them, and the one package that does fit them ships no
+working per-point prediction variance.**
+
+`D15` puts the burden on exactly this shape of sentence — what was searched, when,
+and which near-misses were rejected — and this one carried none of it. The previous
+version was not dated and named no search.
+```
 
 **Licensed out of reach, and easy to mistake for BayBE.**
 [obsidian](https://github.com/MSDLLCpapers/obsidian) is a BoTorch-backed process
@@ -437,9 +504,12 @@ it — a *baseline to beat*, not a frame to sit in — and it is Apache-2.0, so 
 comparison carries no licence question when someone builds it.
 :::
 
-**If you pick one:** BayBE. **If torch is disqualifying, this slot has no answer** —
-but not for the same reason in every case, and the difference matters if you are
-auditing an install. BayBE, Ax and ProcessOptimizer declare torch or BoTorch
+**If you pick one:** BayBE. **If torch is disqualifying, PyOptEx is the answer, and
+it is a different tool rather than a smaller BayBE** — optimal design and a
+response-surface fit, not sequential Bayesian optimization, so it answers the
+screening-and-RSM half of this slot and not the campaign half. The torch story is
+otherwise worth reading closely, because it is not the same in every case and the
+difference matters if you are auditing an install. BayBE, Ax and ProcessOptimizer declare torch or BoTorch
 unconditionally in `[project] dependencies`. **BoFire does not**: `pip install bofire`
 pulls only numpy, pandas, pydantic, scipy, typing-extensions and formulaic, and torch
 arrives through the `optimization` extra. That install is torch-free and it is also
@@ -447,8 +517,8 @@ unusable for this slot's purpose — `bofire/strategies/doe/objective.py` does a
 `import torch` and takes `hessian` and `jacobian` from `torch.autograd.functional`, and
 `doe/design.py` imports that module unconditionally, so the D-optimal designer raises
 `ImportError` on a core install. The dependency is real and undeclared rather than
-absent. Either way there is no escape hatch to route you to, and saying so is more use
-than a redirect that does not help. Pick BoFire instead of BayBE when the binding difficulty is
+absent. Either way neither is the torch-free route; PyOptEx is, at the cost of giving
+up sequential BO. Pick BoFire instead of BayBE when the binding difficulty is
 *constraints on the design itself* — a media mixture that must sum, a component that
 can only appear with another — because that is the case it is built for and the one
 where BayBE's constraint support runs out first.
