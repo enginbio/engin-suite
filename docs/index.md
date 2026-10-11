@@ -180,7 +180,7 @@ Including the baselines that beat us, in the same table as the ones that don't.
 :link: ecosystem
 :link-type: doc
 
-Eleven capability areas Engin deliberately does not build, with licences and dead ends.
+Twelve capability areas Engin deliberately does not build, with licences and dead ends.
 :::
 
 ::::
