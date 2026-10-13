@@ -70,7 +70,7 @@ Provenance = Literal["illustrative", "sourced"]
 """Where a capability value came from.
 
 ``illustrative`` is the default because it is what the shipped knowledge base
-actually is -- sixty hand-assigned numbers, disclosed as such in the module
+actually is -- fifty-four hand-assigned numbers, disclosed as such in the module
 docstring, the package README and its CLAUDE.md.
 
 The point of making it a field rather than prose is that **prose does not survive

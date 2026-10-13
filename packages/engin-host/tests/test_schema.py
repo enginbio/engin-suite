@@ -38,7 +38,7 @@ def test_query_rejects_all_zero_weights():
         HostQuery(weights={"a": 0.0})
 
 
-# -- Provenance (#146). The shipped KB is sixty hand-assigned numbers, disclosed
+# -- Provenance (#146). The shipped KB is fifty-four hand-assigned numbers, disclosed
 # in prose. Prose does not survive a function boundary, so provenance is a field
 # and these assert it cannot be quietly lost or quietly claimed.
 
